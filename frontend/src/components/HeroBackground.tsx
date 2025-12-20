@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 
@@ -30,8 +30,6 @@ export function HeroBackground({
   rotationInterval = 5000 
 }: HeroBackgroundProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [prevIndex, setPrevIndex] = useState<number | null>(null);
-  const [direction, setDirection] = useState(1);
   const [isHovered, setIsHovered] = useState(false);
 
   // Preload all images to prevent loading delays
@@ -42,59 +40,30 @@ export function HeroBackground({
     });
   }, [images]);
 
-  // Clear previous image after transition completes
-  useEffect(() => {
-    if (prevIndex !== null) {
-      const timer = setTimeout(() => {
-        setPrevIndex(null);
-      }, 600); // Match animation duration
-      return () => clearTimeout(timer);
-    }
-  }, [prevIndex]);
-
   // Auto-rotate effect
   useEffect(() => {
     if (!autoRotate || isHovered || images.length <= 1) return;
 
     const interval = setInterval(() => {
-      setDirection(1);
-      setCurrentIndex((prev) => {
-        const next = (prev + 1) % images.length;
-        setPrevIndex(prev);
-        return next;
-      });
+      setCurrentIndex((prev) => (prev + 1) % images.length);
     }, rotationInterval);
 
     return () => clearInterval(interval);
   }, [autoRotate, rotationInterval, images.length, isHovered]);
 
   const handlePrevious = () => {
-    setDirection(-1);
-    setCurrentIndex((prev) => {
-      setPrevIndex(prev);
-      return (prev - 1 + images.length) % images.length;
-    });
+    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
   };
 
   const handleNext = () => {
-    setDirection(1);
-    setCurrentIndex((prev) => {
-      setPrevIndex(prev);
-      return (prev + 1) % images.length;
-    });
+    setCurrentIndex((prev) => (prev + 1) % images.length);
   };
 
   const handleDotClick = (index: number) => {
-    const newDirection = index > currentIndex ? 1 : -1;
-    setDirection(newDirection);
-    setCurrentIndex((prev) => {
-      setPrevIndex(prev);
-      return index;
-    });
+    setCurrentIndex(index);
   };
 
   const currentImage = images[currentIndex];
-  const previousImage = prevIndex !== null ? images[prevIndex] : null;
 
   if (!currentImage) return null;
 
@@ -106,44 +75,18 @@ export function HeroBackground({
     >
       {/* Background Images - Carousel Mode */}
       <div className="absolute inset-0 overflow-hidden bg-neutral-900">
-        {/* Previous image - slides out */}
-        {previousImage && (
+        <AnimatePresence initial={false}>
+          {/* Current image with smooth fade transition */}
           <motion.div
-            key={`prev-${previousImage.id}`}
-            initial={{ x: 0 }}
-            animate={{ x: direction > 0 ? '-100%' : '100%' }}
+            key={currentImage.id}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={{
-              type: 'tween',
-              ease: [0.4, 0, 0.2, 1],
               duration: 0.6,
+              ease: [0.4, 0, 0.2, 1],
             }}
             className="absolute inset-0"
-            style={{ willChange: 'transform', zIndex: 1 }}
-          >
-            <Image
-              src={previousImage.src}
-              alt={previousImage.alt}
-              fill
-              className="object-cover object-top"
-              sizes="100vw"
-              style={{ objectPosition: 'center top' }}
-              priority={false}
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/50 dark:from-black/60 dark:via-black/50 dark:to-black/70" />
-          </motion.div>
-        )}
-          {/* Current image - slides in */}
-          <motion.div
-            key={`current-${currentImage.id}`}
-            initial={{ x: direction > 0 ? '100%' : '-100%' }}
-            animate={{ x: 0 }}
-            transition={{
-              type: 'tween',
-              ease: [0.4, 0, 0.2, 1],
-              duration: 0.6,
-            }}
-            className="absolute inset-0"
-            style={{ willChange: 'transform', zIndex: 2 }}
           >
             <Image
               src={currentImage.src}
@@ -157,6 +100,7 @@ export function HeroBackground({
             {/* Overlay for better text readability */}
             <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/50 dark:from-black/60 dark:via-black/50 dark:to-black/70" />
           </motion.div>
+        </AnimatePresence>
       </div>
 
       {/* Navigation Dots */}
