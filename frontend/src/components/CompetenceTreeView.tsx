@@ -2,71 +2,61 @@
 
 /**
  * Competence Tree View
- * Shows all 4 branches with progress bars and icons
+ * Shows competence summary and visual tree without progress bars/gauges
  */
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Brain, 
-  Users, 
-  Zap, 
-  Target
-} from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { CompetenceBranch } from '@ary/shared';
-import type { LucideIcon } from 'lucide-react';
-
-interface BranchConfig {
-  branch: CompetenceBranch;
-  icon: LucideIcon;
-  title: string;
-  description: string;
-  color: string;
-  gradient: string;
-  progress: number;
-}
-
-const branches: BranchConfig[] = [
-  {
-    branch: CompetenceBranch.COGNITIVE,
-    icon: Brain,
-    title: 'Cognitive',
-    description: 'How you think, analyze, and solve problems',
-    color: 'pink',
-    gradient: 'from-pink-500 to-purple-500',
-    progress: 65,
-  },
-  {
-    branch: CompetenceBranch.INTERPERSONAL,
-    icon: Users,
-    title: 'Interpersonal',
-    description: 'How you connect, communicate, and work with others',
-    color: 'yellow',
-    gradient: 'from-yellow-500 to-purple-500',
-    progress: 68,
-  },
-  {
-    branch: CompetenceBranch.MOTIVATION,
-    icon: Zap,
-    title: 'Motivation',
-    description: 'What energizes and drives you forward',
-    color: 'orange',
-    gradient: 'from-orange-500 to-orange-600',
-    progress: 62,
-  },
-  {
-    branch: CompetenceBranch.EXECUTION,
-    icon: Target,
-    title: 'Execution',
-    description: 'How you get things done and deliver results',
-    color: 'green',
-    gradient: 'from-green-500 to-green-600',
-    progress: 70,
-  },
-];
+import { RedesignedCompetenceTreeView } from './RedesignedCompetenceTreeView';
+import type { ConversationResult } from '@/lib/conversationResults';
+import type { ConversationHistory } from '@/lib/conversationResults';
 
 export function CompetenceTreeView() {
+  // Use the redesigned component
+  return <RedesignedCompetenceTreeView />;
+}
+
+export function OldCompetenceTreeView() {
   const router = useRouter();
+  const [conversationResult, setConversationResult] = useState<ConversationResult | null>(null);
+  const [conversationHistory, setConversationHistory] = useState<ConversationHistory[]>([]);
+
+  useEffect(() => {
+    // Load conversation data from sessionStorage
+    const storedResult = sessionStorage.getItem('conversationResult');
+    const storedHistory = sessionStorage.getItem('conversationHistory');
+    
+    if (storedResult) {
+      try {
+        setConversationResult(JSON.parse(storedResult));
+      } catch (e) {
+        console.error('Failed to parse conversation result', e);
+      }
+    }
+    
+    if (storedHistory) {
+      try {
+        setConversationHistory(JSON.parse(storedHistory));
+      } catch (e) {
+        console.error('Failed to parse conversation history', e);
+      }
+    }
+  }, []);
+
+  // Default result if none available
+  const result: ConversationResult = conversationResult || {
+    id: 'default',
+    title: 'Reflective Thinker',
+    summary: "You demonstrate thoughtful reflection and self-awareness.",
+    competencies: ['Self-awareness', 'Reflection'],
+    detailedEvaluation: "Based on your conversation, you show a thoughtful and reflective approach to understanding your strengths and patterns.",
+    matchingPatterns: {
+      questionIds: [],
+      keywordPatterns: [],
+      competencePatterns: [],
+    },
+  };
 
   return (
     <div className="container mx-auto px-4 pt-24 pb-16 md:pt-28 md:pb-24">
@@ -92,7 +82,7 @@ export function CompetenceTreeView() {
                   
                   {/* Rotating rings */}
                   <div className="absolute w-16 h-16 md:w-18 md:h-18 border-2 border-white/30 rounded-full" />
-                  <div className="absolute w-8 h-8 md:w-9 md:h-9 border-2 border-white/40 rounded-full" />
+                  <div className="absolute w-8 h-8 md:w-9 md:w-9 border-2 border-white/40 rounded-full" />
                   
                   {/* Accent dots */}
                   <div className="absolute top-1.5 left-1.5 w-2 h-2 bg-white/60 rounded-full" />
@@ -110,10 +100,19 @@ export function CompetenceTreeView() {
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-3xl md:text-4xl font-bold text-neutral-900 dark:text-neutral-100 mb-4"
+            className="text-3xl md:text-4xl font-bold text-neutral-900 dark:text-neutral-100 mb-2"
           >
-            Your Competence Tree
+            Your Identity Core
           </motion.h1>
+          
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="text-xl md:text-2xl font-semibold text-primary-600 dark:text-primary-400 mb-4"
+          >
+            {result.title}
+          </motion.h2>
 
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -125,58 +124,72 @@ export function CompetenceTreeView() {
           </motion.p>
         </div>
 
-        {/* Competence Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          {branches.map((branch, index) => {
-            const Icon = branch.icon;
-            return (
-              <motion.div
-                key={branch.branch}
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-white dark:bg-neutral-900 rounded-2xl p-6 shadow-soft border border-neutral-200/50 dark:border-neutral-700/50"
-              >
-                <div className="flex items-start gap-4 mb-4">
-                  <div className={`p-3 rounded-xl bg-gradient-to-br ${branch.gradient} shadow-lg`}>
-                    <Icon className="w-6 h-6 text-white" strokeWidth={2} />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100 mb-1">
-                      {branch.title}
-                    </h3>
-                    <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                      {branch.description}
-                    </p>
-                  </div>
-                </div>
+        {/* Competence Summary */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-white dark:bg-neutral-900 rounded-2xl p-6 md:p-8 shadow-soft border border-neutral-200/50 dark:border-neutral-700/50 mb-8"
+        >
+          <h3 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100 mb-4">
+            Competence Summary
+          </h3>
+          <p className="text-neutral-700 dark:text-neutral-300 mb-6 leading-relaxed">
+            {result.summary}
+          </p>
+          
+          {/* Detailed Evaluation */}
+          {result.detailedEvaluation && (
+            <div className="mb-6 p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl border border-neutral-200/50 dark:border-neutral-700/50">
+              <h4 className="text-sm font-semibold text-neutral-600 dark:text-neutral-400 mb-2 uppercase tracking-wide">
+                Detailed Evaluation
+              </h4>
+              <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed text-sm">
+                {result.detailedEvaluation}
+              </p>
+            </div>
+          )}
+          
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold text-neutral-600 dark:text-neutral-400 uppercase tracking-wide">
+              Mapped Competencies:
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              {result.competencies.map((comp, index) => (
+                <motion.span
+                  key={index}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.3 + index * 0.05 }}
+                  className="inline-flex items-center px-4 py-2 bg-primary-50 dark:bg-primary-950/20 text-primary-700 dark:text-primary-300 rounded-lg text-sm font-medium border border-primary-200/50 dark:border-primary-800/50"
+                >
+                  {comp}
+                </motion.span>
+              ))}
+            </div>
+          </div>
+        </motion.div>
 
-                {/* Progress Bar */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-neutral-500 dark:text-neutral-400">Observed strength</span>
-                    <span className={`font-medium ${
-                      branch.color === 'pink' ? 'text-pink-600 dark:text-pink-400' :
-                      branch.color === 'yellow' ? 'text-yellow-600 dark:text-yellow-400' :
-                      branch.color === 'orange' ? 'text-orange-600 dark:text-orange-400' :
-                      'text-green-600 dark:text-green-400'
-                    }`}>
-                      Emerging
-                    </span>
-                  </div>
-                  <div className="h-2 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${branch.progress}%` }}
-                      transition={{ delay: index * 0.1 + 0.3, duration: 0.8, ease: 'easeOut' }}
-                      className={`h-full bg-gradient-to-r ${branch.gradient} rounded-full`}
-                    />
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
+        {/* Visual Identity Core Tree with Conversation Connection */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="bg-white dark:bg-neutral-900 rounded-2xl p-6 md:p-8 shadow-soft border border-neutral-200/50 dark:border-neutral-700/50 mb-8"
+        >
+          <div className="mb-6">
+            <h3 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100 mb-2 text-center">
+              Your Competence Tree
+            </h3>
+            <p className="text-sm text-neutral-600 dark:text-neutral-400 text-center">
+              Each node shows patterns from your conversation. Click to see the evidence.
+            </p>
+          </div>
+          <EnhancedIdentityCoreTree 
+            competencies={result.competencies} 
+            conversationHistory={conversationHistory}
+          />
+        </motion.div>
 
         {/* What this means */}
         <motion.div
@@ -192,13 +205,19 @@ export function CompetenceTreeView() {
             <li className="flex items-start gap-3">
               <span className="text-primary-600 dark:text-primary-400 mt-1">•</span>
               <span className="text-neutral-700 dark:text-neutral-300">
-                You demonstrate thoughtful reflection and self-awareness.
+                This reflection is based on patterns in your own words, not external evaluation.
               </span>
             </li>
             <li className="flex items-start gap-3">
               <span className="text-primary-600 dark:text-primary-400 mt-1">•</span>
               <span className="text-neutral-700 dark:text-neutral-300">
-                You&apos;re open to exploring your strengths and capabilities.
+                You can edit, refine, or expand on any of these insights at any time.
+              </span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="text-primary-600 dark:text-primary-400 mt-1">•</span>
+              <span className="text-neutral-700 dark:text-neutral-300">
+                This is a starting point for deeper self-reflection, not a final assessment.
               </span>
             </li>
           </ul>
@@ -228,7 +247,7 @@ export function CompetenceTreeView() {
               <span>→</span>
             </motion.button>
             <motion.button
-              onClick={() => router.push('/')}
+              onClick={() => router.push('/demo')}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-all font-medium shadow-sm hover:shadow-md"
@@ -242,4 +261,3 @@ export function CompetenceTreeView() {
     </div>
   );
 }
-

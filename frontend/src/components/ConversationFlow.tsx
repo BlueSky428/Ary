@@ -2,310 +2,563 @@
 
 /**
  * Conversation Flow Component
- * Simple, clean question-answer flow
+ * Polished, professional chat interface with refined design and animations
  */
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Edit2, ArrowRight } from 'lucide-react';
+import { Edit2, Check, MessageCircle, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-
-const questions = [
-  "How are you feeling coming into this?",
-  "Can you think of a recent moment where you felt useful or capable?",
-  "What activities or situations energize you?",
-  "Tell me about a time when you helped someone or solved a problem.",
-  "What kind of challenges do you enjoy tackling?",
-  "Describe a situation where you felt most confident in your abilities.",
-  "What do others often come to you for help with?",
-  "When do you feel most productive or in flow?",
-  "What patterns do you notice in how you approach problems?",
-  "What strengths do you see in yourself that others might not notice?",
-];
+import {
+  getStartingQuestion,
+  getQuestionById,
+  type QuestionNode,
+  type AnswerOption,
+  ResponseCategory,
+} from '@/lib/conversationTree';
+import {
+  analyzeConversationHistory,
+  type ConversationHistory,
+} from '@/lib/conversationResults';
 
 interface Message {
-  questionIndex: number;
+  questionId: string;
   question: string;
+  answerId: string;
   answer: string;
+  category?: ResponseCategory;
+  reaction?: string;
 }
 
 export function ConversationFlow() {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [currentAnswer, setCurrentAnswer] = useState('');
+  const [selectedAnswerId, setSelectedAnswerId] = useState<string | null>(null);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [conversationHistory, setConversationHistory] = useState<ConversationHistory[]>([]);
+  const [currentNode, setCurrentNode] = useState<QuestionNode | null>(getStartingQuestion());
+  const [showReaction, setShowReaction] = useState(false);
   const router = useRouter();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto scroll to bottom
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages, editingIndex]);
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, editingIndex, currentNode, showReaction]);
 
-  const currentQuestionIndex = messages.length;
-  const canShowFinishButton = messages.length >= 5; // Show button after 5 steps
-  const hasMoreQuestions = currentQuestionIndex < questions.length;
-  const currentQuestion = hasMoreQuestions ? questions[currentQuestionIndex] : null;
-  const shouldAutoNavigate = messages.length === questions.length; // Auto-navigate after 10th answer
+  const currentQuestion = currentNode?.question || null;
+  const isComplete = currentNode === null || currentNode.id === 'complete';
+  const canShowFinishButton = messages.length >= 5;
+  const currentStep = messages.length + 1;
+  const totalSteps = 10;
+  const progressPercentage = isComplete ? 100 : ((currentStep - 1) / totalSteps) * 100;
 
-  const handleSend = () => {
-    if (!currentAnswer.trim()) return;
-
+  const handleAnswerSelect = (option: AnswerOption) => {
+    if (!currentNode) return;
+    
     if (editingIndex !== null) {
-      // Update existing answer
-      const updated = [...messages];
-      updated[editingIndex] = {
-        ...updated[editingIndex],
-        answer: currentAnswer.trim(),
-      };
-      setMessages(updated);
-      setEditingIndex(null);
-    } else {
-      // Add new answer - use question from array if available, otherwise use generic
-      const questionText = currentQuestion || "Tell me more...";
-      const newMessages = [
-        ...messages,
-        {
-          questionIndex: currentQuestionIndex,
-          question: questionText,
-          answer: currentAnswer.trim(),
-        },
-      ];
-      setMessages(newMessages);
-      
-      // Auto-navigate after 10th question is answered
-      if (newMessages.length === questions.length) {
-        setTimeout(() => {
-          router.push('/competence-tree');
-        }, 1000);
-      }
+      setSelectedAnswerId(option.id);
+      return;
     }
-    setCurrentAnswer('');
+
+    // New answer - send immediately
+    const category = option.category;
+    const reaction = currentNode.reactionTemplates[category];
+
+    const newMessage: Message = {
+      questionId: currentNode.id,
+      question: currentNode.question,
+      answerId: option.id,
+      answer: option.text,
+      category,
+      reaction,
+    };
+
+    const newMessages = [...messages, newMessage];
+    setMessages(newMessages);
+
+    const historyEntry: ConversationHistory = {
+      questionId: currentNode.id,
+      question: currentNode.question,
+      answerId: option.id,
+      answer: option.text,
+      keywords: option.keywords,
+      competencies: option.competencies,
+    };
+    const updatedHistory = [...conversationHistory, historyEntry];
+    setConversationHistory(updatedHistory);
+
+    setShowReaction(true);
+    setTimeout(() => {
+      setShowReaction(false);
+      
+      const nextQuestionId = option.nextQuestionId;
+      
+      if (nextQuestionId === 'complete') {
+        setCurrentNode(null);
+        setTimeout(() => {
+          const result = analyzeConversationHistory(updatedHistory);
+          sessionStorage.setItem('conversationHistory', JSON.stringify(updatedHistory));
+          sessionStorage.setItem('conversationResult', JSON.stringify(result));
+          router.push('/competence-tree');
+        }, 1500);
+      } else if (nextQuestionId) {
+        const nextNode = getQuestionById(nextQuestionId);
+        if (nextNode) {
+          setCurrentNode(nextNode);
+        } else {
+          // Question not found - log error and allow user to finish early
+          console.error(`Question not found: ${nextQuestionId}. Current step: ${currentStep}. Conversation path may be incomplete.`);
+          // Set to null so conversation appears complete and user can finish
+          // This prevents infinite loops with same question
+          setCurrentNode(null);
+          // Still allow them to see results with what we have
+          setTimeout(() => {
+            const result = analyzeConversationHistory(updatedHistory);
+            sessionStorage.setItem('conversationHistory', JSON.stringify(updatedHistory));
+            sessionStorage.setItem('conversationResult', JSON.stringify(result));
+            router.push('/competence-tree');
+          }, 1500);
+        }
+      } else {
+        // No nextQuestionId - handle gracefully by completing
+        console.warn('No nextQuestionId in answer option. Completing conversation.');
+        setCurrentNode(null);
+        setTimeout(() => {
+          const result = analyzeConversationHistory(updatedHistory);
+          sessionStorage.setItem('conversationHistory', JSON.stringify(updatedHistory));
+          sessionStorage.setItem('conversationResult', JSON.stringify(result));
+          router.push('/competence-tree');
+        }, 1500);
+      }
+      setSelectedAnswerId(null);
+    }, 2200);
+  };
+
+  const handleUpdateEdit = () => {
+    if (!selectedAnswerId || !currentNode || editingIndex === null) return;
+
+    const selectedOption = currentNode.answerOptions.find(opt => opt.id === selectedAnswerId);
+    if (!selectedOption) return;
+
+    const editedMessage = messages[editingIndex];
+    const questionNode = getQuestionById(editedMessage.questionId);
+    if (!questionNode) {
+      setEditingIndex(null);
+      setSelectedAnswerId(null);
+      return;
+    }
+
+    const category = selectedOption.category;
+    const reaction = questionNode.reactionTemplates[category];
+
+    const updated = [...messages];
+    updated[editingIndex] = {
+      ...editedMessage,
+      answerId: selectedOption.id,
+      answer: selectedOption.text,
+      category,
+      reaction,
+    };
+    setMessages(updated);
+
+    const updatedHistory = [...conversationHistory];
+    updatedHistory[editingIndex] = {
+      questionId: editedMessage.questionId,
+      question: editedMessage.question,
+      answerId: selectedOption.id,
+      answer: selectedOption.text,
+      keywords: selectedOption.keywords,
+      competencies: selectedOption.competencies,
+    };
+
+    const trimmedMessages = updated.slice(0, editingIndex + 1);
+    const trimmedHistory = updatedHistory.slice(0, editingIndex + 1);
+    
+    setMessages(trimmedMessages);
+    setConversationHistory(trimmedHistory);
+
+    const nextQuestionId = selectedOption.nextQuestionId;
+    if (nextQuestionId === 'complete') {
+      setCurrentNode(null);
+    } else if (nextQuestionId) {
+      const nextNode = getQuestionById(nextQuestionId);
+      if (nextNode) {
+        setCurrentNode(nextNode);
+      } else {
+        // Question not found during edit - log error but don't end conversation
+        console.error(`Question not found: ${nextQuestionId} during edit. Conversation path may be incomplete.`);
+        // Don't automatically end - let user continue or finish early
+      }
+    } else {
+      console.warn('No nextQuestionId in answer option during edit. This may indicate a configuration issue.');
+    }
+
+    setEditingIndex(null);
+    setSelectedAnswerId(null);
   };
 
   const handleEdit = (index: number) => {
-    setEditingIndex(index);
-    setCurrentAnswer(messages[index].answer);
-    // Scroll to the message being edited
-    setTimeout(() => {
-      scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
-    }, 100);
-  };
-
-  const handleCancelEdit = () => {
-    setEditingIndex(null);
-    setCurrentAnswer('');
-  };
-
-  const handleFinish = () => {
-    router.push('/competence-tree');
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
+    const messageToEdit = messages[index];
+    const questionNode = getQuestionById(messageToEdit.questionId);
+    
+    if (questionNode) {
+      setEditingIndex(index);
+      setSelectedAnswerId(messageToEdit.answerId);
+      setCurrentNode(questionNode);
     }
   };
 
+  const handleCancelEdit = () => {
+    if (editingIndex !== null && messages.length > editingIndex) {
+      const lastMessage = messages[editingIndex];
+      const originalOption = currentNode?.answerOptions.find(opt => opt.id === lastMessage.answerId);
+      if (originalOption && originalOption.nextQuestionId !== 'complete') {
+        const nextNode = getQuestionById(originalOption.nextQuestionId);
+        if (nextNode) setCurrentNode(nextNode);
+      }
+    }
+    setEditingIndex(null);
+    setSelectedAnswerId(null);
+  };
+
+  const handleFinish = () => {
+    const result = analyzeConversationHistory(conversationHistory);
+    sessionStorage.setItem('conversationHistory', JSON.stringify(conversationHistory));
+    sessionStorage.setItem('conversationResult', JSON.stringify(result));
+    router.push('/competence-tree');
+  };
+
   return (
-    <div className="container mx-auto px-4 pt-24 pb-4 md:pt-28 md:pb-4">
-      <div className="max-w-2xl mx-auto h-[calc(100vh-8rem)] flex flex-col">
-        {/* Header */}
-        <div className="text-center mb-4 flex-shrink-0">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, rotate: -10 }}
-            animate={{ opacity: 1, scale: 1, rotate: 0 }}
-            transition={{ duration: 0.6, ease: 'easeOut' }}
-            className="inline-flex items-center justify-center mb-4"
-          >
-            <div className="relative w-16 h-16 md:w-20 md:h-20">
-              {/* Glow effect */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary-400/40 via-accent-400/40 to-primary-400/40 rounded-2xl blur-xl animate-pulse" />
-              
-              {/* Main logo container */}
-              <div className="relative w-full h-full bg-gradient-to-br from-primary-500 via-primary-600 to-accent-500 rounded-2xl shadow-2xl overflow-hidden">
-                {/* Abstract design - representing reflection/growth */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  {/* Central circle */}
-                  <div className="absolute w-8 h-8 md:w-10 md:h-10 bg-white/20 rounded-full blur-sm" />
-                  
-                  {/* Rotating rings */}
-                  <div className="absolute w-12 h-12 md:w-14 md:h-14 border-2 border-white/30 rounded-full" />
-                  <div className="absolute w-6 h-6 md:w-7 md:h-7 border-2 border-white/40 rounded-full" />
-                  
-                  {/* Accent dots */}
-                  <div className="absolute top-1 left-1 w-1.5 h-1.5 bg-white/60 rounded-full" />
-                  <div className="absolute top-1 right-1 w-1.5 h-1.5 bg-white/60 rounded-full" />
-                  <div className="absolute bottom-1 left-1 w-1.5 h-1.5 bg-white/60 rounded-full" />
-                  <div className="absolute bottom-1 right-1 w-1.5 h-1.5 bg-white/60 rounded-full" />
-                  
-                  {/* Central highlight */}
-                  <div className="absolute w-3 h-3 md:w-4 md:h-4 bg-white/50 rounded-full blur-[2px]" />
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-2xl md:text-3xl font-bold text-neutral-900 dark:text-neutral-100"
-          >
-            Let&apos;s talk
-          </motion.h1>
-        </div>
-
-        {/* Demo Disclaimer */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-4 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl flex-shrink-0"
-        >
-          <p className="text-xs text-blue-800 dark:text-blue-300 text-center">
-            <span className="font-semibold">Demo Mode:</span> This is a demonstration. No AI is processing your responses. You can edit any answer by clicking the edit icon.
-          </p>
-        </motion.div>
-
-        {/* Scrollable Messages */}
-        <div 
-          ref={scrollRef}
-          className="flex-1 overflow-y-auto mb-4 space-y-4 pr-2 custom-scrollbar"
-        >
-          {/* Past Questions and Answers */}
-          {messages.map((msg, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="space-y-3"
-            >
-              {/* Question */}
-              <div className="bg-white dark:bg-neutral-900 rounded-2xl p-4 shadow-soft border border-neutral-200/50 dark:border-neutral-700/50">
-                <p className="text-sm font-semibold text-primary-600 dark:text-primary-400 mb-1">
-                  Ary:
-                </p>
-                <p className="text-neutral-900 dark:text-neutral-100">
-                  {msg.question}
-                </p>
-              </div>
-
-              {/* Answer */}
-              <div className="bg-primary-50 dark:bg-primary-950/20 rounded-2xl p-4 shadow-soft border border-primary-200/50 dark:border-primary-800/50">
-                <div className="flex items-start justify-between mb-1">
-                  <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
-                    You:
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-6 max-w-5xl">
+        <div className="w-full mx-auto h-[calc(100vh-3rem)] flex flex-col bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm rounded-2xl shadow-xl border border-neutral-200/50 dark:border-neutral-800/50 overflow-hidden">
+          
+          {/* Elegant Header */}
+          <div className="flex-shrink-0 px-6 py-4 border-b border-neutral-200/80 dark:border-neutral-800/80 bg-gradient-to-r from-white/50 to-neutral-50/50 dark:from-neutral-900/50 dark:to-neutral-950/50">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="relative"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary-400/30 to-accent-400/30 rounded-xl blur-lg" />
+                  <div className="relative w-10 h-10 bg-gradient-to-br from-primary-500 via-primary-600 to-accent-500 rounded-xl flex items-center justify-center shadow-lg">
+                    <MessageCircle className="w-5 h-5 text-white" strokeWidth={2.5} />
+                  </div>
+                </motion.div>
+                <div>
+                  <h1 className="text-base font-bold text-neutral-900 dark:text-neutral-100 tracking-tight">
+                    Ary
+                  </h1>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
+                    {isComplete ? 'Conversation complete' : `Step ${currentStep} of ${totalSteps}`}
                   </p>
-                  {editingIndex !== index && (
-                    <button
-                      onClick={() => handleEdit(index)}
-                      className="p-1 hover:bg-primary-100 dark:hover:bg-primary-900/30 rounded-lg transition-colors"
-                      title="Edit answer"
-                    >
-                      <Edit2 className="w-4 h-4 text-primary-600 dark:text-primary-400" />
-                    </button>
-                  )}
                 </div>
-                <p className="text-neutral-800 dark:text-neutral-200 whitespace-pre-wrap">
-                  {msg.answer}
-                </p>
               </div>
-            </motion.div>
-          ))}
+              
+              {/* Progress Bar with Glow */}
+              <div className="flex-1 max-w-[200px] ml-6 mr-4">
+                <div className="relative">
+                  <div className="w-full h-2 bg-neutral-200/60 dark:bg-neutral-800/60 rounded-full overflow-hidden backdrop-blur-sm">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${progressPercentage}%` }}
+                      transition={{ duration: 0.5, ease: 'easeOut' }}
+                      className="h-full bg-gradient-to-r from-primary-500 via-primary-600 to-accent-500 rounded-full shadow-lg shadow-primary-500/50"
+                    />
+                  </div>
+                </div>
+              </div>
 
-          {/* Current Question (if available) */}
-          {currentQuestion && (
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentQuestionIndex}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                className="bg-white dark:bg-neutral-900 rounded-2xl p-5 shadow-soft border border-neutral-200/50 dark:border-neutral-700/50"
-              >
-                <p className="text-sm font-semibold text-primary-600 dark:text-primary-400 mb-2">
-                  Ary:
-                </p>
-                <p className="text-neutral-900 dark:text-neutral-100">
-                  {currentQuestion}
-                </p>
-              </motion.div>
-            </AnimatePresence>
-          )}
-
-          {/* Editing Indicator */}
-          {editingIndex !== null && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl p-3"
-            >
-              <p className="text-xs text-amber-800 dark:text-amber-300 text-center">
-                <span className="font-semibold">Editing your answer</span>
-              </p>
-            </motion.div>
-          )}
-        </div>
-
-        {/* Input Area - Fixed at Bottom */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white dark:bg-neutral-900 rounded-2xl p-5 shadow-soft border border-neutral-200/50 dark:border-neutral-700/50 flex-shrink-0"
-        >
-          <textarea
-            value={currentAnswer}
-            onChange={(e) => setCurrentAnswer(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={editingIndex !== null ? "Edit your answer..." : "Share whatever comes to mind..."}
-            className="w-full min-h-[100px] max-h-[150px] p-4 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:focus:ring-primary-400/20 focus:border-primary-400 dark:focus:border-primary-500 transition-all placeholder:text-neutral-400 dark:placeholder:text-neutral-500 text-neutral-900 dark:text-neutral-100 resize-none"
-          />
-
-          <div className="flex items-center justify-between mt-3">
-            <div>
-              {editingIndex !== null ? (
-                <button
-                  onClick={handleCancelEdit}
-                  className="text-xs text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors"
-                >
-                  Cancel editing
-                </button>
-              ) : (
-                <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                  Press Enter to send • Shift + Enter for new line
-                </p>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2">
-              {canShowFinishButton && (
+              {/* Finish Button */}
+              {canShowFinishButton && !isComplete && !showReaction && (
                 <motion.button
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={handleFinish}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-sm hover:shadow-md font-medium text-sm"
+                  className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm font-semibold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all shadow-lg shadow-green-500/30 hover:shadow-xl hover:shadow-green-500/40"
                 >
-                  View Results
-                  <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
+                  Finish Early
                 </motion.button>
               )}
-
-              <motion.button
-                onClick={handleSend}
-                disabled={!currentAnswer.trim()}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-md font-medium text-sm"
-              >
-                {editingIndex !== null ? 'Update' : 'Send'}
-                <Send className="w-4 h-4" strokeWidth={2.5} />
-              </motion.button>
             </div>
           </div>
-        </motion.div>
+
+          {/* Messages Container */}
+          <div 
+            ref={scrollRef}
+            className="flex-1 overflow-y-auto px-6 py-6 space-y-5 custom-scrollbar"
+          >
+            {/* Past Messages */}
+            <AnimatePresence mode="popLayout">
+              {messages.map((msg, index) => (
+                <motion.div
+                  key={`${msg.questionId}-${index}`}
+                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+                  className="space-y-3"
+                >
+                  {/* Question */}
+                  <div className="flex items-start gap-3">
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 0.1, type: 'spring' }}
+                      className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center flex-shrink-0 shadow-lg"
+                    >
+                      <span className="text-white text-xs font-bold">A</span>
+                    </motion.div>
+                    <motion.div
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.15 }}
+                      className="flex-1 max-w-[75%]"
+                    >
+                      <div className="bg-white dark:bg-neutral-800 rounded-2xl rounded-tl-md px-5 py-3.5 shadow-sm border border-neutral-200/60 dark:border-neutral-700/60 backdrop-blur-sm">
+                        <p className="text-neutral-900 dark:text-neutral-100 text-[15px] leading-relaxed font-medium">
+                          {msg.question}
+                        </p>
+                      </div>
+                    </motion.div>
+                  </div>
+
+                  {/* Answer */}
+                  <div className="flex items-start gap-3 justify-end">
+                    <motion.div
+                      initial={{ opacity: 0, x: 10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.2 }}
+                      className="flex-1 max-w-[75%]"
+                    >
+                      <div className="bg-gradient-to-br from-primary-500 to-primary-600 dark:from-primary-600 dark:to-primary-700 rounded-2xl rounded-tr-md px-5 py-3.5 shadow-lg shadow-primary-500/20 relative group">
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="text-white text-[15px] leading-relaxed font-medium">
+                            {msg.answer}
+                          </p>
+                          {editingIndex !== index && (
+                            <motion.button
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              whileHover={{ opacity: 1, scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              onClick={() => handleEdit(index)}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-white/20 rounded-lg"
+                              title="Edit answer"
+                            >
+                              <Edit2 className="w-4 h-4 text-white/90" strokeWidth={2} />
+                            </motion.button>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 0.25, type: 'spring' }}
+                      className="w-8 h-8 rounded-full bg-neutral-300 dark:bg-neutral-700 flex items-center justify-center flex-shrink-0 shadow-md"
+                    >
+                      <span className="text-neutral-600 dark:text-neutral-300 text-xs font-semibold">Y</span>
+                    </motion.div>
+                  </div>
+
+                  {/* Reaction - Hide if it's the last message and showReaction is true (to avoid duplicate) */}
+                  {msg.reaction && !(index === messages.length - 1 && showReaction) && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
+                      className="flex items-start gap-3"
+                    >
+                      <div className="w-8 h-8" />
+                      <div className="flex-1 max-w-[75%]">
+                        <div className="bg-neutral-100/80 dark:bg-neutral-800/50 rounded-2xl rounded-tl-md px-4 py-2.5 backdrop-blur-sm">
+                          <p className="text-neutral-600 dark:text-neutral-400 text-sm italic font-medium">
+                            {msg.reaction}
+                          </p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </motion.div>
+              ))}
+            </AnimatePresence>
+
+            {/* Current Question */}
+            <AnimatePresence mode="wait">
+              {currentQuestion && !isComplete && !showReaction && (
+                <motion.div
+                  key="current-question"
+                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+                  className="flex items-start gap-3"
+                >
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center flex-shrink-0 shadow-lg">
+                    <span className="text-white text-xs font-bold">A</span>
+                  </div>
+                  <div className="flex-1 max-w-[75%]">
+                    <div className="bg-white dark:bg-neutral-800 rounded-2xl rounded-tl-md px-5 py-3.5 shadow-sm border border-neutral-200/60 dark:border-neutral-700/60 backdrop-blur-sm">
+                      <p className="text-neutral-900 dark:text-neutral-100 text-[15px] leading-relaxed font-medium">
+                        {currentQuestion}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Reaction Animation */}
+            <AnimatePresence>
+              {showReaction && messages.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: -5, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.3 }}
+                  className="flex items-start gap-3"
+                >
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center flex-shrink-0 shadow-lg">
+                    <Sparkles className="w-3.5 h-3.5 text-white" />
+                  </div>
+                  <div className="flex-1 max-w-[75%]">
+                    <div className="bg-neutral-100/80 dark:bg-neutral-800/50 rounded-2xl rounded-tl-md px-4 py-2.5 backdrop-blur-sm">
+                      <p className="text-neutral-600 dark:text-neutral-400 text-sm italic font-medium">
+                        {messages[messages.length - 1]?.reaction}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Completion Message */}
+            <AnimatePresence>
+              {isComplete && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="flex items-start gap-3"
+                >
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center flex-shrink-0 shadow-lg">
+                    <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                  </div>
+                  <div className="flex-1 max-w-[75%]">
+                    <div className="bg-gradient-to-br from-primary-50 to-accent-50 dark:from-primary-950/40 dark:to-accent-950/40 rounded-2xl rounded-tl-md px-5 py-3.5 border-2 border-primary-200/60 dark:border-primary-800/60 shadow-sm">
+                      <p className="text-neutral-900 dark:text-neutral-100 text-[15px] leading-relaxed font-medium">
+                        Thank you for sharing. I&apos;ve gathered enough to reflect back what I&apos;m seeing.
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Editing Indicator */}
+            <AnimatePresence>
+              {editingIndex !== null && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-800/60 rounded-xl px-4 py-3 backdrop-blur-sm"
+                >
+                  <p className="text-xs text-amber-800 dark:text-amber-300 text-center font-medium">
+                    <span className="font-semibold">Editing answer</span> — This will update the conversation path
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Answer Options */}
+          <AnimatePresence mode="wait">
+            {currentNode && !isComplete && !showReaction && (
+              <motion.div
+                key="answer-options"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ duration: 0.3 }}
+                className="flex-shrink-0 px-6 pt-4 pb-5 border-t border-neutral-200/80 dark:border-neutral-800/80 bg-gradient-to-b from-transparent to-neutral-50/30 dark:to-neutral-950/30"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {currentNode.answerOptions.map((option, idx) => (
+                    <motion.button
+                      key={option.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      onClick={() => handleAnswerSelect(option)}
+                      whileHover={{ scale: 1.02, y: -2 }}
+                      whileTap={{ scale: 0.98 }}
+                      className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 ${
+                        editingIndex !== null && selectedAnswerId === option.id
+                          ? 'bg-primary-50 dark:bg-primary-950/30 border-primary-500 dark:border-primary-500 shadow-lg shadow-primary-500/20'
+                          : 'bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 hover:border-primary-400 dark:hover:border-primary-600 hover:bg-primary-50/50 dark:hover:bg-primary-950/20 hover:shadow-md'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <p className={`text-[15px] leading-relaxed font-medium ${
+                          editingIndex !== null && selectedAnswerId === option.id
+                            ? 'text-primary-900 dark:text-primary-100'
+                            : 'text-neutral-700 dark:text-neutral-300'
+                        }`}>
+                          {option.text}
+                        </p>
+                        {editingIndex !== null && selectedAnswerId === option.id && (
+                          <motion.div
+                            initial={{ scale: 0, rotate: -180 }}
+                            animate={{ scale: 1, rotate: 0 }}
+                            className="w-6 h-6 rounded-full bg-primary-500 flex items-center justify-center flex-shrink-0 shadow-lg"
+                          >
+                            <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                          </motion.div>
+                        )}
+                      </div>
+                    </motion.button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Edit Mode Actions */}
+          <AnimatePresence>
+            {editingIndex !== null && !showReaction && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                className="flex-shrink-0 flex items-center justify-between gap-4 px-6 py-4 border-t border-neutral-200/80 dark:border-neutral-800/80 bg-neutral-50/50 dark:bg-neutral-950/30"
+              >
+                <button
+                  onClick={handleCancelEdit}
+                  className="px-5 py-2.5 text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 font-medium transition-colors rounded-lg hover:bg-neutral-200/50 dark:hover:bg-neutral-800/50"
+                >
+                  Cancel
+                </button>
+                <motion.button
+                  onClick={handleUpdateEdit}
+                  disabled={!selectedAnswerId}
+                  whileHover={{ scale: selectedAnswerId ? 1.02 : 1 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="px-6 py-2.5 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl hover:from-primary-600 hover:to-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 font-semibold text-sm flex items-center gap-2"
+                >
+                  Update Answer
+                  <Check className="w-4 h-4" strokeWidth={2.5} />
+                </motion.button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );
