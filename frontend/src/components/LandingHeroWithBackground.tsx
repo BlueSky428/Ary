@@ -55,14 +55,14 @@ export function LandingHeroWithBackground() {
       </div>
 
       {/* Content Overlay - Button positioned at middle bottom */}
-      <div className="absolute inset-0 z-20 flex items-end justify-center">
+      <div className="absolute inset-0 z-20 flex items-end justify-center pointer-events-none">
         <div className="w-full px-6 pb-12 md:pb-16">
           {/* CTA Button - Centered at bottom */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.3, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full flex justify-center"
+            className="w-full flex justify-center pointer-events-auto"
           >
             <Link
               href="/demo"

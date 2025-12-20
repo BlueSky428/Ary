@@ -33,6 +33,14 @@ export function HeroBackground({
   const [direction, setDirection] = useState(0); // 1 for forward, -1 for backward
   const [isHovered, setIsHovered] = useState(false);
 
+  // Preload all images to prevent loading delays
+  useEffect(() => {
+    images.forEach((img) => {
+      const imageElement = new window.Image();
+      imageElement.src = img.src;
+    });
+  }, [images]);
+
   useEffect(() => {
     if (!autoRotate || isHovered || images.length <= 1) return;
 
@@ -66,6 +74,8 @@ export function HeroBackground({
     >
       {/* Background Images - Carousel Mode */}
       <div className="absolute inset-0 overflow-hidden">
+        {/* Static background layer to prevent blank flash */}
+        <div className="absolute inset-0 bg-neutral-900" />
         <AnimatePresence initial={false} custom={direction}>
           <motion.div
             key={currentImage.id}
@@ -76,7 +86,7 @@ export function HeroBackground({
             variants={{
               enter: (dir: number) => ({
                 x: dir > 0 ? '100%' : '-100%',
-                opacity: 0,
+                opacity: 1,
               }),
               center: {
                 x: 0,
@@ -84,14 +94,19 @@ export function HeroBackground({
               },
               exit: (dir: number) => ({
                 x: dir > 0 ? '-100%' : '100%',
-                opacity: 0,
+                opacity: 1,
               }),
             }}
             transition={{
-              x: { type: 'spring', stiffness: 300, damping: 30 },
-              opacity: { duration: 0.3 },
+              x: { 
+                type: 'tween', 
+                ease: [0.4, 0, 0.2, 1],
+                duration: 0.7 
+              },
+              opacity: { duration: 0 },
             }}
             className="absolute inset-0"
+            style={{ willChange: 'transform' }}
           >
             <Image
               src={currentImage.src}
@@ -110,12 +125,13 @@ export function HeroBackground({
 
       {/* Navigation Dots */}
       {images.length > 1 && (
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10 flex gap-2">
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-30 pointer-events-auto flex gap-2">
           {images.map((_, index) => (
             <button
               key={index}
               onClick={() => {
-                setDirection(index > currentIndex ? 1 : -1);
+                const newDirection = index > currentIndex ? 1 : -1;
+                setDirection(newDirection);
                 setCurrentIndex(index);
               }}
               className={`h-2 rounded-full transition-all ${
@@ -134,14 +150,14 @@ export function HeroBackground({
         <>
           <button
             onClick={handlePrevious}
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white transition-all z-10"
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white transition-all z-30 pointer-events-auto"
             aria-label="Previous image"
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
           <button
             onClick={handleNext}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white transition-all z-10"
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white transition-all z-30 pointer-events-auto"
             aria-label="Next image"
           >
             <ChevronRight className="w-6 h-6" />
