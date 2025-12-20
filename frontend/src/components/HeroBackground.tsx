@@ -29,7 +29,6 @@ export function HeroBackground({
   rotationInterval = 5000 
 }: HeroBackgroundProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
 
   // Preload all images to prevent loading delays
   useEffect(() => {
@@ -41,14 +40,14 @@ export function HeroBackground({
 
   // Auto-rotate effect
   useEffect(() => {
-    if (!autoRotate || isHovered || images.length <= 1) return;
+    if (!autoRotate || images.length <= 1) return;
 
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % images.length);
     }, rotationInterval);
 
     return () => clearInterval(interval);
-  }, [autoRotate, rotationInterval, images.length, isHovered]);
+  }, [autoRotate, rotationInterval, images.length]);
 
   const handleDotClick = (index: number) => {
     setCurrentIndex(index);
@@ -59,11 +58,7 @@ export function HeroBackground({
   if (!currentImage) return null;
 
   return (
-    <div
-      className="relative w-full h-full"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
+    <div className="relative w-full h-full">
       {/* Background Images - Carousel Mode */}
       <div className="absolute inset-0 overflow-hidden bg-neutral-900">
         <AnimatePresence initial={false}>
