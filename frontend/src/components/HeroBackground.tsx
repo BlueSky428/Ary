@@ -7,7 +7,6 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 
 export interface BackgroundImage {
@@ -50,14 +49,6 @@ export function HeroBackground({
 
     return () => clearInterval(interval);
   }, [autoRotate, rotationInterval, images.length, isHovered]);
-
-  const handlePrevious = () => {
-    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
-  };
-
-  const handleNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % images.length);
-  };
 
   const handleDotClick = (index: number) => {
     setCurrentIndex(index);
@@ -121,25 +112,6 @@ export function HeroBackground({
         </div>
       )}
 
-      {/* Navigation Arrows */}
-      {images.length > 1 && (
-        <>
-          <button
-            onClick={handlePrevious}
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white transition-all z-30 pointer-events-auto"
-            aria-label="Previous image"
-          >
-            <ChevronLeft className="w-6 h-6" />
-          </button>
-          <button
-            onClick={handleNext}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white transition-all z-30 pointer-events-auto"
-            aria-label="Next image"
-          >
-            <ChevronRight className="w-6 h-6" />
-          </button>
-        </>
-      )}
     </div>
   );
 }
