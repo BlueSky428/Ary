@@ -185,10 +185,7 @@ export function OldCompetenceTreeView() {
               Each node shows patterns from your conversation. Click to see the evidence.
             </p>
           </div>
-          <EnhancedIdentityCoreTree 
-            competencies={result.competencies} 
-            conversationHistory={conversationHistory}
-          />
+          <RedesignedCompetenceTreeView />
         </motion.div>
 
         {/* What this means */}
