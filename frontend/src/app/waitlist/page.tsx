@@ -9,7 +9,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function WaitlistPage() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950">
+    <div className="min-h-screen grid grid-rows-[auto_1fr_auto] bg-gradient-to-b from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950">
       {/* Navigation */}
       <Navigation />
 
@@ -18,14 +18,14 @@ export default function WaitlistPage() {
         <ThemeToggle />
       </div>
 
-      {/* Waitlist Section */}
+      {/* Waitlist Section - fills middle row */}
       <div className="pt-16">
         <WaitlistSection />
       </div>
 
-      {/* Footer */}
+      {/* Footer - at bottom */}
       <Footer />
-    </main>
+    </div>
   );
 }
 

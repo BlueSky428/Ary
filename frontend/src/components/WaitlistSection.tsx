@@ -11,7 +11,7 @@ import { Mail } from 'lucide-react';
 
 export function WaitlistSection() {
   return (
-    <section className="relative pt-24 pb-20 md:pt-28 md:pb-28 overflow-hidden">
+    <section className="relative pt-24 pb-12 md:pt-32 md:pb-16 lg:pt-40 lg:pb-20 overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-neutral-50 via-white to-primary-50/30 dark:from-neutral-950 dark:via-neutral-900 dark:to-primary-950/30" />
       
@@ -59,7 +59,9 @@ export function WaitlistSection() {
           </div>
 
           {/* Form */}
-          <WaitlistForm />
+          <div className="w-full">
+            <WaitlistForm />
+          </div>
         </motion.div>
       </div>
     </section>
