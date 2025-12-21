@@ -837,7 +837,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.DETAILED,
         keywords: ['organize', 'plan', 'structure', 'system'],
         competencies: ['structure', 'planning', 'execution'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-execution',
       },
       {
         id: 'a4-ac2',
@@ -845,7 +845,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.POSITIVE,
         keywords: ['initiative', 'take action', 'start'],
         competencies: ['initiative', 'execution', 'leadership'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-execution',
       },
       {
         id: 'a4-ac3',
@@ -853,7 +853,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.POSITIVE,
         keywords: ['work with others', 'team', 'collaborate'],
         competencies: ['collaboration', 'interpersonal', 'teamwork'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-collaboration',
       },
       {
         id: 'a4-ac4',
@@ -882,7 +882,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.DETAILED,
         keywords: ['strategic', 'think', 'analysis', 'analyze'],
         competencies: ['strategic-thinking', 'analytical', 'problem-solving'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-thinking',
       },
       {
         id: 'a4-pr2',
@@ -890,7 +890,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.POSITIVE,
         keywords: ['impact', 'solution', 'results', 'outcome'],
         competencies: ['impact-driven', 'results-oriented', 'execution'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-execution',
       },
       {
         id: 'a4-pr3',
@@ -898,7 +898,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.POSITIVE,
         keywords: ['working', 'others', 'together', 'collaborate'],
         competencies: ['collaboration', 'teamwork', 'interpersonal'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-collaboration',
       },
       {
         id: 'a4-pr4',
@@ -927,7 +927,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.POSITIVE,
         keywords: ['succeed', 'grow', 'impact', 'support'],
         competencies: ['empathy', 'helpfulness', 'impact-driven'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-collaboration',
       },
       {
         id: 'a4-h2',
@@ -935,7 +935,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.POSITIVE,
         keywords: ['connection', 'teamwork', 'together', 'collaborate'],
         competencies: ['collaboration', 'interpersonal', 'teamwork'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-collaboration',
       },
       {
         id: 'a4-h3',
@@ -943,7 +943,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.DETAILED,
         keywords: ['understand', 'challenges', 'solutions', 'problem-solving'],
         competencies: ['empathy', 'problem-solving', 'analytical'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-thinking',
       },
       {
         id: 'a4-h4',
@@ -1064,7 +1064,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.DETAILED,
         keywords: ['listening', 'understanding', 'perspective', 'empathy'],
         competencies: ['empathy', 'interpersonal', 'listening'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-collaboration',
       },
       {
         id: 'a4-s2',
@@ -1072,7 +1072,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.POSITIVE,
         keywords: ['help', 'solve', 'achieve', 'goals'],
         competencies: ['helpfulness', 'problem-solving', 'goal-driven'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-thinking',
       },
       {
         id: 'a4-s3',
@@ -1080,7 +1080,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.DETAILED,
         keywords: ['working together', 'shared', 'challenges', 'collaborate'],
         competencies: ['collaboration', 'teamwork', 'interpersonal'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-collaboration',
       },
       {
         id: 'a4-s4',
@@ -1109,7 +1109,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.DETAILED,
         keywords: ['values', 'purpose', 'align', 'meaningful'],
         competencies: ['values-driven', 'purpose', 'self-awareness'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-growth',
       },
       {
         id: 'a4-g2',
@@ -1117,7 +1117,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.POSITIVE,
         keywords: ['impact', 'others', 'positive', 'help'],
         competencies: ['impact-driven', 'helpfulness', 'empathy'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-collaboration',
       },
       {
         id: 'a4-g3',
@@ -1125,7 +1125,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.DETAILED,
         keywords: ['challenges', 'grow', 'develop', 'improve'],
         competencies: ['growth-mindset', 'learning', 'self-awareness'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-growth',
       },
       {
         id: 'a4-g4',
@@ -1154,7 +1154,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.DETAILED,
         keywords: ['reflect', 'experiences', 'think', 'analyze'],
         competencies: ['reflection', 'self-awareness', 'learning'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-growth',
       },
       {
         id: 'a4-l2',
@@ -1162,7 +1162,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.POSITIVE,
         keywords: ['trying', 'new things', 'experiment', 'explore'],
         competencies: ['experimentation', 'learning', 'growth-mindset'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-growth',
       },
       {
         id: 'a4-l3',
@@ -1170,7 +1170,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.POSITIVE,
         keywords: ['learning', 'others', 'feedback', 'input'],
         competencies: ['learning', 'interpersonal', 'openness'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-collaboration',
       },
       {
         id: 'a4-l4',
@@ -1200,7 +1200,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.DETAILED,
         keywords: ['analyze', 'complex', 'patterns', 'think'],
         competencies: ['analytical', 'pattern-recognition', 'strategic-thinking'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-thinking',
       },
       {
         id: 'a4-st2',
@@ -1208,7 +1208,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.POSITIVE,
         keywords: ['plans', 'results', 'execute', 'achieve'],
         competencies: ['planning', 'execution', 'results-oriented'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-execution',
       },
       {
         id: 'a4-st3',
@@ -1216,7 +1216,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.DETAILED,
         keywords: ['solve', 'problems', 'innovative', 'creative'],
         competencies: ['innovation', 'problem-solving', 'strategic-thinking'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-thinking',
       },
       {
         id: 'a4-st4',
@@ -1245,7 +1245,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.DETAILED,
         keywords: ['explore', 'possibilities', 'ideas', 'innovate'],
         competencies: ['innovation', 'creativity', 'strategic-thinking'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-thinking',
       },
       {
         id: 'a4-cr2',
@@ -1253,7 +1253,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.POSITIVE,
         keywords: ['solve', 'problems', 'unique', 'creative'],
         competencies: ['creativity', 'problem-solving', 'innovation'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-thinking',
       },
       {
         id: 'a4-cr3',
@@ -1261,7 +1261,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.POSITIVE,
         keywords: ['collaborate', 'others', 'creative', 'projects'],
         competencies: ['collaboration', 'creativity', 'teamwork'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-collaboration',
       },
       {
         id: 'a4-cr4',
@@ -1290,7 +1290,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.DETAILED,
         keywords: ['break down', 'manageable', 'steps', 'organize'],
         competencies: ['organization', 'problem-solving', 'execution'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-execution',
       },
       {
         id: 'a4-ch2',
@@ -1298,7 +1298,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.POSITIVE,
         keywords: ['support', 'collaboration', 'help', 'team'],
         competencies: ['collaboration', 'help-seeking', 'interpersonal'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-collaboration',
       },
       {
         id: 'a4-ch3',
@@ -1306,7 +1306,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.DETAILED,
         keywords: ['analyze', 'situation', 'plan', 'strategic'],
         competencies: ['analytical', 'planning', 'strategic-thinking'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-thinking',
       },
       {
         id: 'a4-ch4',
@@ -1335,7 +1335,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.DETAILED,
         keywords: ['reflect', 'experiences', 'patterns', 'analyze'],
         competencies: ['reflection', 'pattern-recognition', 'self-awareness'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-growth',
       },
       {
         id: 'a4-un2',
@@ -1343,7 +1343,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.POSITIVE,
         keywords: ['feedback', 'others', 'input', 'perspective'],
         competencies: ['interpersonal', 'learning', 'openness'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-collaboration',
       },
       {
         id: 'a4-un3',
@@ -1351,7 +1351,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.DETAILED,
         keywords: ['trying', 'new things', 'works', 'experiment'],
         competencies: ['learning', 'experimentation', 'growth-mindset'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-growth',
       },
       {
         id: 'a4-un4',
@@ -1380,7 +1380,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.DETAILED,
         keywords: ['goals', 'progress', 'track', 'clear'],
         competencies: ['goal-driven', 'pattern-recognition', 'execution'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-execution',
       },
       {
         id: 'a4-pa2',
@@ -1388,7 +1388,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.POSITIVE,
         keywords: ['supportive', 'people', 'team', 'collaborate'],
         competencies: ['collaboration', 'interpersonal', 'teamwork'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-collaboration',
       },
       {
         id: 'a4-pa3',
@@ -1396,7 +1396,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.DETAILED,
         keywords: ['autonomy', 'figure out', 'independence'],
         competencies: ['independence', 'problem-solving', 'initiative'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-thinking',
       },
       {
         id: 'a4-pa4',
@@ -1425,7 +1425,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.DETAILED,
         keywords: ['reflect', 'experiences', 'learning', 'analyze'],
         competencies: ['reflection', 'learning', 'self-awareness'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-growth',
       },
       {
         id: 'a4-gr2',
@@ -1433,7 +1433,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.POSITIVE,
         keywords: ['trying', 'new things', 'challenges', 'experiment'],
         competencies: ['growth-mindset', 'experimentation', 'learning'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-growth',
       },
       {
         id: 'a4-gr3',
@@ -1441,7 +1441,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.POSITIVE,
         keywords: ['feedback', 'learning', 'others', 'input'],
         competencies: ['learning', 'interpersonal', 'openness'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-collaboration',
       },
       {
         id: 'a4-gr4',
@@ -1470,7 +1470,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.POSITIVE,
         keywords: ['people', 'support', 'others', 'relationships'],
         competencies: ['interpersonal', 'gratitude', 'collaboration'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-collaboration',
       },
       {
         id: 'a4-ga2',
@@ -1478,7 +1478,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.DETAILED,
         keywords: ['opportunities', 'learn', 'grow', 'develop'],
         competencies: ['growth-mindset', 'learning', 'self-awareness'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-growth',
       },
       {
         id: 'a4-ga3',
@@ -1486,7 +1486,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.POSITIVE,
         keywords: ['impact', 'positive', 'help', 'contribute'],
         competencies: ['impact-driven', 'helpfulness', 'purpose'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-collaboration',
       },
       {
         id: 'a4-ga4',
@@ -1515,7 +1515,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.DETAILED,
         keywords: ['goals', 'outcomes', 'results', 'achieve'],
         competencies: ['goal-driven', 'planning', 'results-oriented'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-execution',
       },
       {
         id: 'a4-pl2',
@@ -1523,7 +1523,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.DETAILED,
         keywords: ['steps', 'needed', 'structure', 'organize'],
         competencies: ['planning', 'organization', 'execution'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-execution',
       },
       {
         id: 'a4-pl3',
@@ -1531,7 +1531,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.POSITIVE,
         keywords: ['involve', 'collaborate', 'team', 'others'],
         competencies: ['collaboration', 'teamwork', 'interpersonal'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-collaboration',
       },
       {
         id: 'a4-pl4',
@@ -1560,7 +1560,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.DETAILED,
         keywords: ['systems', 'structures', 'organize', 'plan'],
         competencies: ['organization', 'structure', 'planning'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-execution',
       },
       {
         id: 'a4-or2',
@@ -1568,7 +1568,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.DETAILED,
         keywords: ['breaking', 'manageable', 'pieces', 'steps'],
         competencies: ['organization', 'problem-solving', 'execution'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-execution',
       },
       {
         id: 'a4-or3',
@@ -1576,7 +1576,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.POSITIVE,
         keywords: ['others', 'track', 'team', 'collaborate'],
         competencies: ['collaboration', 'teamwork', 'interpersonal'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-collaboration',
       },
       {
         id: 'a4-or4',
@@ -1605,7 +1605,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.DETAILED,
         keywords: ['reflect', 'patterns', 'identify', 'analyze'],
         competencies: ['reflection', 'pattern-recognition', 'self-awareness'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-growth',
       },
       {
         id: 'a4-f2',
@@ -1613,7 +1613,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.POSITIVE,
         keywords: ['trying', 'new approaches', 'experiment', 'improve'],
         competencies: ['learning', 'experimentation', 'growth-mindset'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-growth',
       },
       {
         id: 'a4-f3',
@@ -1621,7 +1621,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.POSITIVE,
         keywords: ['discussing', 'others', 'understand', 'collaborate'],
         competencies: ['interpersonal', 'learning', 'openness'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-collaboration',
       },
       {
         id: 'a4-f4',
@@ -1650,7 +1650,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.DETAILED,
         keywords: ['works', 'doesn\'t', 'results', 'outcomes'],
         competencies: ['learning', 'experimentation', 'results-oriented'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-execution',
       },
       {
         id: 'a4-e2',
@@ -1658,7 +1658,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.DETAILED,
         keywords: ['strengths', 'preferences', 'self', 'awareness'],
         competencies: ['self-awareness', 'learning', 'reflection'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-growth',
       },
       {
         id: 'a4-e3',
@@ -1666,7 +1666,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.POSITIVE,
         keywords: ['new ways', 'approach', 'problems', 'innovate'],
         competencies: ['innovation', 'problem-solving', 'learning'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-thinking',
       },
       {
         id: 'a4-e4',
@@ -1695,7 +1695,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.DETAILED,
         keywords: ['plan', 'structure', 'organize', 'system'],
         competencies: ['planning', 'structure', 'execution'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-execution',
       },
       {
         id: 'a4-ex2',
@@ -1703,7 +1703,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.POSITIVE,
         keywords: ['focused', 'goal', 'results', 'achieve'],
         competencies: ['goal-driven', 'execution', 'results-oriented'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-execution',
       },
       {
         id: 'a4-ex3',
@@ -1711,7 +1711,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.POSITIVE,
         keywords: ['team', 'get things done', 'collaborate', 'together'],
         competencies: ['collaboration', 'teamwork', 'execution'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-collaboration',
       },
       {
         id: 'a4-ex4',
@@ -1740,7 +1740,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.POSITIVE,
         keywords: ['understanding', 'support', 'mutual', 'empathy'],
         competencies: ['empathy', 'interpersonal', 'collaboration'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-collaboration',
       },
       {
         id: 'a4-co2',
@@ -1748,7 +1748,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.DETAILED,
         keywords: ['shared goals', 'together', 'collaborate', 'team'],
         competencies: ['collaboration', 'goal-driven', 'teamwork'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-collaboration',
       },
       {
         id: 'a4-co3',
@@ -1756,7 +1756,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.DETAILED,
         keywords: ['learning', 'growing', 'together', 'develop'],
         competencies: ['growth-mindset', 'learning', 'interpersonal'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-growth',
       },
       {
         id: 'a4-co4',
@@ -1785,7 +1785,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.DETAILED,
         keywords: ['analyze', 'complex', 'situations', 'think'],
         competencies: ['analytical', 'strategic-thinking', 'problem-solving'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-thinking',
       },
       {
         id: 'a4-t2',
@@ -1793,7 +1793,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.POSITIVE,
         keywords: ['creative', 'solutions', 'innovate', 'solve'],
         competencies: ['creativity', 'innovation', 'problem-solving'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-thinking',
       },
       {
         id: 'a4-t3',
@@ -1801,7 +1801,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.POSITIVE,
         keywords: ['impact', 'solutions', 'results', 'outcome'],
         competencies: ['impact-driven', 'results-oriented', 'problem-solving'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-execution',
       },
       {
         id: 'a4-t4',
@@ -1830,7 +1830,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.POSITIVE,
         keywords: ['help', 'others', 'succeed', 'grow'],
         competencies: ['helpfulness', 'empathy', 'impact-driven'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-collaboration',
       },
       {
         id: 'a4-im2',
@@ -1838,7 +1838,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.DETAILED,
         keywords: ['solve', 'important', 'problems', 'challenges'],
         competencies: ['problem-solving', 'impact-driven', 'purpose'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-thinking',
       },
       {
         id: 'a4-im3',
@@ -1846,7 +1846,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.DETAILED,
         keywords: ['positive change', 'systems', 'processes', 'improve'],
         competencies: ['innovation', 'impact-driven', 'execution'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-execution',
       },
       {
         id: 'a4-im4',
@@ -1875,7 +1875,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.DETAILED,
         keywords: ['freedom', 'figure out', 'own way', 'independence'],
         competencies: ['independence', 'problem-solving', 'initiative'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-thinking',
       },
       {
         id: 'a4-au2',
@@ -1883,7 +1883,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.POSITIVE,
         keywords: ['initiative', 'take action', 'start', 'lead'],
         competencies: ['initiative', 'leadership', 'independence'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-execution',
       },
       {
         id: 'a4-au3',
@@ -1891,7 +1891,7 @@ export const conversationTree: Record<string, QuestionNode> = {
         category: ResponseCategory.DETAILED,
         keywords: ['experiment', 'learn', 'try', 'explore'],
         competencies: ['learning', 'experimentation', 'growth-mindset'],
-        nextQuestionId: 'q5-final',
+        nextQuestionId: 'q5-growth',
       },
       {
         id: 'a4-au4',
@@ -1910,7 +1910,192 @@ export const conversationTree: Record<string, QuestionNode> = {
     },
   },
 
-  // Step 5 - Mid-point (allows early completion or continue to step 6)
+  // Step 5 - Multiple final questions for better branching
+  // Execution-focused paths
+  'q5-execution': {
+    id: 'q5-execution',
+    question: "How do you want to use these insights about your execution style?",
+    answerOptions: [
+      {
+        id: 'a5-e1',
+        text: "To seek out opportunities that match my strengths",
+        category: ResponseCategory.DETAILED,
+        keywords: ['opportunities', 'strengths', 'match', 'seek'],
+        competencies: ['self-awareness', 'goal-driven', 'strategic-thinking'],
+        nextQuestionId: 'q6-reflection',
+      },
+      {
+        id: 'a5-e2',
+        text: "To be more intentional about how I approach work",
+        category: ResponseCategory.POSITIVE,
+        keywords: ['intentional', 'approach', 'work', 'plan'],
+        competencies: ['self-awareness', 'planning', 'goal-driven'],
+        nextQuestionId: 'q6-challenge',
+      },
+      {
+        id: 'a5-e3',
+        text: "To understand what environments help me thrive",
+        category: ResponseCategory.DETAILED,
+        keywords: ['understand', 'environments', 'thrive', 'works'],
+        competencies: ['self-awareness', 'reflection'],
+        nextQuestionId: 'q6-future',
+      },
+      {
+        id: 'a5-e4',
+        text: "I'm still processing what this means",
+        category: ResponseCategory.VAGUE,
+        keywords: [],
+        competencies: [],
+        nextQuestionId: 'q6-environment',
+      },
+    ],
+    reactionTemplates: {
+      [ResponseCategory.POSITIVE]: "That's a powerful vision.",
+      [ResponseCategory.NEGATIVE]: "I appreciate your honesty.",
+      [ResponseCategory.DETAILED]: "You have a clear sense of direction.",
+      [ResponseCategory.VAGUE]: "That's okay.",
+    },
+  },
+
+  // Collaboration-focused paths
+  'q5-collaboration': {
+    id: 'q5-collaboration',
+    question: "How do you want to use these insights about how you connect with others?",
+    answerOptions: [
+      {
+        id: 'a5-c1',
+        text: "To build stronger, more meaningful relationships",
+        category: ResponseCategory.DETAILED,
+        keywords: ['relationships', 'meaningful', 'stronger', 'connect'],
+        competencies: ['interpersonal', 'empathy', 'collaboration'],
+        nextQuestionId: 'q6-reflection',
+      },
+      {
+        id: 'a5-c2',
+        text: "To be more intentional in how I support others",
+        category: ResponseCategory.POSITIVE,
+        keywords: ['intentional', 'support', 'others', 'help'],
+        competencies: ['helpfulness', 'interpersonal', 'empathy'],
+        nextQuestionId: 'q6-challenge',
+      },
+      {
+        id: 'a5-c3',
+        text: "To understand what makes collaboration work for me",
+        category: ResponseCategory.DETAILED,
+        keywords: ['understand', 'collaboration', 'works', 'team'],
+        competencies: ['self-awareness', 'collaboration'],
+        nextQuestionId: 'q6-future',
+      },
+      {
+        id: 'a5-c4',
+        text: "I'm still figuring this out",
+        category: ResponseCategory.VAGUE,
+        keywords: [],
+        competencies: [],
+        nextQuestionId: 'q6-environment',
+      },
+    ],
+    reactionTemplates: {
+      [ResponseCategory.POSITIVE]: "That's meaningful.",
+      [ResponseCategory.NEGATIVE]: "I appreciate your honesty.",
+      [ResponseCategory.DETAILED]: "You have a clear sense of connection.",
+      [ResponseCategory.VAGUE]: "That's okay.",
+    },
+  },
+
+  // Growth/Reflection-focused paths
+  'q5-growth': {
+    id: 'q5-growth',
+    question: "How do you want to use these insights about your growth and reflection?",
+    answerOptions: [
+      {
+        id: 'a5-g1',
+        text: "To be more intentional about my personal development",
+        category: ResponseCategory.DETAILED,
+        keywords: ['intentional', 'personal development', 'grow', 'improve'],
+        competencies: ['self-awareness', 'growth-mindset', 'learning'],
+        nextQuestionId: 'q6-reflection',
+      },
+      {
+        id: 'a5-g2',
+        text: "To create situations where I can thrive",
+        category: ResponseCategory.POSITIVE,
+        keywords: ['create', 'situations', 'thrive', 'opportunities'],
+        competencies: ['self-awareness', 'goal-driven', 'strategic-thinking'],
+        nextQuestionId: 'q6-challenge',
+      },
+      {
+        id: 'a5-g3',
+        text: "To understand myself better and make better choices",
+        category: ResponseCategory.DETAILED,
+        keywords: ['understand', 'self', 'choices', 'awareness'],
+        competencies: ['self-awareness', 'reflection'],
+        nextQuestionId: 'q6-future',
+      },
+      {
+        id: 'a5-g4',
+        text: "I'm still exploring what this means for me",
+        category: ResponseCategory.VAGUE,
+        keywords: [],
+        competencies: [],
+        nextQuestionId: 'q6-environment',
+      },
+    ],
+    reactionTemplates: {
+      [ResponseCategory.POSITIVE]: "That's thoughtful.",
+      [ResponseCategory.NEGATIVE]: "I appreciate your honesty.",
+      [ResponseCategory.DETAILED]: "You have a clear sense of growth.",
+      [ResponseCategory.VAGUE]: "That's okay.",
+    },
+  },
+
+  // Thinking/Problem-solving focused paths
+  'q5-thinking': {
+    id: 'q5-thinking',
+    question: "How do you want to use these insights about how you think and solve problems?",
+    answerOptions: [
+      {
+        id: 'a5-t1',
+        text: "To seek out challenges that match my thinking style",
+        category: ResponseCategory.DETAILED,
+        keywords: ['challenges', 'thinking style', 'match', 'seek'],
+        competencies: ['self-awareness', 'strategic-thinking', 'analytical'],
+        nextQuestionId: 'q6-reflection',
+      },
+      {
+        id: 'a5-t2',
+        text: "To be more strategic about the problems I tackle",
+        category: ResponseCategory.POSITIVE,
+        keywords: ['strategic', 'problems', 'tackle', 'approach'],
+        competencies: ['strategic-thinking', 'planning', 'self-awareness'],
+        nextQuestionId: 'q6-challenge',
+      },
+      {
+        id: 'a5-t3',
+        text: "To understand what kinds of problems energize me",
+        category: ResponseCategory.DETAILED,
+        keywords: ['understand', 'problems', 'energize', 'interest'],
+        competencies: ['self-awareness', 'reflection'],
+        nextQuestionId: 'q6-future',
+      },
+      {
+        id: 'a5-t4',
+        text: "I'm still processing these insights",
+        category: ResponseCategory.VAGUE,
+        keywords: [],
+        competencies: [],
+        nextQuestionId: 'q6-environment',
+      },
+    ],
+    reactionTemplates: {
+      [ResponseCategory.POSITIVE]: "That's insightful.",
+      [ResponseCategory.NEGATIVE]: "I appreciate your honesty.",
+      [ResponseCategory.DETAILED]: "You have a clear sense of your thinking.",
+      [ResponseCategory.VAGUE]: "That's okay.",
+    },
+  },
+
+  // General/Unsure paths (original q5-final as fallback)
   'q5-final': {
     id: 'q5-final',
     question: "How do you want to use these insights moving forward?",
