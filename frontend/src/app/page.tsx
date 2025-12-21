@@ -5,6 +5,7 @@
 
 import { LandingHeroWithBackground } from '@/components/LandingHeroWithBackground';
 import { FeatureCards } from '@/components/FeatureCards';
+import { Footer } from '@/components/Footer';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function HomePage() {
@@ -20,6 +21,9 @@ export default function HomePage() {
 
       {/* Feature Cards */}
       <FeatureCards />
+
+      {/* Footer */}
+      <Footer />
     </main>
   );
 }

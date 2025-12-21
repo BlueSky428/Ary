@@ -127,8 +127,8 @@ export function RedesignedCompetenceTreeView() {
   const selectedNodeData = activeNodes.find(n => n.id === selectedNode);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-900 dark:to-neutral-950">
-      <div className="container mx-auto px-4 pt-8 pb-16">
+    <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-900 dark:to-neutral-950">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-16">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <motion.div

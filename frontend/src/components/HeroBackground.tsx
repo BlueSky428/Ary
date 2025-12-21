@@ -21,21 +21,39 @@ interface HeroBackgroundProps {
   images: BackgroundImage[];
   autoRotate?: boolean;
   rotationInterval?: number; // in milliseconds
+  transitionDuration?: number; // in seconds, default 0.8
+  transitionEasing?: number[]; // cubic bezier easing, default smooth
 }
 
 export function HeroBackground({ 
   images, 
   autoRotate = true, 
-  rotationInterval = 5000 
+  rotationInterval = 5000,
+  transitionDuration = 0.8,
+  transitionEasing = [0.25, 0.46, 0.45, 0.94] // smooth ease-out (ease-out-quad)
 }: HeroBackgroundProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [prevIndex, setPrevIndex] = useState<number | null>(null);
 
-  // Preload all images to prevent loading delays
+  // Preload all images using Next.js Image optimization
+  // This ensures images are loaded and decoded before animation
   useEffect(() => {
-    images.forEach((img) => {
-      const imageElement = new window.Image();
-      imageElement.src = img.src;
-    });
+    const preloadImages = async () => {
+      for (const img of images) {
+        // Create link element for preloading
+        const link = document.createElement('link');
+        link.rel = 'preload';
+        link.as = 'image';
+        link.href = img.src;
+        document.head.appendChild(link);
+        
+        // Also use native Image preloading for browser cache
+        const imageElement = new window.Image();
+        imageElement.src = img.src;
+      }
+    };
+    
+    preloadImages();
   }, [images]);
 
   // Auto-rotate effect
@@ -43,13 +61,18 @@ export function HeroBackground({
     if (!autoRotate || images.length <= 1) return;
 
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % images.length);
+      setCurrentIndex((prev) => {
+        setPrevIndex(prev);
+        return (prev + 1) % images.length;
+      });
     }, rotationInterval);
 
     return () => clearInterval(interval);
   }, [autoRotate, rotationInterval, images.length]);
 
   const handleDotClick = (index: number) => {
+    if (index === currentIndex) return;
+    setPrevIndex(currentIndex);
     setCurrentIndex(index);
   };
 
@@ -59,29 +82,56 @@ export function HeroBackground({
 
   return (
     <div className="relative w-full h-full">
-      {/* Background Images - Carousel Mode */}
+      {/* Background Images - Carousel Mode with Crossfade */}
       <div className="absolute inset-0 overflow-hidden bg-neutral-900">
+        {/* Render previous image behind current for smooth crossfade */}
+        {prevIndex !== null && prevIndex !== currentIndex && (
+          <div className="absolute inset-0" style={{ zIndex: 0 }}>
+            <Image
+              src={images[prevIndex].src}
+              alt={images[prevIndex].alt}
+              fill
+              className="object-cover object-top"
+              sizes="100vw"
+              quality={85}
+              style={{ objectPosition: 'center top' }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/50 dark:from-black/60 dark:via-black/50 dark:to-black/70" />
+          </div>
+        )}
+        
+        {/* Current image with fade transition */}
         <AnimatePresence initial={false}>
-          {/* Current image with smooth fade transition */}
           <motion.div
             key={currentImage.id}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{
-              duration: 0.6,
-              ease: [0.4, 0, 0.2, 1],
+              duration: transitionDuration,
+              ease: transitionEasing,
             }}
             className="absolute inset-0"
+            style={{ zIndex: 1 }}
+            onAnimationComplete={() => {
+              // Clear previous index after transition completes
+              if (prevIndex !== null) {
+                setPrevIndex(null);
+              }
+            }}
           >
             <Image
               src={currentImage.src}
               alt={currentImage.alt}
               fill
-              priority={currentIndex === 0}
+              priority={currentIndex === 0 || currentIndex === 1}
               className="object-cover object-top"
               sizes="100vw"
-              style={{ objectPosition: 'center top' }}
+              quality={85}
+              style={{ 
+                objectPosition: 'center top',
+                willChange: 'opacity'
+              }}
             />
             {/* Overlay for better text readability */}
             <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/50 dark:from-black/60 dark:via-black/50 dark:to-black/70" />

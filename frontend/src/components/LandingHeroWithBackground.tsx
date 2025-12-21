@@ -66,7 +66,7 @@ export function LandingHeroWithBackground() {
           >
             <Link
               href="/demo"
-              className="group relative inline-flex items-center justify-center px-12 py-5 bg-primary-600 text-white rounded-full font-medium text-lg hover:bg-primary-700 transition-all duration-200 shadow-md hover:shadow-lg"
+              className="group relative inline-flex items-center justify-center px-12 py-5 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-full font-semibold text-lg hover:from-primary-600 hover:to-primary-700 transition-all duration-200 shadow-lg hover:shadow-xl"
             >
               <span className="flex items-center gap-3">
                 <span>Try a quick demo</span>
