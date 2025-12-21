@@ -35,22 +35,49 @@ export function HeroBackground({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [prevIndex, setPrevIndex] = useState<number | null>(null);
   const [isInitialMount, setIsInitialMount] = useState(true);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
 
-  // Preload all images using Next.js Image optimization
-  // This ensures images are loaded and decoded before animation
+  // Preload all images and wait for them to fully load before enabling transitions
   useEffect(() => {
     const preloadImages = async () => {
-      for (const img of images) {
-        // Create link element for preloading
-        const link = document.createElement('link');
-        link.rel = 'preload';
-        link.as = 'image';
-        link.href = img.src;
-        document.head.appendChild(link);
+      try {
+        // Wait for all images to load
+        await Promise.all(
+          images.map((img) => {
+            return new Promise<void>((resolve, reject) => {
+              // Create link element for preloading (hint to browser)
+              const link = document.createElement('link');
+              link.rel = 'preload';
+              link.as = 'image';
+              link.href = img.src;
+              document.head.appendChild(link);
+              
+              // Use native Image to actually load and decode the image
+              const imageElement = new window.Image();
+              
+              imageElement.onload = () => {
+                // Image is loaded and decoded
+                resolve();
+              };
+              
+              imageElement.onerror = () => {
+                // Even if one image fails, continue with others
+                console.warn(`Failed to preload image: ${img.src}`);
+                resolve();
+              };
+              
+              // Set src to start loading (must be after onload/onerror handlers)
+              imageElement.src = img.src;
+            });
+          })
+        );
         
-        // Also use native Image preloading for browser cache
-        const imageElement = new window.Image();
-        imageElement.src = img.src;
+        // All images are loaded, set flag to enable smooth transitions
+        setImagesLoaded(true);
+      } catch (error) {
+        console.error('Error preloading images:', error);
+        // Even on error, set loaded to true after a delay to prevent blocking
+        setTimeout(() => setImagesLoaded(true), 1000);
       }
     };
     
@@ -65,9 +92,9 @@ export function HeroBackground({
     return () => clearTimeout(timer);
   }, []);
 
-  // Auto-rotate effect
+  // Auto-rotate effect - only start after images are loaded
   useEffect(() => {
-    if (!autoRotate || images.length <= 1) return;
+    if (!autoRotate || images.length <= 1 || !imagesLoaded) return;
 
     const interval = setInterval(() => {
       setCurrentIndex((prev) => {
@@ -77,7 +104,7 @@ export function HeroBackground({
     }, rotationInterval);
 
     return () => clearInterval(interval);
-  }, [autoRotate, rotationInterval, images.length]);
+  }, [autoRotate, rotationInterval, images.length, imagesLoaded]);
 
   const handleDotClick = (index: number) => {
     if (index === currentIndex) return;
