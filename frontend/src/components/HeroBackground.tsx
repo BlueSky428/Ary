@@ -34,6 +34,7 @@ export function HeroBackground({
 }: HeroBackgroundProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [prevIndex, setPrevIndex] = useState<number | null>(null);
+  const [isInitialMount, setIsInitialMount] = useState(true);
 
   // Preload all images using Next.js Image optimization
   // This ensures images are loaded and decoded before animation
@@ -56,6 +57,14 @@ export function HeroBackground({
     preloadImages();
   }, [images]);
 
+  // Mark initial mount as complete after a short delay to allow first image to render
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsInitialMount(false);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Auto-rotate effect
   useEffect(() => {
     if (!autoRotate || images.length <= 1) return;
@@ -74,6 +83,7 @@ export function HeroBackground({
     if (index === currentIndex) return;
     setPrevIndex(currentIndex);
     setCurrentIndex(index);
+    setIsInitialMount(false);
   };
 
   const currentImage = images[currentIndex];
@@ -104,17 +114,17 @@ export function HeroBackground({
         <AnimatePresence initial={false}>
           <motion.div
             key={currentImage.id}
-            initial={{ opacity: 0 }}
+            initial={isInitialMount ? { opacity: 1 } : { opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{
-              duration: transitionDuration,
+              duration: isInitialMount ? 0 : transitionDuration,
               ease: transitionEasing,
             }}
             className="absolute inset-0"
             style={{ zIndex: 1 }}
             onAnimationComplete={() => {
-              // Clear previous index after transition completes
+              // Clear previous index after transition completes to allow next transition
               if (prevIndex !== null) {
                 setPrevIndex(null);
               }

@@ -7,6 +7,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { MessageCircle } from 'lucide-react';
 import { HeroBackground } from './HeroBackground';
 import { heroImages } from '@/data/heroImages';
 
@@ -20,38 +21,29 @@ export function LandingHeroWithBackground() {
 
       {/* Logo - Top left */}
       <div className="absolute top-6 left-6 md:top-8 md:left-8 z-30">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9, rotate: -10 }}
-          animate={{ opacity: 1, scale: 1, rotate: 0 }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
-        >
-          <div className="relative w-12 h-12 md:w-16 md:h-16">
-            {/* Glow effect */}
-            <div className="absolute inset-0 bg-gradient-to-br from-primary-400/40 via-accent-400/40 to-primary-400/40 rounded-2xl blur-xl animate-pulse" />
-            
-            {/* Main logo container */}
-            <div className="relative w-full h-full bg-gradient-to-br from-primary-500 via-primary-600 to-accent-500 rounded-2xl shadow-2xl overflow-hidden">
-              {/* Abstract design - representing reflection/growth */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                {/* Central circle */}
-                <div className="absolute w-6 h-6 md:w-8 md:h-8 bg-white/20 rounded-full blur-sm" />
-                
-                {/* Rotating rings */}
-                <div className="absolute w-10 h-10 md:w-12 md:h-12 border-2 border-white/30 rounded-full" />
-                <div className="absolute w-5 h-5 md:w-6 md:h-6 border-2 border-white/40 rounded-full" />
-                
-                {/* Accent dots */}
-                <div className="absolute top-1 left-1 w-1 h-1 md:w-1.5 md:h-1.5 bg-white/60 rounded-full" />
-                <div className="absolute top-1 right-1 w-1 h-1 md:w-1.5 md:h-1.5 bg-white/60 rounded-full" />
-                <div className="absolute bottom-1 left-1 w-1 h-1 md:w-1.5 md:h-1.5 bg-white/60 rounded-full" />
-                <div className="absolute bottom-1 right-1 w-1 h-1 md:w-1.5 md:h-1.5 bg-white/60 rounded-full" />
-                
-                {/* Central highlight */}
-                <div className="absolute w-2 h-2 md:w-3 md:h-3 bg-white/50 rounded-full blur-[2px]" />
-              </div>
+        <Link href="/" className="inline-flex items-center gap-3 group">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ duration: 0.3 }}
+            className="relative"
+          >
+            <div className="absolute inset-0 bg-primary-500/20 rounded-xl blur-xl group-hover:opacity-75 transition-opacity" />
+            <div className="relative bg-gradient-to-br from-primary-500 to-accent-500 p-2 rounded-xl shadow-lg">
+              <MessageCircle className="w-5 h-5 text-white" strokeWidth={2.5} />
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
+          <motion.span
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1, duration: 0.3 }}
+            className="text-xl font-bold text-white group-hover:text-primary-200 transition-colors drop-shadow-lg"
+          >
+            Ary
+          </motion.span>
+        </Link>
       </div>
 
       {/* Content Overlay - Button positioned at middle bottom */}
