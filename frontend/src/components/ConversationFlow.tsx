@@ -284,9 +284,9 @@ export function ConversationFlow() {
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center flex-shrink-0">
                     <span className="text-white text-xs font-bold">A</span>
                   </div>
-                  <div className="flex-1 max-w-[80%]">
-                    <div className="bg-neutral-100 dark:bg-neutral-800 rounded-2xl rounded-tl-md px-4 py-3">
-                      <p className="text-neutral-900 dark:text-neutral-100 text-[15px] leading-relaxed">
+                  <div className="flex-shrink-0">
+                    <div className="bg-neutral-100 dark:bg-neutral-800 rounded-2xl rounded-tl-md px-4 py-3 inline-block">
+                      <p className="text-neutral-900 dark:text-neutral-100 text-[15px] leading-relaxed whitespace-normal">
                         {msg.question}
                       </p>
                     </div>
@@ -295,16 +295,16 @@ export function ConversationFlow() {
 
                 {/* Answer */}
                 <div className="flex items-start gap-3 justify-end">
-                  <div className="flex-1 max-w-[80%]">
-                    <div className="bg-gradient-to-br from-primary-500 to-primary-600 dark:from-primary-600 dark:to-primary-700 rounded-2xl rounded-tr-md px-4 py-3 relative group">
+                  <div className="flex-shrink-0">
+                    <div className="bg-gradient-to-br from-primary-500 to-primary-600 dark:from-primary-600 dark:to-primary-700 rounded-2xl rounded-tr-md px-4 py-3 relative group inline-block">
                       <div className="flex items-center justify-between gap-3">
-                        <p className="text-white text-[15px] leading-relaxed">
+                        <p className="text-white text-[15px] leading-relaxed whitespace-normal">
                           {msg.answer}
                         </p>
                         {editingIndex !== index && (
                           <button
                             onClick={() => handleEdit(index)}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-white/20 rounded-lg"
+                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-white/20 rounded-lg flex-shrink-0"
                             title="Edit answer"
                           >
                             <Edit2 className="w-4 h-4 text-white/90" strokeWidth={2} />
@@ -332,9 +332,9 @@ export function ConversationFlow() {
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center flex-shrink-0">
                     <span className="text-white text-xs font-bold">A</span>
                   </div>
-                  <div className="flex-1 max-w-[80%]">
-                    <div className="bg-neutral-100 dark:bg-neutral-800 rounded-2xl rounded-tl-md px-4 py-3">
-                      <p className="text-neutral-900 dark:text-neutral-100 text-[15px] leading-relaxed">
+                  <div className="flex-shrink-0">
+                    <div className="bg-neutral-100 dark:bg-neutral-800 rounded-2xl rounded-tl-md px-4 py-3 inline-block">
+                      <p className="text-neutral-900 dark:text-neutral-100 text-[15px] leading-relaxed whitespace-normal">
                         {currentNode.question}
                       </p>
                     </div>
@@ -349,9 +349,9 @@ export function ConversationFlow() {
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center flex-shrink-0">
                   <Check className="w-4 h-4 text-white" strokeWidth={3} />
                 </div>
-                <div className="flex-1 max-w-[80%]">
-                  <div className="bg-primary-50 dark:bg-primary-950/40 rounded-2xl rounded-tl-md px-4 py-3 border-2 border-primary-200 dark:border-primary-800">
-                    <p className="text-neutral-900 dark:text-neutral-100 text-[15px] leading-relaxed">
+                <div className="flex-shrink-0">
+                  <div className="bg-primary-50 dark:bg-primary-950/40 rounded-2xl rounded-tl-md px-4 py-3 border-2 border-primary-200 dark:border-primary-800 inline-block">
+                    <p className="text-neutral-900 dark:text-neutral-100 text-[15px] leading-relaxed whitespace-normal">
                       Thank you for sharing. I&apos;ve gathered enough to reflect back what I&apos;m seeing.
                     </p>
                   </div>
