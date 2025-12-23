@@ -2,15 +2,20 @@
 
 /**
  * Waitlist Form Component
- * Beautiful form with smooth animations
+ * Beautiful form with commitment question, segmentation, and email capture
  */
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, Mail, Loader2 } from 'lucide-react';
 
+type CommitmentAnswer = 'yes' | 'no' | null;
+type UseCase = 'cv-update' | 'cover-letter' | 'job-applications' | 'interview-prep' | 'exploring' | null;
+
 export function WaitlistForm() {
   const [email, setEmail] = useState('');
+  const [commitment, setCommitment] = useState<CommitmentAnswer>(null);
+  const [useCase, setUseCase] = useState<UseCase>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
@@ -18,6 +23,16 @@ export function WaitlistForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (!commitment) {
+      setError('Please answer the commitment question');
+      return;
+    }
+
+    if (!useCase) {
+      setError('Please select how you will use Ary');
+      return;
+    }
 
     if (!email || !email.includes('@')) {
       setError('Please enter a valid email address');
@@ -33,11 +48,13 @@ export function WaitlistForm() {
       
       // In demo mode, always succeed (no actual API call)
       // In production, uncomment this:
-      // const result = await waitlistApi.joinWaitlist(email);
+      // const result = await waitlistApi.joinWaitlist({ email, commitment, useCase });
       // if (result.success) {
       
       setSubmitted(true);
       setEmail('');
+      setCommitment(null);
+      setUseCase(null);
       
       // } else {
       //   setError(result.error || 'Something went wrong. Please try again.');
@@ -92,14 +109,78 @@ export function WaitlistForm() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           onSubmit={handleSubmit}
-          className="relative"
+          className="space-y-6"
         >
           {/* Glow effect */}
           <div className="absolute -inset-0.5 bg-gradient-to-r from-primary-400 to-accent-400 dark:from-primary-500 dark:to-accent-500 rounded-2xl blur opacity-20 dark:opacity-10" />
           
-          <div className="relative bg-white dark:bg-neutral-900 rounded-2xl shadow-soft border border-neutral-200/50 dark:border-neutral-700/50 p-6 md:p-8">
-            <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-              <div className="flex-1 relative">
+          <div className="relative bg-white dark:bg-neutral-900 rounded-2xl shadow-soft border border-neutral-200/50 dark:border-neutral-700/50 p-6 md:p-8 space-y-6">
+            {/* Commitment Question */}
+            <div>
+              <label className="block text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-3">
+                Will you return to articulate your strengths for a specific job application?
+              </label>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setCommitment('yes')}
+                  className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all ${
+                    commitment === 'yes'
+                      ? 'bg-primary-600 text-white shadow-md'
+                      : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                  }`}
+                >
+                  Yes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCommitment('no')}
+                  className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all ${
+                    commitment === 'no'
+                      ? 'bg-primary-600 text-white shadow-md'
+                      : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                  }`}
+                >
+                  No
+                </button>
+              </div>
+            </div>
+
+            {/* Segmentation Question */}
+            <div>
+              <label className="block text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-3">
+                What will you use Ary for first?
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {[
+                  { id: 'cv-update' as UseCase, label: 'CV update' },
+                  { id: 'cover-letter' as UseCase, label: 'Cover letter' },
+                  { id: 'job-applications' as UseCase, label: 'Job applications' },
+                  { id: 'interview-prep' as UseCase, label: 'Interview prep' },
+                  { id: 'exploring' as UseCase, label: 'Just exploring' },
+                ].map((option) => (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => setUseCase(option.id)}
+                    className={`px-4 py-3 rounded-xl font-medium text-sm transition-all ${
+                      useCase === option.id
+                        ? 'bg-primary-600 text-white shadow-md'
+                        : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Email Capture */}
+            <div>
+              <label className="block text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-3">
+                Get early access when Ary goes live — enter your email:
+              </label>
+              <div className="relative">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 dark:text-neutral-500 pointer-events-none z-10" />
                 <input
                   type="email"
@@ -111,26 +192,28 @@ export function WaitlistForm() {
                   required
                 />
               </div>
-              <motion.button
-                type="submit"
-                disabled={isSubmitting}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="px-6 md:px-8 py-4 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl hover:from-primary-600 hover:to-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl font-semibold flex items-center justify-center gap-2 whitespace-nowrap text-[15px]"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>Joining...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Join Waitlist</span>
-                    <Mail className="w-5 h-5" />
-                  </>
-                )}
-              </motion.button>
             </div>
+
+            {/* Submit Button */}
+            <motion.button
+              type="submit"
+              disabled={isSubmitting || !commitment || !useCase || !email}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full px-6 md:px-8 py-4 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl hover:from-primary-600 hover:to-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl font-semibold flex items-center justify-center gap-2 text-[15px]"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Joining...</span>
+                </>
+              ) : (
+                <>
+                  <span>Join Waitlist</span>
+                  <Mail className="w-5 h-5" />
+                </>
+              )}
+            </motion.button>
 
             <AnimatePresence>
               {error && (
@@ -138,7 +221,7 @@ export function WaitlistForm() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="text-red-600 text-sm mt-4 text-center"
+                  className="text-red-600 dark:text-red-400 text-sm text-center"
                 >
                   {error}
                 </motion.p>

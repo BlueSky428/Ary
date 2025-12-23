@@ -232,8 +232,8 @@ export function analyzeConversationHistory(
   history: ConversationHistory[]
 ): ConversationResult {
   if (history.length === 0) {
-    // Default result
-    return conversationResults[conversationResults.length - 1]; // balanced-thinker
+    // Default fallback if no history
+    return conversationResults[0];
   }
 
   // Collect all data from conversation
@@ -252,36 +252,31 @@ export function analyzeConversationHistory(
     competenceCounts[c] = (competenceCounts[c] || 0) + 1;
   });
 
-  // Score each result based on matches
+  // Score results based on question, keyword, and competence matches
   const scoredResults = conversationResults.map(result => {
     let score = 0;
 
-    // Match question IDs
     const questionMatches = result.matchingPatterns.questionIds.filter(qId =>
       allQuestionIds.includes(qId)
     ).length;
     score += questionMatches * 10;
 
-    // Match keywords
     const keywordMatches = result.matchingPatterns.keywordPatterns.filter(k =>
       allKeywords.includes(k)
     ).length;
     score += keywordMatches * 5;
 
-    // Match competencies
     const competenceMatches = result.matchingPatterns.competencePatterns.filter(c =>
       allCompetencies.includes(c)
     ).length;
     score += competenceMatches * 8;
 
-    // Bonus for high frequency keywords
+    // Bonus for frequency
     result.matchingPatterns.keywordPatterns.forEach(k => {
       if (keywordCounts[k]) {
         score += keywordCounts[k] * 2;
       }
     });
-
-    // Bonus for high frequency competencies
     result.matchingPatterns.competencePatterns.forEach(c => {
       if (competenceCounts[c]) {
         score += competenceCounts[c] * 3;
@@ -291,11 +286,9 @@ export function analyzeConversationHistory(
     return { result, score };
   });
 
-  // Sort by score and return top match
   scoredResults.sort((a, b) => b.score - a.score);
-  const topResult = scoredResults[0].result;
+  const topResult = scoredResults[0]?.result || conversationResults[0];
 
-  // Enhance the result with conversation-specific details
   const enhancedResult: ConversationResult = {
     ...topResult,
     detailedEvaluation: generateDetailedEvaluation(

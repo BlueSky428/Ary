@@ -19,7 +19,7 @@ export default function DemoPage() {
       </div>
 
       {/* Conversation Flow */}
-      <div className="pt-16 h-full">
+      <div className="pt-24 pb-6 h-full">
         <ConversationFlow />
       </div>
     </main>

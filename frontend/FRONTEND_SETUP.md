@@ -29,7 +29,13 @@ Create `.env.local` file in the `frontend` directory:
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:3001
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+OPENAI_API_KEY=your_openai_api_key_here
 ```
+
+**Important:** 
+- Get your OpenAI API key from https://platform.openai.com/api-keys
+- The API key is used server-side only (via Next.js API routes) and is never exposed to the client
+- For production, use environment variables in your hosting platform (Vercel, etc.)
 
 ### 4. Run Development Server
 
