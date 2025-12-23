@@ -41,6 +41,9 @@ export function RedesignedCompetenceTreeView() {
   const [gptResult, setGptResult] = useState<any>(null);
 
   useEffect(() => {
+    // Only access sessionStorage in browser (not during SSR/build)
+    if (typeof window === 'undefined') return;
+    
     const storedResult = sessionStorage.getItem('conversationResult');
     const storedHistory = sessionStorage.getItem('conversationHistory');
     const storedGPTResult = sessionStorage.getItem('gptResult');
@@ -93,15 +96,12 @@ export function RedesignedCompetenceTreeView() {
   
   let collaborationCompetencies: CompetenceBubble[] = [];
   
-  if (hasGPTCompetencies && conversationResult) {
-    // Use GPT-provided competencies (stored in sessionStorage with evidence)
-    // The GPT result is stored in conversationResult, but we need to check sessionStorage
-    // for the full GPT response with evidence
+  // Use GPT-provided competencies from state (already loaded in useEffect)
+  if (hasGPTCompetencies && conversationResult && gptResult) {
+    // Use GPT-provided competencies from state (loaded in useEffect)
     try {
-      const storedGPTResult = sessionStorage.getItem('gptResult');
-      if (storedGPTResult) {
-        const gptResult = JSON.parse(storedGPTResult);
-        collaborationCompetencies = gptResult.competencies || [];
+      if (gptResult.competencies && Array.isArray(gptResult.competencies)) {
+        collaborationCompetencies = gptResult.competencies;
       }
     } catch (e) {
       console.error('Failed to parse GPT result:', e);
@@ -321,16 +321,15 @@ export function RedesignedCompetenceTreeView() {
 
   // Get GPT competencies with evidence (if available)
   const getGPTCompetencies = (): CompetenceBubble[] => {
+    // Use state instead of directly accessing sessionStorage
+    if (!gptResult) return [];
+    
     try {
-      const storedGPTResult = sessionStorage.getItem('gptResult');
-      if (storedGPTResult) {
-        const gptResult = JSON.parse(storedGPTResult);
-        if (gptResult.competencies && Array.isArray(gptResult.competencies)) {
-          return gptResult.competencies.map((comp: any) => ({
-            label: typeof comp === 'string' ? comp : comp.label || comp,
-            evidence: typeof comp === 'object' && comp.evidence ? comp.evidence : undefined,
-          }));
-        }
+      if (gptResult.competencies && Array.isArray(gptResult.competencies)) {
+        return gptResult.competencies.map((comp: any) => ({
+          label: typeof comp === 'string' ? comp : comp.label || comp,
+          evidence: typeof comp === 'object' && comp.evidence ? comp.evidence : undefined,
+        }));
       }
     } catch (e) {
       console.error('Failed to parse GPT result:', e);
