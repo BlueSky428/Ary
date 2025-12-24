@@ -16,6 +16,8 @@ import {
   analyzeConversationHistory,
   type ConversationHistory,
 } from '@/lib/conversationResults';
+import { PromptEditPanel } from './PromptEditPanel';
+import { GPTDebugPanel, type GPTDebugEntry } from './GPTDebugPanel';
 
 const getAiAnsweredCount = (history: ConversationHistory[]) => {
   // Count only main questions (not clarifications - clarifications have questionId starting with 'clarify-')
@@ -59,6 +61,74 @@ export function ConversationFlow() {
   
   // Debug mode state (set on client side only)
   const [debugMode, setDebugMode] = useState(false);
+  
+  // Default prompts (matching API route)
+  const DEFAULT_QUESTION_PROMPT = `You are Ary, an AI system for professional articulation. Extract what the user has done at work and express it clearly. Use a warm, conversational, and curious tone.
+
+Rules:
+- Focus on actions, responsibilities, collaboration, and outcomes only
+- Do not ask about feelings, thoughts, motivations, or plans
+- Do not give advice or use personality/trait language
+- If an answer is vague, ask for concrete examples
+- Reference their previous answers to show you're listening
+- Keep questions concise and natural
+
+7 PURPOSES TO COMPLETE (work through in order, 1-7):
+1. Grounding - Identify concrete work/project/experience
+2. Role/Responsibility - Identify what they were personally responsible for
+3. Collaboration Context - Identify who else was involved and how they worked together
+4. Actions Taken - Identify specific actions they performed
+5. Outcome/Result - Identify concrete outcome or result
+6. Scale/Significance - Identify scope, complexity, or significance
+7. Scope/Continuity - Identify if recurring or one-time
+
+For each purpose:
+- Generate a natural, context-aware question referencing their previous answers
+- If their answer is vague/abstract, ask a clarifying probe for that SAME purpose
+- Do not advance to next purpose until you have a clear answer (max 2 clarification probes per purpose)
+
+COMPLETION CHECK — Before generating any question, check if you have clear answers for ALL 7 purposes:
+
+1. Grounding - Do you know what concrete work/project/experience? (YES/NO)
+2. Role - Do you know what they were responsible for? (YES/NO)
+3. Collaboration - Do you know who else was involved and how? (YES/NO)
+4. Actions - Do you know specific actions they performed? (YES/NO)
+5. Outcome - Do you know a concrete result? (YES/NO)
+6. Scale - Do you understand scope/complexity? (YES/NO)
+7. Scope/Continuity - Do you know if recurring or one-time? (YES/NO)
+
+If ALL 7 are YES → Return ONLY "FINAL" (just that word).
+
+If ANY is NO → Generate a question for the lowest-numbered purpose (1-7) that needs more information. Work through purposes in order.
+
+Return only the question text, or "FINAL" if all 7 purposes are satisfied.`;
+
+  const DEFAULT_FINAL_PROMPT = `You are Ary. Extract what the user has done at work and express it clearly. Do not evaluate, coach, advise, or assess.
+
+Return ONLY a valid JSON object (no extra text, no markdown):
+
+{
+  "summary": "Three sentences max, second person (you), referencing concrete actions/outcomes from the conversation. Plain text only, not JSON.",
+  "competencies": [
+    {
+      "label": "One competence label from the provided list (Collaboration & Stakeholder Navigation only)",
+      "evidence": "One sentence grounded in user's words that backs the label"
+    }
+  ]
+}
+
+Rules:
+- Return ONLY JSON object, nothing else
+- Summary: plain text string (3 sentences max), second person, concrete actions/outcomes only
+- Competencies: array of 4-6 objects, select from provided list, evidence must be in user's words
+- No scores, rankings, or interpretations - just what they did`;
+
+  // Custom prompts state (loaded from sessionStorage)
+  const [customQuestionPrompt, setCustomQuestionPrompt] = useState<string | null>(null);
+  const [customFinalPrompt, setCustomFinalPrompt] = useState<string | null>(null);
+  
+  // GPT Debug history state
+  const [gptDebugEntries, setGptDebugEntries] = useState<GPTDebugEntry[]>([]);
   
   // AI question state (always in AI mode now - no fixed questions)
   const [isAIQuestion, setIsAIQuestion] = useState(true);
@@ -122,6 +192,14 @@ export function ConversationFlow() {
     }
     
     setDebugMode(isDebug);
+    
+    // Load custom prompts from sessionStorage if available
+    if (typeof window !== 'undefined') {
+      const storedQuestionPrompt = sessionStorage.getItem('customQuestionPrompt');
+      const storedFinalPrompt = sessionStorage.getItem('customFinalPrompt');
+      if (storedQuestionPrompt) setCustomQuestionPrompt(storedQuestionPrompt);
+      if (storedFinalPrompt) setCustomFinalPrompt(storedFinalPrompt);
+    }
   }, []);
 
 
@@ -204,7 +282,8 @@ export function ConversationFlow() {
     isClarification: boolean = false
   ): Promise<{ type: 'question' | 'final'; question?: string; result?: GPTResult }> => {
     try {
-      const requestBody = {
+      // Always include custom prompts if they exist (even if empty string, pass them)
+      const requestBody: any = {
         conversationHistory: historySnapshot.map(h => ({
           question: h.question,
           answer: h.answer,
@@ -213,6 +292,24 @@ export function ConversationFlow() {
         isFinalTurn: isFinal,
         isClarification: isClarification,
       };
+
+      // Include custom prompts if they exist
+      if (customQuestionPrompt !== null) {
+        requestBody.customQuestionPrompt = customQuestionPrompt;
+      }
+      if (customFinalPrompt !== null) {
+        requestBody.customFinalPrompt = customFinalPrompt;
+      }
+      
+      if (debugMode) {
+        console.log('[callGPT] Sending request with custom prompts:', {
+          isFinal,
+          hasCustomQuestionPrompt: customQuestionPrompt !== null,
+          hasCustomFinalPrompt: customFinalPrompt !== null,
+          customQuestionPromptLength: customQuestionPrompt?.length || 0,
+          customFinalPromptLength: customFinalPrompt?.length || 0,
+        });
+      }
 
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -225,6 +322,25 @@ export function ConversationFlow() {
       }
 
       const data = await response.json();
+
+      // Capture debug information if available
+      if (debugMode && data.debug) {
+        const debugEntry: GPTDebugEntry = {
+          id: `gpt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          timestamp: new Date(),
+          type: isFinal ? 'final' : 'question',
+          request: data.debug.request,
+          response: {
+            type: data.type === 'final' ? 'final' : 'question',
+            content: data.type === 'final' 
+              ? { summary: data.summary, competencies: data.competencies }
+              : data.question,
+            raw: data.debug.rawResponse,
+          },
+          isClarification: isClarification,
+        };
+        setGptDebugEntries(prev => [...prev, debugEntry]);
+      }
 
       // Fallback: if API mislabels but returns JSON-like final content, coerce to final
       const maybeFinal =
@@ -293,6 +409,30 @@ export function ConversationFlow() {
     }, 500);
   };
 
+  // Handle prompt save
+  const handleSavePrompts = (questionPrompt: string, finalPrompt: string) => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('customQuestionPrompt', questionPrompt);
+      sessionStorage.setItem('customFinalPrompt', finalPrompt);
+      setCustomQuestionPrompt(questionPrompt);
+      setCustomFinalPrompt(finalPrompt);
+      console.log('[Prompt Edit] Saved custom prompts:', {
+        questionPromptLength: questionPrompt.length,
+        finalPromptLength: finalPrompt.length,
+      });
+    }
+  };
+
+  // Handle prompt reset
+  const handleResetPrompts = () => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('customQuestionPrompt');
+      sessionStorage.removeItem('customFinalPrompt');
+      setCustomQuestionPrompt(null);
+      setCustomFinalPrompt(null);
+    }
+  };
+
   // Debug: Skip to completion (for testing only)
   const handleDebugSkipToCompletion = async () => {
     setHasStarted(true);
@@ -345,7 +485,7 @@ export function ConversationFlow() {
         setPendingRedirect({ history, result: finalResponse.result });
         setIsLoadingAI(false);
         return true;
-      }
+        }
     } catch (error) {
       console.error('Error forcing completion:', error);
     }
@@ -433,7 +573,7 @@ export function ConversationFlow() {
           }
         } catch (finalError) {
           // If final synthesis fails, redirect anyway
-          setTimeout(() => navigateToResults(history), 1500);
+      setTimeout(() => navigateToResults(history), 1500);
         }
       }
     }
@@ -538,9 +678,9 @@ export function ConversationFlow() {
 
     // Load next question - GPT will determine if we need more clarifications/questions 
     // or if we have clear answers for all 7 purposes and should show final synthesis
-    setTimeout(() => {
+      setTimeout(() => {
       loadNextAIQuestion(updatedHistory, isClarification);
-    }, 800);
+      }, 800);
   };
 
   const handleFinish = () => {
@@ -577,15 +717,15 @@ export function ConversationFlow() {
               {/* Progress Bar - Only show after conversation starts */}
               {hasStarted && (
                 <div className="flex-1 max-w-[180px] ml-auto">
-                  <div className="w-full h-2 bg-neutral-200 dark:bg-neutral-800 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${progressPercentage}%` }}
-                      transition={{ duration: 0.5, ease: 'easeOut' }}
+                <div className="w-full h-2 bg-neutral-200 dark:bg-neutral-800 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progressPercentage}%` }}
+                    transition={{ duration: 0.5, ease: 'easeOut' }}
                       className="h-full bg-gradient-to-r from-primary-600 to-primary-700 rounded-full"
-                    />
-                  </div>
+                  />
                 </div>
+        </div>
               )}
 
               {/* Finish Button */}
@@ -782,11 +922,11 @@ export function ConversationFlow() {
           {hasStarted && (
             <div 
               className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-4 space-y-4"
-              style={{ 
-                willChange: 'scroll-position',
-                contain: 'layout style paint'
-              }}
-            >
+            style={{ 
+              willChange: 'scroll-position',
+              contain: 'layout style paint'
+            }}
+        >
             {/* All Messages */}
           {messages.map((msg, index) => (
               <div key={`${msg.questionId}-${index}`} className="space-y-2">
@@ -847,30 +987,30 @@ export function ConversationFlow() {
 
             {/* Loading AI Question - Show while loading next question (CHATTING state) */}
             {hasStarted && isLoadingAI && !pendingRedirect && (
-            <motion.div
+              <motion.div
                 initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
+                animate={{ opacity: 1, y: 0 }}
                 className="flex items-start gap-3"
               >
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-600 to-primary-700 flex items-center justify-center flex-shrink-0 shadow-sm">
                   <Loader2 className="w-4 h-4 text-white animate-spin" />
-                </div>
+                  </div>
                 <div className="flex-shrink-0">
                   <div className="bg-neutral-100 dark:bg-neutral-800 rounded-2xl rounded-tl-md px-4 py-3 inline-block">
                     <p className="text-neutral-500 dark:text-neutral-400 text-[15px]">
                       Thinking...
-                    </p>
+                </p>
                   </div>
                 </div>
-            </motion.div>
+              </motion.div>
           )}
 
 
             {/* Loading Final Synthesis - Show while loading final synthesis (transitioning to MODAL state) */}
             {hasStarted && isLoadingAI && pendingRedirect === null && mainQuestionCount >= 7 && (
-              <motion.div
+            <motion.div
                 initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
+              animate={{ opacity: 1, y: 0 }}
                 className="flex items-start gap-3"
               >
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-600 to-primary-700 flex items-center justify-center flex-shrink-0 shadow-sm">
@@ -883,11 +1023,11 @@ export function ConversationFlow() {
                     </p>
                   </div>
                 </div>
-              </motion.div>
+            </motion.div>
             )}
 
             <div ref={messagesEndRef} />
-            </div>
+        </div>
           )}
 
           {/* Text Input - Show in CHATTING state: when there's a question to answer and we're not showing the modal */}
@@ -922,7 +1062,7 @@ export function ConversationFlow() {
                   whileTap={{ scale: 0.95 }}
                   className="px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl hover:from-primary-600 hover:to-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg font-semibold flex items-center gap-2"
                   aria-label={isLoadingAI ? "Sending answer..." : "Send your answer"}
-                >
+              >
                   {isLoadingAI ? (
                     <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
                   ) : (
@@ -937,6 +1077,24 @@ export function ConversationFlow() {
           )}
         </div>
       </div>
+
+      {/* Prompt Edit Panel - Debug Mode Only */}
+      {debugMode && (
+        <PromptEditPanel
+          questionPrompt={customQuestionPrompt || DEFAULT_QUESTION_PROMPT}
+          finalPrompt={customFinalPrompt || DEFAULT_FINAL_PROMPT}
+          onSave={handleSavePrompts}
+          onReset={handleResetPrompts}
+        />
+                      )}
+
+      {/* GPT Debug Panel - Debug Mode Only */}
+      {debugMode && (
+        <GPTDebugPanel
+          entries={gptDebugEntries}
+          onClear={() => setGptDebugEntries([])}
+        />
+      )}
     </div>
   );
 }

@@ -15,6 +15,8 @@ interface ChatRequest {
   questionCount: number;
   isFinalTurn: boolean;
   isClarification?: boolean;
+  customQuestionPrompt?: string;
+  customFinalPrompt?: string;
 }
 
 /**
@@ -142,7 +144,7 @@ Rules:
 export async function POST(req: NextRequest) {
   try {
     const body: ChatRequest = await req.json();
-    const { conversationHistory, questionCount, isFinalTurn, isClarification } = body;
+    const { conversationHistory, questionCount, isFinalTurn, isClarification, customQuestionPrompt, customFinalPrompt } = body;
 
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(
@@ -152,8 +154,26 @@ export async function POST(req: NextRequest) {
     }
 
     // Build messages array with appropriate system prompt
+    // Use custom prompts if provided (check for undefined, not truthy, to allow empty strings)
     // Use QUESTION_PROMPT for regular questions, FINAL_TURN_PROMPT for final step
-    const systemPrompt = isFinalTurn ? FINAL_TURN_PROMPT : QUESTION_PROMPT;
+    const systemPrompt = isFinalTurn 
+      ? (customFinalPrompt !== undefined ? customFinalPrompt : FINAL_TURN_PROMPT)
+      : (customQuestionPrompt !== undefined ? customQuestionPrompt : QUESTION_PROMPT);
+    
+    // Log for debugging (only in development)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[GPT API] Using prompt:', {
+        isFinalTurn,
+        customQuestionPromptProvided: customQuestionPrompt !== undefined,
+        customFinalPromptProvided: customFinalPrompt !== undefined,
+        usingCustomPrompt: isFinalTurn 
+          ? (customFinalPrompt !== undefined)
+          : (customQuestionPrompt !== undefined),
+        promptLength: systemPrompt.length,
+        promptPreview: systemPrompt.substring(0, 100) + '...',
+      });
+    }
+    
     const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
       { role: 'system', content: systemPrompt },
     ];
@@ -193,7 +213,8 @@ export async function POST(req: NextRequest) {
       response_format: isFinalTurn ? { type: 'json_object' } : undefined,
     });
 
-    const response = completion.choices[0]?.message?.content || '';
+    const rawResponse = completion.choices[0]?.message?.content || '';
+    const response = rawResponse;
 
     if (isFinalTurn) {
       // Parse JSON response
@@ -298,7 +319,7 @@ export async function POST(req: NextRequest) {
         if (competencies.length === 0 && conversationHistory.length > 0) {
           competencies = extractCompetenciesFromHistory(conversationHistory);
         }
-
+        
         return NextResponse.json({
           type: 'final',
           summary: summaryText,
@@ -306,10 +327,30 @@ export async function POST(req: NextRequest) {
             label: typeof comp === 'string' ? comp : comp.label || comp,
             evidence: typeof comp === 'object' && comp.evidence ? comp.evidence : undefined,
           })),
+          debug: {
+            request: {
+              messages: messages,
+              model: 'gpt-4o-mini',
+              temperature: isFinalTurn ? 0.7 : 0.9,
+              max_tokens: isFinalTurn ? 2000 : 200,
+            },
+            rawResponse: rawResponse,
+          },
         });
       } catch (parseError) {
-        // Failed to parse response - return empty result
-        throw new Error('Failed to parse GPT response as JSON');
+        // Failed to parse response - return error with debug info
+        return NextResponse.json({
+          error: 'Failed to parse GPT response as JSON',
+          debug: {
+            request: {
+              messages: messages,
+              model: 'gpt-4o-mini',
+              temperature: isFinalTurn ? 0.7 : 0.9,
+              max_tokens: isFinalTurn ? 2000 : 200,
+            },
+            rawResponse: rawResponse,
+          },
+        }, { status: 500 });
       }
     } else {
       // Check if GPT returned "FINAL" indicating all 7 purposes are satisfied
@@ -324,8 +365,10 @@ export async function POST(req: NextRequest) {
       if (isFinalSignal) {
         // GPT determined all 7 purposes are satisfied - trigger final synthesis
         // Make a recursive call with isFinalTurn=true to get the final summary
+        // Use custom final prompt if provided, otherwise use default
+        const finalSystemPrompt = customFinalPrompt !== undefined ? customFinalPrompt : FINAL_TURN_PROMPT;
         const finalMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
-          { role: 'system', content: FINAL_TURN_PROMPT },
+          { role: 'system', content: finalSystemPrompt },
         ];
         
         conversationHistory.forEach((entry) => {
@@ -350,8 +393,8 @@ export async function POST(req: NextRequest) {
           response_format: { type: 'json_object' },
         });
         
-        const finalResponse = finalCompletion.choices[0]?.message?.content || '';
-        let parsed = JSON.parse(finalResponse);
+        const finalResponseRaw = finalCompletion.choices[0]?.message?.content || '';
+        let parsed = JSON.parse(finalResponseRaw);
         
         // Handle nested JSON (same logic as above)
         if (typeof parsed.summary === 'string' && parsed.summary.includes('"summary"')) {
@@ -410,6 +453,15 @@ export async function POST(req: NextRequest) {
             label: typeof comp === 'string' ? comp : comp.label || comp,
             evidence: typeof comp === 'object' && comp.evidence ? comp.evidence : undefined,
           })),
+          debug: {
+            request: {
+              messages: finalMessages,
+              model: 'gpt-4o-mini',
+              temperature: 0.7,
+              max_tokens: 2000,
+            },
+            rawResponse: finalResponseRaw,
+          },
         });
       }
       
@@ -417,6 +469,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         type: 'question',
         question: trimmedResponse,
+        debug: {
+          request: {
+            messages: messages,
+            model: 'gpt-4o-mini',
+            temperature: isFinalTurn ? 0.7 : 0.9,
+            max_tokens: isFinalTurn ? 2000 : 200,
+          },
+          rawResponse: rawResponse,
+        },
       });
     }
   } catch (error) {
