@@ -301,7 +301,8 @@ Rules:
         requestBody.customFinalPrompt = customFinalPrompt;
       }
       
-      if (debugMode) {
+      // Log custom prompts usage (useful for debugging)
+      if (customQuestionPrompt !== null || customFinalPrompt !== null) {
         console.log('[callGPT] Sending request with custom prompts:', {
           isFinal,
           hasCustomQuestionPrompt: customQuestionPrompt !== null,
@@ -324,7 +325,8 @@ Rules:
       const data = await response.json();
 
       // Capture debug information if available
-      if (debugMode && data.debug) {
+      // Always capture debug information (not just in debug mode)
+      if (data.debug) {
         const debugEntry: GPTDebugEntry = {
           id: `gpt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           timestamp: new Date(),
@@ -1078,23 +1080,19 @@ Rules:
         </div>
       </div>
 
-      {/* Prompt Edit Panel - Debug Mode Only */}
-      {debugMode && (
-        <PromptEditPanel
-          questionPrompt={customQuestionPrompt || DEFAULT_QUESTION_PROMPT}
-          finalPrompt={customFinalPrompt || DEFAULT_FINAL_PROMPT}
-          onSave={handleSavePrompts}
-          onReset={handleResetPrompts}
-        />
-                      )}
+      {/* Prompt Edit Panel - Always Available */}
+      <PromptEditPanel
+        questionPrompt={customQuestionPrompt || DEFAULT_QUESTION_PROMPT}
+        finalPrompt={customFinalPrompt || DEFAULT_FINAL_PROMPT}
+        onSave={handleSavePrompts}
+        onReset={handleResetPrompts}
+      />
 
-      {/* GPT Debug Panel - Debug Mode Only */}
-      {debugMode && (
-        <GPTDebugPanel
-          entries={gptDebugEntries}
-          onClear={() => setGptDebugEntries([])}
-        />
-      )}
+      {/* GPT Debug Panel - Always Available */}
+      <GPTDebugPanel
+        entries={gptDebugEntries}
+        onClear={() => setGptDebugEntries([])}
+      />
     </div>
   );
 }
