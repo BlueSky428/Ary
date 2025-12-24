@@ -62,7 +62,7 @@ export function HeroBackground({
               
               imageElement.onerror = () => {
                 // Even if one image fails, continue with others
-                console.warn(`Failed to preload image: ${img.src}`);
+                // Failed to preload image, continue with others
                 resolve();
               };
               
@@ -75,7 +75,7 @@ export function HeroBackground({
         // All images are loaded, set flag to enable smooth transitions
         setImagesLoaded(true);
       } catch (error) {
-        console.error('Error preloading images:', error);
+        // Error preloading images, continue anyway
         // Even on error, set loaded to true after a delay to prevent blocking
         setTimeout(() => setImagesLoaded(true), 1000);
       }

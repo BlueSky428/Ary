@@ -6,8 +6,8 @@
  */
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Edit2, Check, MessageCircle, Loader2, Send } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Check, MessageCircle, Loader2, Send } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import {
   getStartingQuestion,
@@ -20,45 +20,6 @@ import {
   analyzeConversationHistory,
   type ConversationHistory,
 } from '@/lib/conversationResults';
-
-// Debug: mirror system prompt (keep in sync with /api/chat)
-const CLIENT_SYSTEM_PROMPT = `You are Ary, an AI used for professional reflection. Ask short, neutral follow-up questions about work, study, collaboration, tasks, and goals.
-
-Rules:
-- Ask a total of five follow-up questions, one at a time.
-- Keep each question under 18 words.
-- Each question must relate to the user's previous answers and include a tiny contextual hook (1–2 nouns/verbs) from the last answer.
-- Vary neutral openers (e.g., "Understood,", "Noted,", "Quick follow-up:", "One thing I'm curious about:") to avoid repetition.
-- Avoid emotional or mental-health language; do not ask "How are you?" or anything about feelings or well-being.
-- Do not give advice, guidance, or suggestions for improvement.
-
-Conversational Flow:
-- Briefly acknowledge then ask; keep it neutral (no praise or judgement).
-- Avoid sounding like a questionnaire—make it feel like a natural follow-on.
-- Avoid repeating the same topic. Over 5 questions, try to cover different angles: collaboration, communication, tools/process, planning/coordination, feedback/ownership.
-- If the user's answer is very short (e.g., under 8 words), ask a quick clarifier ("Could you share a quick example?") then proceed.
-- Before the fifth and final question, preface with "One last question:".
-
-Final Turn:
-When FINAL_TURN is provided, do not ask more questions. Return only a JSON object with:
-- "summary": 3 short sentences reflecting how the user collaborates or works with others, depending on available evidence. Do not invent information.
-- "competencies": An array of 4-6 objects, each with:
-  - "label": A short competence label related to collaboration (e.g., "Collaboration", "Teamwork", "Empathy", "Interpersonal Skills", "Helpfulness", "Active Listening", "Coordination")
-  - "evidence": An optional short evidence phrase (one line max) only if it is directly reflected in the user's wording. If no evidence is clear, omit this field.
-
-Evidence should refer to linguistic cues, not personality traits.
-
-No scores, no percentages, no emotions.
-
-Style for summary: Write in second person ("you") only. Never refer to the user as "the user", "they", or "their". Use neutral, professional tone.`;
-
-// Animation constants
-const ANIMATION_DURATION = {
-  FAST: 0.3,
-  NORMAL: 0.4,
-} as const;
-
-const EASING = [0.16, 1, 0.3, 1] as const;
 
 const getAiAnsweredCount = (history: ConversationHistory[]) =>
   Math.max(0, history.length - 2); // subtract 2 fixed Q&As
@@ -76,28 +37,8 @@ interface GPTResult {
   competencies: Array<{ label: string; evidence?: string }>;
 }
 
-interface GPTDebugLog {
-  type: 'question' | 'final';
-  request: {
-    systemPrompt?: string;
-    body: any;
-    fullMessages?: Array<{ role: string; content: string }>;
-    apiConfig?: {
-      model: string;
-      temperature: number;
-      max_tokens: number;
-      response_format?: { type: string };
-    };
-  };
-  response: any;
-  timestamp: number;
-  historyLength: number;
-}
-
 export function ConversationFlow() {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [selectedAnswerId, setSelectedAnswerId] = useState<string | null>(null);
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [conversationHistory, setConversationHistory] = useState<ConversationHistory[]>([]);
   const [currentNode, setCurrentNode] = useState<QuestionNode | null>(getStartingQuestion());
   
@@ -107,16 +48,12 @@ export function ConversationFlow() {
   const [textAnswer, setTextAnswer] = useState('');
   const [isLoadingAI, setIsLoadingAI] = useState(false);
   const [currentAIQuestion, setCurrentAIQuestion] = useState<string | null>(null);
-  const [debugLogs, setDebugLogs] = useState<GPTDebugLog[]>([]);
-  const [showDebug, setShowDebug] = useState(false);
   const [pendingRedirect, setPendingRedirect] = useState<{ history: ConversationHistory[], result?: GPTResult } | null>(null);
   
   const router = useRouter();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const textInputRef = useRef<HTMLTextAreaElement>(null);
-  const finalLogRef = useRef<HTMLDivElement>(null);
-  const debugScrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Auto scroll to bottom
   useEffect(() => {
@@ -125,7 +62,7 @@ export function ConversationFlow() {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
       });
     }
-  }, [messages.length, editingIndex, currentNode?.id, currentAIQuestion]);
+  }, [messages.length, currentNode?.id, currentAIQuestion]);
 
   // Focus text input when AI question appears
   useEffect(() => {
@@ -145,25 +82,15 @@ export function ConversationFlow() {
     };
   }, []);
 
-  // Auto-open debug when final response arrives and scroll to final log
-  useEffect(() => {
-    const finalLog = debugLogs.find(log => log.type === 'final');
-    if (finalLog && pendingRedirect) {
-      setShowDebug(true);
-      // Scroll to final log after a brief delay to ensure it's rendered
-      setTimeout(() => {
-        if (finalLogRef.current && debugScrollContainerRef.current) {
-          finalLogRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }, 300);
-    }
-  }, [debugLogs, pendingRedirect]);
 
-  const isComplete = currentNode === null || currentNode.id === 'complete';
+  // Conversation is complete when we have all 7 messages, final synthesis is done, and we're ready to redirect
+  const isComplete = messages.length >= 7 && !isAIQuestion && !currentAIQuestion && pendingRedirect !== null;
   const canShowFinishButton = messages.length >= 7; // 2 fixed + 5 AI follow-ups
-  const currentStep = messages.length + (isAIQuestion ? 1 : 0) + 1;
+  // Current step: messages.length represents answered questions, +1 for the current question being shown
+  // Cap at totalSteps to handle edge cases
+  const currentStep = Math.min(messages.length + 1, 7);
   const totalSteps = 7; // 2 fixed + 5 AI follow-ups
-  const progressPercentage = isComplete ? 100 : ((currentStep - 1) / totalSteps) * 100;
+  const progressPercentage = isComplete ? 100 : (currentStep / totalSteps) * 100;
 
   // Helper: Navigate to results page (with optional delay)
   const navigateToResults = useCallback((history: ConversationHistory[], gptResult?: GPTResult, immediate: boolean = false) => {
@@ -208,42 +135,6 @@ export function ConversationFlow() {
     router.push('/competence-tree');
   }, [router]);
 
-  // Helper: Construct full messages array for debug (matches server-side construction)
-  const constructMessagesForDebug = (historySnapshot: ConversationHistory[], isFinal: boolean) => {
-    const COMPETENCE_OPTIONS = {
-      execution: ['Planning', 'Organization', 'Goal-Driven', 'Execution', 'Results-Oriented', 'Initiative', 'Structure', 'Deadline Management', 'Systematic Approach', 'Efficiency', 'Productivity', 'Resilience', 'Persistence', 'Commitment'],
-      collaboration: ['Collaboration', 'Teamwork', 'Interpersonal Skills', 'Empathy', 'Communication', 'Active Listening', 'Helpfulness', 'Support', 'Leadership', 'Coordination', 'Client Focus', 'Relationship Building', 'Networking'],
-      thinking: ['Strategic Thinking', 'Problem-Solving', 'Analytical', 'Critical Thinking', 'Pattern Recognition', 'Innovation', 'Creativity', 'Ideation', 'Design Thinking', 'Logical Reasoning', 'Complex Thinking'],
-      growth: ['Self-Awareness', 'Reflection', 'Learning', 'Growth Mindset', 'Openness', 'Curiosity', 'Adaptability', 'Flexibility', 'Continuous Improvement', 'Self-Development', 'Feedback Seeking'],
-      purpose: ['Purpose-Driven', 'Values-Driven', 'Impact-Driven', 'Mission', 'Vision', 'Motivation', 'Passion', 'Intrinsic Drive', 'Ambition', 'Contribution', 'Social Impact'],
-    };
-    const COMPETENCE_LIST = Object.values(COMPETENCE_OPTIONS).flat().join(', ');
-
-    const messages: Array<{ role: string; content: string }> = [
-      { role: 'system', content: CLIENT_SYSTEM_PROMPT },
-    ];
-
-    // Add conversation history as pairs: assistant question, user answer
-    historySnapshot.forEach((entry) => {
-      if (entry.question) {
-        messages.push({ role: 'assistant', content: entry.question });
-      }
-      if (entry.answer) {
-        messages.push({ role: 'user', content: entry.answer });
-      }
-    });
-
-    // For final turn, add special instruction
-    if (isFinal) {
-      messages.push({
-        role: 'user',
-        content: `FINAL_TURN: Generate the final summary and competencies based on the conversation above. Select 4-6 competencies from this list that are most evidenced: ${COMPETENCE_LIST}`,
-      });
-    }
-
-    return messages;
-  };
-
   // Call GPT API for next question or final synthesis
   const callGPT = async (
     isFinal: boolean,
@@ -259,9 +150,6 @@ export function ConversationFlow() {
         isFinalTurn: isFinal,
       };
 
-      // Construct full messages array for debug display
-      const fullMessages = constructMessagesForDebug(historySnapshot, isFinal);
-
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -273,28 +161,6 @@ export function ConversationFlow() {
       }
 
       const data = await response.json();
-
-      // Debug log - include full messages array
-      setDebugLogs(prev => [
-        {
-          type: isFinal ? 'final' : 'question',
-          request: {
-            systemPrompt: CLIENT_SYSTEM_PROMPT,
-            body: requestBody,
-            fullMessages: fullMessages, // Full messages array sent to OpenAI
-            apiConfig: {
-              model: 'gpt-4o-mini',
-              temperature: isFinal ? 0.7 : 0.8,
-              max_tokens: isFinal ? 1200 : 100,
-              response_format: isFinal ? { type: 'json_object' } : undefined,
-            },
-          },
-          response: data,
-          timestamp: Date.now(),
-          historyLength: historySnapshot.length,
-        },
-        ...prev,
-      ]);
 
       // Fallback: if API mislabels but returns JSON-like final content, coerce to final
       const maybeFinal =
@@ -339,7 +205,7 @@ export function ConversationFlow() {
         };
       }
     } catch (error) {
-      console.error('GPT API error:', error);
+      // Error handled by caller
       throw error;
     }
   };
@@ -347,11 +213,6 @@ export function ConversationFlow() {
   // Handle answer selection for fixed questions (q1, q2)
   const handleAnswerSelect = (option: AnswerOption) => {
     if (!currentNode) return;
-    
-    if (editingIndex !== null) {
-      setSelectedAnswerId(option.id);
-      return;
-    }
 
     // Add question and answer to messages
     const newMessage: Message = {
@@ -395,41 +256,51 @@ export function ConversationFlow() {
         if (nextNode) {
           setCurrentNode(nextNode);
         } else {
-          console.error(`Question not found: ${nextQuestionId}`);
           setCurrentNode(null);
           setTimeout(() => navigateToResults(updatedHistory), 1500);
         }
       } else {
-        console.warn('No nextQuestionId in answer option.');
         setCurrentNode(null);
         setTimeout(() => navigateToResults(updatedHistory), 1500);
       }
-      setSelectedAnswerId(null);
     }, 800);
   };
 
   // Load next AI question
   const loadNextAIQuestion = async (history: ConversationHistory[]) => {
+    const answeredAI = getAiAnsweredCount(history);
+    
+    // Guard: Don't load more questions if we've already answered 5
+    if (answeredAI >= 5) {
+      return;
+    }
+    
     setIsLoadingAI(true);
     try {
-      const answeredAI = getAiAnsweredCount(history);
       setAiQuestionCount(answeredAI);
-      const isFinal = answeredAI >= 5; // 5 AI follow-ups
+      // If we've answered 4 questions, the next one will be the 5th (final)
+      const isFinal = answeredAI >= 4;
       const response = await callGPT(isFinal, history);
 
-      if (response.type === 'final' && response.result) {
-        // Final synthesis - set pending redirect and show debug
-        setPendingRedirect({ history, result: response.result });
-        // Auto-open debug overlay to view final prompt
-        setShowDebug(true);
-        // No automatic redirect - user must click "Proceed to Results" button
-      } else if (response.type === 'question' && response.question) {
-        // Show next AI question
-        setCurrentAIQuestion(response.question);
-        setIsLoadingAI(false);
+        if (response.type === 'final' && response.result) {
+          // Final synthesis - set pending redirect
+          setPendingRedirect({ history, result: response.result });
+          // Auto-redirect after a short delay
+          setTimeout(() => {
+            navigateToResults(history, response.result, true);
+          }, 2000);
+        } else if (response.type === 'question' && response.question) {
+        // Only show question if we haven't reached 5 yet
+        if (answeredAI < 5) {
+          setCurrentAIQuestion(response.question);
+          setIsLoadingAI(false);
+        } else {
+          // Shouldn't happen, but guard against it
+          setIsLoadingAI(false);
+        }
       }
     } catch (error) {
-      console.error('Failed to load AI question:', error);
+        // Error loading AI question, fallback to results
       setIsLoadingAI(false);
       // Fallback: complete conversation
       setTimeout(() => navigateToResults(history), 1500);
@@ -472,26 +343,34 @@ export function ConversationFlow() {
     setAiQuestionCount(answeredAI);
 
     if (answeredAI >= 5) {
-      // Final synthesis
+      // Final synthesis - clear AI question state
+      setCurrentAIQuestion(null);
+      setIsAIQuestion(false);
       setIsLoadingAI(true);
       try {
         const response = await callGPT(true, updatedHistory);
         if (response.type === 'final' && response.result) {
-          // Final synthesis - set pending redirect and show debug
+          // Final synthesis - set pending redirect
           setPendingRedirect({ history: updatedHistory, result: response.result });
-          // Auto-open debug overlay to view final prompt
-          setShowDebug(true);
-          // No automatic redirect - user must click "Proceed to Results" button
+          // Auto-redirect after a short delay to show completion message
+          setTimeout(() => {
+            navigateToResults(updatedHistory, response.result, true);
+          }, 2000);
         }
       } catch (error) {
-        console.error('Failed to get final synthesis:', error);
+        // Error getting final synthesis, redirect to results
         setTimeout(() => navigateToResults(updatedHistory), 1500);
+      } finally {
+        setIsLoadingAI(false);
       }
     } else {
-      // Load next AI question
-      setTimeout(() => {
-        loadNextAIQuestion(updatedHistory);
-      }, 800);
+      // Load next AI question only if we haven't reached 5 yet
+      const nextAnsweredAI = getAiAnsweredCount(updatedHistory);
+      if (nextAnsweredAI < 5) {
+        setTimeout(() => {
+          loadNextAIQuestion(updatedHistory);
+        }, 800);
+      }
     }
   };
 
@@ -618,8 +497,8 @@ export function ConversationFlow() {
               </motion.div>
             )}
 
-            {/* Current AI Question */}
-            {isAIQuestion && currentAIQuestion && !isLoadingAI && (
+            {/* Current AI Question - Only show if we haven't answered 5 questions yet */}
+            {isAIQuestion && currentAIQuestion && !isLoadingAI && getAiAnsweredCount(conversationHistory) < 5 && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -641,8 +520,8 @@ export function ConversationFlow() {
               </motion.div>
           )}
 
-            {/* Loading AI Question */}
-            {isAIQuestion && isLoadingAI && (
+            {/* Loading AI Question - Only show if we haven't answered 5 questions yet */}
+            {isAIQuestion && isLoadingAI && getAiAnsweredCount(conversationHistory) < 5 && (
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -661,20 +540,48 @@ export function ConversationFlow() {
             </motion.div>
           )}
 
-            {/* Completion Message - Only show when actually navigating to results */}
-            {isComplete && !isAIQuestion && !currentAIQuestion && messages.length >= 7 && (
-              <div className="flex items-start gap-3">
+            {/* Completion Message - Show after all questions answered and final synthesis is ready */}
+            {pendingRedirect && messages.length >= 7 && !isLoadingAI && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="flex items-start gap-3"
+              >
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center flex-shrink-0">
                   <Check className="w-4 h-4 text-white" strokeWidth={3} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="bg-primary-50 dark:bg-primary-950/40 rounded-2xl rounded-tl-md px-4 py-3 border-2 border-primary-200 dark:border-primary-800 inline-block max-w-[85%]">
-                    <p className="text-neutral-900 dark:text-neutral-100 text-[15px] leading-relaxed break-words">
-                      Thank you for sharing. I&apos;ve gathered enough to reflect back what I&apos;m seeing.
+                    <p className="text-neutral-900 dark:text-neutral-100 text-[15px] leading-relaxed break-words mb-2">
+                      Thank you for sharing. The conversation is now complete.
+                    </p>
+                    <p className="text-neutral-700 dark:text-neutral-300 text-[14px] leading-relaxed break-words">
+                      I&apos;ve analyzed your responses and prepared a reflection. Next, you&apos;ll see your competence tree, a summary of our conversation, and insights based on what you shared.
                     </p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
+            )}
+
+            {/* Loading Final Synthesis */}
+            {messages.length >= 7 && isLoadingAI && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-start gap-3"
+              >
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center flex-shrink-0">
+                  <Loader2 className="w-4 h-4 text-white animate-spin" />
+                </div>
+                <div className="flex-shrink-0">
+                  <div className="bg-neutral-100 dark:bg-neutral-800 rounded-2xl rounded-tl-md px-4 py-3 inline-block">
+                    <p className="text-neutral-500 dark:text-neutral-400 text-[15px]">
+                      Analyzing your responses...
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
             )}
 
             <div ref={messagesEndRef} />
@@ -709,8 +616,8 @@ export function ConversationFlow() {
             </motion.div>
           )}
 
-          {/* Text Input - AI questions */}
-          {isAIQuestion && !isLoadingAI && currentAIQuestion && (
+          {/* Text Input - AI questions - Only show if we haven't answered 5 questions yet */}
+          {isAIQuestion && !isLoadingAI && currentAIQuestion && getAiAnsweredCount(conversationHistory) < 5 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -754,184 +661,6 @@ export function ConversationFlow() {
           )}
         </div>
       </div>
-      {/* GPT Debug Trigger */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-6 max-w-4xl flex justify-end">
-        <button
-          onClick={() => setShowDebug(true)}
-          className="px-4 py-2 text-sm font-medium rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-        >
-          Open GPT Debug
-        </button>
-      </div>
-
-      {/* GPT Debug Overlay */}
-      {showDebug && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 w-[90vw] max-w-5xl h-[80vh] flex flex-col overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-200 dark:border-neutral-800">
-              <div className="flex-1">
-                <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">GPT Debug</p>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400">Prompt, request, and response per step</p>
-                {pendingRedirect && (
-                  <p className="text-xs text-primary-600 dark:text-primary-400 mt-1">
-                    ✓ Conversation complete. Review the final prompt below, then click "Proceed to Results" when ready.
-                  </p>
-                )}
-              </div>
-              <div className="flex gap-2">
-                {pendingRedirect && (
-                  <button
-                    onClick={() => {
-                      navigateToResults(pendingRedirect.history, pendingRedirect.result, true);
-                      setPendingRedirect(null);
-                      setShowDebug(false);
-                    }}
-                    className="px-4 py-1.5 text-sm rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors font-medium"
-                  >
-                    Proceed to Results
-                  </button>
-                )}
-                <button
-                  onClick={() => {
-                    setShowDebug(false);
-                    // Don't cancel redirect if it's pending
-                  }}
-                  className="px-3 py-1.5 text-sm rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-                >
-                  {pendingRedirect ? 'Keep Open' : 'Close'}
-                </button>
-              </div>
-            </div>
-
-            <div ref={debugScrollContainerRef} className="flex-1 overflow-auto px-4 py-3 space-y-3 text-xs">
-              <div className="bg-neutral-50 dark:bg-neutral-800/60 rounded-lg p-3 whitespace-pre-wrap break-words">
-                <p className="font-semibold mb-1 text-neutral-800 dark:text-neutral-100">System Prompt</p>
-                <p className="text-neutral-700 dark:text-neutral-300">{CLIENT_SYSTEM_PROMPT}</p>
-              </div>
-
-              {debugLogs.length === 0 && (
-                <p className="text-neutral-500 dark:text-neutral-400">No GPT calls yet.</p>
-              )}
-
-              {debugLogs.map((log, idx) => {
-                // Extract components from fullMessages for final step
-                const systemPrompt = log.request.fullMessages?.find((m: any) => m.role === 'system')?.content || '';
-                const conversationMessages = log.request.fullMessages?.filter((m: any) => m.role !== 'system') || [];
-                const finalTurnInstruction = log.type === 'final' 
-                  ? conversationMessages[conversationMessages.length - 1]?.content 
-                  : null;
-                const historyMessages = log.type === 'final' 
-                  ? conversationMessages.slice(0, -1) 
-                  : conversationMessages;
-
-                return (
-                <div 
-                  key={idx} 
-                  ref={log.type === 'final' ? finalLogRef : null}
-                  className={`bg-neutral-50 dark:bg-neutral-800/60 rounded-lg p-3 space-y-3 ${log.type === 'final' ? 'ring-2 ring-primary-400 dark:ring-primary-600' : ''}`}
-                >
-                  <div className="flex items-center justify-between text-neutral-600 dark:text-neutral-300">
-                    <span className="font-semibold capitalize">{log.type} call</span>
-                    <span>{new Date(log.timestamp).toLocaleTimeString()} • history: {log.historyLength}</span>
-                  </div>
-
-                  {/* Complete Final Prompt (readable format) */}
-                  {log.type === 'final' && log.request.fullMessages && (
-                    <div className="space-y-3 border-2 border-primary-300 dark:border-primary-700 rounded-lg p-4 bg-primary-50/30 dark:bg-primary-950/20">
-                      <p className="font-bold text-primary-800 dark:text-primary-200 text-sm">Complete Final Prompt (Readable Format)</p>
-                      
-                      {/* Complete Combined Prompt */}
-                      <div className="space-y-2">
-                        <p className="font-semibold text-primary-700 dark:text-primary-300 text-xs uppercase tracking-wide">Complete Final Prompt (All Messages Combined)</p>
-                        <pre className="bg-white dark:bg-neutral-900 rounded p-4 overflow-auto whitespace-pre-wrap break-words text-xs border-2 border-primary-400 dark:border-primary-600 max-h-96">
-{log.request.fullMessages.map((msg: any, msgIdx: number) => {
-  const roleLabel = msg.role === 'system' ? 'SYSTEM' : msg.role === 'assistant' ? 'ASSISTANT' : 'USER';
-  return `=== ${roleLabel} ===\n${msg.content}\n\n`;
-}).join('')}
-                        </pre>
-                      </div>
-                      
-                      {/* System Prompt */}
-                      <div className="space-y-2">
-                        <p className="font-semibold text-neutral-700 dark:text-neutral-200 text-xs uppercase tracking-wide">System Prompt</p>
-                        <pre className="bg-white dark:bg-neutral-900 rounded p-3 overflow-auto whitespace-pre-wrap break-words text-xs border border-neutral-200 dark:border-neutral-700 max-h-64">
-{systemPrompt}
-                        </pre>
-                      </div>
-
-                      {/* Conversation History */}
-                      {historyMessages.length > 0 && (
-                        <div className="space-y-2">
-                          <p className="font-semibold text-neutral-700 dark:text-neutral-200 text-xs uppercase tracking-wide">Conversation History</p>
-                          <div className="bg-white dark:bg-neutral-900 rounded p-3 overflow-auto max-h-64 border border-neutral-200 dark:border-neutral-700 space-y-3">
-                            {historyMessages.map((msg: any, msgIdx: number) => (
-                              <div key={msgIdx} className="border-l-4 border-primary-400 dark:border-primary-600 pl-3 pb-2">
-                                <div className="font-semibold text-primary-600 dark:text-primary-400 text-xs uppercase mb-1">
-                                  {msg.role === 'assistant' ? 'Assistant (Question)' : 'User (Answer)'}
-                                </div>
-                                <pre className="whitespace-pre-wrap break-words text-xs text-neutral-800 dark:text-neutral-200">{msg.content}</pre>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Final Turn Instruction */}
-                      {finalTurnInstruction && (
-                        <div className="space-y-2">
-                          <p className="font-semibold text-primary-700 dark:text-primary-300 text-xs uppercase tracking-wide">Final Turn Instruction</p>
-                          <pre className="bg-primary-100 dark:bg-primary-900/40 rounded p-3 overflow-auto whitespace-pre-wrap break-words text-xs border border-primary-300 dark:border-primary-700">
-{finalTurnInstruction}
-                          </pre>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  
-                  {/* API Configuration */}
-                  {log.request.apiConfig && (
-                    <div className="space-y-1">
-                      <p className="font-semibold text-neutral-700 dark:text-neutral-200">API Configuration</p>
-                      <pre className="bg-neutral-100 dark:bg-neutral-900 rounded p-2 overflow-auto whitespace-pre-wrap break-words text-xs">
-{JSON.stringify(log.request.apiConfig, null, 2)}
-                      </pre>
-                    </div>
-                  )}
-
-                  {/* Full Messages Array (What's sent to OpenAI) */}
-                  {log.request.fullMessages && (
-                    <details className="space-y-1">
-                      <summary className="cursor-pointer font-semibold text-neutral-700 dark:text-neutral-200 hover:text-primary-600 dark:hover:text-primary-400">
-                        Full Messages Array (Raw JSON)
-                      </summary>
-                      <pre className="bg-neutral-100 dark:bg-neutral-900 rounded p-2 overflow-auto whitespace-pre-wrap break-words text-xs max-h-96 mt-2">
-{JSON.stringify(log.request.fullMessages, null, 2)}
-                      </pre>
-                    </details>
-                  )}
-
-                  {/* Request Body (original) */}
-                  <div className="space-y-1">
-                    <p className="font-semibold text-neutral-700 dark:text-neutral-200">Request Body (original)</p>
-                    <pre className="bg-neutral-100 dark:bg-neutral-900 rounded p-2 overflow-auto whitespace-pre-wrap break-words text-xs">
-{JSON.stringify(log.request.body, null, 2)}
-                    </pre>
-                  </div>
-
-                  {/* Response */}
-                  <div className="space-y-1">
-                    <p className="font-semibold text-neutral-700 dark:text-neutral-200">Response</p>
-                    <pre className="bg-neutral-100 dark:bg-neutral-900 rounded p-2 overflow-auto whitespace-pre-wrap break-words text-xs">
-{JSON.stringify(log.response, null, 2)}
-                    </pre>
-                  </div>
-                </div>
-              );
-              })}
-          </div>
-      </div>
-        </div>
-      )}
     </div>
   );
 }

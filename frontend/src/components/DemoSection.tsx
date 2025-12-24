@@ -67,7 +67,7 @@ export function DemoSection() {
       }
     } catch (error) {
       // In demo mode, still show results even if API fails
-      console.error('Analysis error:', error);
+      // Analysis error in demo mode, continue with fallback
       const conversationText = messages
         .filter((msg) => msg.role === 'user')
         .map((msg) => msg.content)

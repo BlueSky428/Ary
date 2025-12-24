@@ -2,7 +2,8 @@
 
 /**
  * Redesigned Competence Tree View
- * Single active pillar: Connection & Collaboration
+ * Five pillars: Collaboration & Stakeholder Navigation, Decision Framing & Judgment,
+ * Execution & Ownership, Learning & Adaptation, Initiative & Impact Orientation
  * Tab order: Competence Tree → Breakdown → Conversation
  */
 
@@ -10,12 +11,13 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { 
-  Brain, Users, Zap, Heart, Sparkles,
-  MessageSquare, ArrowRight, Target, TrendingUp
+  Users, Sparkles,
+  MessageSquare, ArrowRight, Target,
+  Scale, BookOpen, Rocket
 } from 'lucide-react';
 import type { ConversationResult, ConversationHistory } from '@/lib/conversationResults';
 
-// Connection & Collaboration competencies
+// Legacy competency list (kept for backward compatibility)
 const COLLABORATION_COMPETENCIES = [
   'Collaboration',
   'Empathy',
@@ -37,7 +39,6 @@ export function RedesignedCompetenceTreeView() {
   const [conversationHistory, setConversationHistory] = useState<ConversationHistory[]>([]);
   const [activeTab, setActiveTab] = useState<'tree' | 'breakdown' | 'conversation'>('tree');
   const [selectedPillarId, setSelectedPillarId] = useState<string | null>(null);
-  const [showGPTResult, setShowGPTResult] = useState(false);
   const [gptResult, setGptResult] = useState<any>(null);
 
   useEffect(() => {
@@ -52,7 +53,7 @@ export function RedesignedCompetenceTreeView() {
       try {
         setConversationResult(JSON.parse(storedResult));
       } catch (e) {
-        console.error('Failed to parse conversation result', e);
+        // Failed to parse conversation result - will use default
       }
     }
     
@@ -60,16 +61,16 @@ export function RedesignedCompetenceTreeView() {
       try {
         setConversationHistory(JSON.parse(storedHistory));
       } catch (e) {
-        console.error('Failed to parse conversation history', e);
+        // Failed to parse conversation history - will use empty array
       }
     }
     
-    // Load GPT result for display
+    // Load GPT result for competency extraction (not displayed)
     if (storedGPTResult) {
       try {
         setGptResult(JSON.parse(storedGPTResult));
       } catch (e) {
-        console.error('Failed to parse GPT result', e);
+        // Failed to parse GPT result - will use fallback extraction
       }
     }
   }, []);
@@ -87,7 +88,7 @@ export function RedesignedCompetenceTreeView() {
     },
   };
 
-  // Extract Connection & Collaboration competencies from result
+  // Extract competencies from result
   const normalize = (str: string) => str.toLowerCase().replace(/[\s-]/g, '');
   
   // Check if result has GPT-provided competencies with evidence
@@ -104,7 +105,7 @@ export function RedesignedCompetenceTreeView() {
         collaborationCompetencies = gptResult.competencies;
       }
     } catch (e) {
-      console.error('Failed to parse GPT result:', e);
+      // Failed to parse GPT result, using fallback
     }
   }
   
@@ -181,7 +182,7 @@ export function RedesignedCompetenceTreeView() {
 
   const pillarCompetencies: Record<string, { label: string; icon: any; color: string; keywords: string[] }> = {
     execution: {
-      label: 'Execution & Delivery',
+      label: 'Execution & Ownership',
       icon: Target,
       color: 'from-blue-500 to-cyan-500',
       keywords: [
@@ -199,10 +200,12 @@ export function RedesignedCompetenceTreeView() {
         'systematic', 'methodical', 'process', 'processes', 'efficiency', 'efficient', 'productivity', 'productive',
         // Resilience and follow-through
         'resilience', 'resilient', 'persistence', 'persistent', 'follow-through', 'follow through', 'commitment',
+        // Ownership and accountability
+        'ownership', 'own', 'owned', 'accountability', 'accountable', 'responsible', 'responsibility', 'taking ownership', 'take ownership',
       ],
     },
     collaboration: {
-      label: 'Connection & Collaboration',
+      label: 'Collaboration & Stakeholder Navigation',
       icon: Users,
       color: 'from-purple-500 to-pink-500',
       keywords: [
@@ -224,73 +227,71 @@ export function RedesignedCompetenceTreeView() {
         'client', 'clients', 'stakeholder', 'stakeholders', 'customer', 'customers', 'service-oriented', 'service orientation',
         // Building relationships
         'relationship', 'relationships', 'building relationships', 'networking', 'network', 'connection', 'connections', 'connecting',
+        // Stakeholder navigation
+        'stakeholder', 'stakeholders', 'navigate stakeholders', 'stakeholder management', 'stakeholder engagement', 'stakeholder relations',
+        'navigate', 'navigating', 'navigation', 'manage stakeholders', 'stakeholder communication',
       ],
     },
     thinking: {
-      label: 'Thinking & Problem-Solving',
-      icon: Brain,
+      label: 'Decision Framing & Judgment',
+      icon: Scale,
       color: 'from-indigo-500 to-purple-500',
       keywords: [
+        // Decision-making and judgment
+        'decision', 'decisions', 'decision-making', 'decision making', 'make decisions', 'decide', 'judgment', 'judgement', 'judge',
+        'sound judgment', 'good judgment', 'decision quality', 'judicious', 'discerning',
+        // Framing and perspective
+        'framing', 'frame', 'frames', 'perspective', 'perspectives', 'viewpoint', 'viewpoints', 'lens', 'angle', 'reframe', 'reframing',
         // Strategic thinking
         'strategic thinking', 'strategic', 'strategy', 'strategic planning', 'strategic approach', 'strategic mind', 'strategist',
         // Problem-solving
         'problem-solving', 'problem solving', 'solve problems', 'solving problems', 'problem solver', 'troubleshooting', 'troubleshoot',
         // Analytical thinking
         'analytical', 'analysis', 'analyze', 'analyzing', 'analytical thinking', 'critical thinking', 'critical analysis',
-        // Pattern recognition
-        'pattern recognition', 'pattern', 'patterns', 'identify patterns', 'recognize patterns', 'pattern analysis',
-        // Innovation and creativity
-        'innovation', 'innovative', 'innovate', 'innovating', 'creativity', 'creative', 'create', 'creating', 'original thinking',
-        // Ideas and ideation
-        'idea', 'ideas', 'ideation', 'conceptual thinking', 'concept', 'concepts', 'brainstorming', 'brainstorm',
-        // Design thinking
-        'design', 'design thinking', 'designing', 'architecture', 'architectural thinking',
-        // Complex reasoning
-        'reasoning', 'logical thinking', 'logic', 'systematic thinking', 'complex thinking', 'abstract thinking',
+        // Evaluation and assessment
+        'evaluate', 'evaluation', 'assess', 'assessment', 'weigh', 'weighing', 'consider', 'considering', 'balance', 'balancing',
       ],
     },
     growth: {
-      label: 'Self-Awareness & Growth',
-      icon: TrendingUp,
+      label: 'Learning & Adaptation',
+      icon: BookOpen,
       color: 'from-teal-500 to-green-500',
       keywords: [
-        // Self-awareness
-        'self-awareness', 'self awareness', 'self-aware', 'self understanding', 'know yourself', 'self-reflection', 'self reflection',
-        // Reflection
-        'reflection', 'reflect', 'reflecting', 'reflective', 'introspection', 'introspective', 'contemplative',
         // Learning
         'learning', 'learn', 'learner', 'continuous learning', 'lifelong learning', 'learning mindset', 'learning orientation',
-        // Growth mindset
-        'growth-mindset', 'growth mindset', 'growth', 'growing', 'personal growth', 'development', 'develop', 'developing', 'self-development',
+        'learn from', 'learned from', 'learns from', 'quick learner', 'fast learner', 'learn new', 'learn quickly',
+        // Adaptation
+        'adaptability', 'adaptable', 'adapt', 'adapting', 'adaptation', 'adapts', 'adapted', 'flexibility', 'flexible', 
+        'adjust', 'adjusting', 'adjustment', 'adjusts', 'adjusted', 'resilience to change', 'embrace change', 'embracing change',
+        // Improvement and development
+        'improve', 'improvement', 'improving', 'improves', 'improved', 'enhance', 'enhancing', 'enhancement', 'practice', 'practicing',
+        'refine', 'refining', 'refinement', 'development', 'develop', 'developing', 'develops', 'developed', 'skill development', 'skill building',
         // Openness and curiosity
         'openness', 'open', 'open-minded', 'open minded', 'curiosity', 'curious', 'inquisitive', 'explore', 'exploring', 'exploration',
-        // Adaptability
-        'adaptability', 'adaptable', 'adapt', 'adapting', 'flexibility', 'flexible', 'adjust', 'adjusting', 'resilience to change',
-        // Improvement
-        'improve', 'improvement', 'improving', 'enhance', 'enhancing', 'practice', 'practicing', 'refine', 'refining',
-        // Feedback and development
-        'feedback', 'seek feedback', 'accept feedback', 'self-improvement', 'self improvement', 'skill development', 'skill building',
+        // Reflection and feedback
+        'reflection', 'reflect', 'reflecting', 'reflective', 'feedback', 'seek feedback', 'accept feedback',
       ],
     },
     purpose: {
-      label: 'Purpose & Impact',
-      icon: Heart,
+      label: 'Initiative & Impact Orientation',
+      icon: Rocket,
       color: 'from-orange-500 to-red-500',
       keywords: [
-        // Purpose
+        // Initiative
+        'initiative', 'take initiative', 'taking initiative', 'proactive', 'proactivity', 'self-starter', 'self starter',
+        'independent action', 'take action', 'taking action', 'drive', 'driven', 'action-oriented', 'action oriented',
+        // Impact orientation
+        'impact', 'impact-driven', 'impact driven', 'impact oriented', 'make an impact', 'create impact', 'positive impact',
+        'contribute', 'contribution', 'meaningful impact', 'focus on impact', 'impactful', 'measurable impact',
+        // Purpose and meaning
         'purpose', 'purpose-driven', 'purpose driven', 'sense of purpose', 'meaning', 'meaningful', 'meaningful work',
         // Values
         'values-driven', 'values driven', 'values', 'value-driven', 'value driven', 'principles', 'principled', 'ethics', 'ethical',
-        // Impact
-        'impact', 'impact-driven', 'impact driven', 'make an impact', 'create impact', 'positive impact', 'contribute', 'contribution',
         // Mission and vision
         'mission', 'mission-driven', 'mission driven', 'vision', 'vision-driven', 'cause', 'advocacy',
-        // Motivation
-        'motivation', 'motivated', 'motivate', 'intrinsic motivation', 'drive', 'passion', 'passionate', 'inspiration', 'inspired',
-        // Goal-driven (also relevant to purpose)
-        'goal-driven', 'goal oriented', 'long-term goals', 'aspirations', 'aspire', 'ambition', 'ambitious',
-        // Client and user focus
-        'clients', 'client-focused', 'client focus', 'users', 'user-centered', 'customer focus', 'stakeholder impact',
+        // Motivation and ambition
+        'motivation', 'motivated', 'motivate', 'intrinsic motivation', 'passion', 'passionate', 'inspiration', 'inspired',
+        'ambition', 'ambitious', 'aspirations', 'aspire', 'long-term goals',
         // Outcomes and results with meaning
         'outcome', 'outcomes', 'results with meaning', 'meaningful results', 'contribution to society', 'social impact',
       ],
@@ -326,13 +327,13 @@ export function RedesignedCompetenceTreeView() {
     
     try {
       if (gptResult.competencies && Array.isArray(gptResult.competencies)) {
-        return gptResult.competencies.map((comp: any) => ({
+        return gptResult.competencies.map((comp: { label: string; evidence?: string } | string) => ({
           label: typeof comp === 'string' ? comp : comp.label || comp,
           evidence: typeof comp === 'object' && comp.evidence ? comp.evidence : undefined,
         }));
       }
     } catch (e) {
-      console.error('Failed to parse GPT result:', e);
+      // Failed to parse GPT result, using fallback
     }
     return [];
   };
@@ -522,14 +523,6 @@ export function RedesignedCompetenceTreeView() {
             <p className="text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">
               Patterns revealed from your conversation with Ary
             </p>
-            {gptResult && (
-              <button
-                onClick={() => setShowGPTResult(true)}
-                className="mt-4 px-4 py-2 text-sm font-medium rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-              >
-                View GPT Result
-              </button>
-            )}
           </motion.div>
 
           {/* Tabs */}
@@ -599,7 +592,7 @@ export function RedesignedCompetenceTreeView() {
                   {pillars.map((pillar, idx) => {
                     const Icon = pillar.icon;
                     const angle = (idx / pillars.length) * Math.PI * 2 - Math.PI / 2;
-                    const radius = 180;
+                    const radius = 190; // Slightly larger radius to accommodate larger badges
                     const x = Math.cos(angle) * radius;
                     const y = Math.sin(angle) * radius;
 
@@ -623,7 +616,7 @@ export function RedesignedCompetenceTreeView() {
                           }
                         }}
                       >
-                        <div className={`relative w-28 h-28 rounded-full shadow-2xl border-2 flex flex-col items-center justify-center p-3 transition-all ${
+                        <div className={`relative w-32 h-32 rounded-full shadow-2xl border-2 flex flex-col items-center justify-center p-3 transition-all ${
                           pillar.isActive && !pillar.isLocked
                             ? `bg-gradient-to-br ${pillar.color} border-white/90 shadow-lg hover:scale-110`
                             : pillar.isLocked
@@ -650,10 +643,17 @@ export function RedesignedCompetenceTreeView() {
                             strokeWidth={2} 
                           />
                           
-                          <p className={`text-xs font-semibold text-center leading-tight ${
-                            pillar.isActive && !pillar.isLocked ? 'text-white' : 'text-white drop-shadow-md'
+                          <p className={`text-base font-black text-center leading-tight px-1.5 ${
+                            pillar.isActive && !pillar.isLocked 
+                              ? 'text-white drop-shadow-[0_3px_10px_rgba(0,0,0,0.9)]' 
+                              : 'text-white/95 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]'
                           }`}>
-                            {pillar.label}
+                            {pillar.label.split(' ').slice(0, 2).join(' ')}
+                            {pillar.label.split(' ').length > 2 && (
+                              <span className="block text-sm font-extrabold leading-tight mt-1">
+                                {pillar.label.split(' ').slice(2).join(' ')}
+                              </span>
+                            )}
                           </p>
                           
                           {pillar.isLocked && (
@@ -678,8 +678,8 @@ export function RedesignedCompetenceTreeView() {
                 className="space-y-6"
               >
                 {/* Visual: Active pillar bubble with competence bubbles */}
-                <div className="bg-white dark:bg-neutral-900 rounded-2xl p-8 shadow-lg border border-neutral-200/50 dark:border-neutral-700/50">
-                  <div className="relative h-[600px] flex items-center justify-center bg-gradient-to-br from-neutral-50 via-neutral-50/50 to-neutral-100 dark:from-neutral-900 dark:via-neutral-800/30 dark:to-neutral-900/50 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+                <div className="bg-white dark:bg-neutral-900 rounded-2xl p-8 shadow-lg border border-neutral-200/50 dark:border-neutral-700/50 overflow-visible">
+                  <div className="relative h-[500px] flex items-center justify-center bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-800/30 dark:to-neutral-900/50 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-visible">
                     {/* Subtle background pattern */}
                     <div className="absolute inset-0 opacity-5 dark:opacity-10">
                       <div className="absolute inset-0" style={{
@@ -694,7 +694,7 @@ export function RedesignedCompetenceTreeView() {
                       initial={{ scale: 0, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       transition={{ duration: 0.6, type: "spring", stiffness: 100 }}
-                      className="absolute z-30"
+                      className="absolute z-20"
                     >
                       <div className="relative group">
                         {/* Outer glow rings */}
@@ -738,8 +738,8 @@ export function RedesignedCompetenceTreeView() {
                           {/* Icon */}
                           <primaryPillar.icon className="w-7 h-7 text-white mb-8 relative z-10" strokeWidth={2.5} />
                           
-                          {/* Label */}
-                          <p className="text-white text-sm font-bold text-center leading-tight px-3 relative z-10 mt-auto mb-2 drop-shadow-lg">
+                          {/* Label - maximum readability with larger text */}
+                          <p className="text-white text-xl font-black text-center leading-tight px-3 relative z-10 mt-auto mb-2 drop-shadow-[0_3px_12px_rgba(0,0,0,0.95)]">
                             {primaryPillar.label.split(' ').map((word, i) => (
                               <span key={i} className="block">
                                 {word === '&' ? '&' : word}
@@ -751,30 +751,29 @@ export function RedesignedCompetenceTreeView() {
                     </motion.div>
                   )}
 
-                    {/* Connection lines from center to competency cards */}
+                    {/* Connection lines from center to competency badges */}
                     {!showNoData && (() => {
-                      // Calculate safe radius to prevent overlaps
+                      // Calculate safe radius to prevent overlaps - matching Competence Tree style
                       // Central circle: w-40 = 160px diameter = 80px radius
-                      // Card: max-w-[200px] = 200px max width = 100px radius from card center
-                      // Minimum gap: 20px
-                      // Base radius: center radius (80) + gap (30) + card half-width (100) = 210px
-                      // For more cards, need larger radius to prevent card-to-card overlap
+                      // Badge: w-32 h-32 = 128px diameter = 64px radius (larger for better text readability)
+                      // Minimum gap: 25px
+                      // Base radius: center radius (80) + gap (25) + badge half-width (64) = 169px
                       const centerRadius = 80; // Half of w-40 (160px)
-                      const cardHalfWidth = 100; // Half of max card width (200px)
-                      const minGap = 30;
+                      const cardHalfWidth = 64; // Half of circular badge diameter (128px)
+                      const minGap = 25;
                       const baseRadius = centerRadius + minGap + cardHalfWidth;
                       
-                      // Adjust radius based on number of competencies to prevent card-to-card overlap
+                      // Adjust radius based on number of competencies to prevent badge-to-badge overlap
                       const numCompetencies = activePillarCompetencies.length;
                       const minAngle = (Math.PI * 2) / numCompetencies;
-                      // For cards to not overlap, distance between card centers must be >= card width
-                      // distance = 2 * radius * sin(minAngle/2) >= 200
-                      // radius >= 200 / (2 * sin(minAngle/2))
+                      // For circular badges with 128px diameter, distance between badge centers must be >= 128px
+                      // distance = 2 * radius * sin(minAngle/2) >= 128
+                      // radius >= 128 / (2 * sin(minAngle/2))
                       const minRadiusForSpacing = numCompetencies > 1 
-                        ? Math.max(baseRadius, 200 / (2 * Math.sin(minAngle / 2)) + 20)
+                        ? Math.max(baseRadius, 128 / (2 * Math.sin(minAngle / 2)) + 20)
                         : baseRadius;
                       
-                      const radius = Math.max(minRadiusForSpacing, 220); // Minimum 220px for safety
+                      const radius = Math.max(minRadiusForSpacing, 175); // Minimum 175px for safety
                       
                       return activePillarCompetencies.map((comp, idx) => {
                         const angle = (idx / numCompetencies) * Math.PI * 2 - Math.PI / 2;
@@ -807,19 +806,21 @@ export function RedesignedCompetenceTreeView() {
                       });
                     })()}
 
-                    {/* Competence bubbles around center */}
+                    {/* Competence bubbles around center - matching Competence Tree style */}
                     {!showNoData && (() => {
                       // Use same radius calculation as connection lines
+                      // Cards are circular badges: w-32 h-32 = 128px (64px radius) - larger for better text
                       const centerRadius = 80;
-                      const cardHalfWidth = 100;
-                      const minGap = 30;
+                      const cardHalfWidth = 64; // Half of circular badge diameter (128px)
+                      const minGap = 25;
                       const baseRadius = centerRadius + minGap + cardHalfWidth;
                       const numCompetencies = activePillarCompetencies.length;
                       const minAngle = (Math.PI * 2) / numCompetencies;
+                      // For circular badges with 128px diameter, need spacing >= 128px
                       const minRadiusForSpacing = numCompetencies > 1 
-                        ? Math.max(baseRadius, 200 / (2 * Math.sin(minAngle / 2)) + 20)
+                        ? Math.max(baseRadius, 128 / (2 * Math.sin(minAngle / 2)) + 20)
                         : baseRadius;
-                      const radius = Math.max(minRadiusForSpacing, 220);
+                      const radius = Math.max(minRadiusForSpacing, 175);
                       
                       return activePillarCompetencies.map((comp, idx) => {
                         const angle = (idx / numCompetencies) * Math.PI * 2 - Math.PI / 2;
@@ -837,30 +838,71 @@ export function RedesignedCompetenceTreeView() {
                             y,
                           }}
                           transition={{ delay: 0.3 + idx * 0.12, type: "spring", stiffness: 180, damping: 15 }}
-                          className="absolute z-20 group"
-                          style={{ transform: 'translate(-50%, -50%)' }}
-                          whileHover={{ scale: 1.05, z: 30 }}
+                          className="absolute z-40 group"
+                          style={{ 
+                            transform: 'translate(-50%, -50%)',
+                            zIndex: 40
+                          }}
+                          whileHover={{ 
+                            scale: 1.1,
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.zIndex = '100';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.zIndex = '40';
+                          }}
                         >
-                          {/* Glow effect on hover */}
-                          <div className="absolute inset-0 rounded-xl bg-primary-400/0 dark:bg-primary-500/0 blur-xl group-hover:bg-primary-400/40 dark:group-hover:bg-primary-500/40 transition-all duration-300 -z-10" />
+                          {/* Glow effect on hover - matching pillar style */}
+                          {primaryPillar && (
+                            <motion.div
+                              className={`absolute inset-0 rounded-full bg-gradient-to-br ${primaryPillar.color} opacity-0 group-hover:opacity-60 blur-xl -z-10`}
+                              animate={{}}
+                              transition={{ duration: 0.3 }}
+                            />
+                          )}
                           
-                          <div className="bg-white dark:bg-neutral-800 rounded-xl p-4 shadow-xl border-2 border-primary-300/50 dark:border-primary-600/50 group-hover:border-primary-400 dark:group-hover:border-primary-500 min-w-[160px] max-w-[200px] backdrop-blur-sm transition-all duration-300">
-                            {/* Competency label */}
-                            <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100 text-center mb-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-                              {comp.label}
+                          {/* Small circular badge matching pillar style - larger for better text readability */}
+                          <div className={`relative w-32 h-32 rounded-full shadow-2xl border-2 flex flex-col items-center justify-center p-3 transition-all ${
+                            primaryPillar 
+                              ? `bg-gradient-to-br ${primaryPillar.color} border-white/90 shadow-lg group-hover:shadow-xl`
+                              : 'bg-white dark:bg-neutral-800 border-primary-300/50 dark:border-primary-600/50'
+                          }`}>
+                            {/* Competency label - maximum readability with larger size */}
+                            <p className="text-base font-black text-white text-center leading-tight drop-shadow-[0_3px_10px_rgba(0,0,0,0.9)] px-1">
+                              {comp.label.split(' ').slice(0, 2).join(' ')}
+                              {comp.label.split(' ').length > 2 && (
+                                <span className="block text-sm font-extrabold leading-tight mt-1">
+                                  {comp.label.split(' ').slice(2).join(' ')}
+                                </span>
+                              )}
                             </p>
                             
-                            {/* Evidence text */}
+                            {/* Evidence text - shown as tooltip on hover above the badge */}
                             {comp.evidence && (
-                              <p className="text-xs text-neutral-600 dark:text-neutral-400 text-center italic leading-relaxed line-clamp-3">
-                                {comp.evidence.length > 80 
-                                  ? `${comp.evidence.substring(0, 77)}...` 
-                                  : comp.evidence}
-                              </p>
+                              <div 
+                                className="absolute opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-300 z-[99999]"
+                                style={{ 
+                                  bottom: 'calc(100% + 16px)',
+                                  left: '50%',
+                                  transform: 'translateX(-50%)',
+                                  zIndex: 99999
+                                }}
+                              >
+                                <div className="bg-neutral-950 dark:bg-neutral-950 text-white dark:text-white rounded-lg p-3 shadow-2xl border border-primary-400/60 w-56 max-w-[260px] pointer-events-auto relative">
+                                  {/* Competency label in tooltip */}
+                                  <p className="font-bold mb-1.5 text-sm text-primary-200 dark:text-primary-300 leading-tight break-words">
+                                    {comp.label}
+                                  </p>
+                                  {/* Evidence text */}
+                                  <p className="text-xs font-normal leading-relaxed text-neutral-200 dark:text-neutral-200 whitespace-normal break-words">
+                                    {comp.evidence}
+                                  </p>
+                                  {/* Tooltip arrow pointing down to badge */}
+                                  <div className="absolute -bottom-1.5 left-1/2 transform -translate-x-1/2 w-2.5 h-2.5 bg-neutral-950 dark:bg-neutral-950 border-b border-r border-primary-400/60 rotate-45"></div>
+                                </div>
+                              </div>
                             )}
-                            
-                            {/* Decorative accent */}
-                            <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-12 h-0.5 bg-gradient-to-r from-transparent via-primary-400 dark:via-primary-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                           </div>
                         </motion.div>
                       );
@@ -884,17 +926,17 @@ export function RedesignedCompetenceTreeView() {
                       <Sparkles className="w-6 h-6 text-primary-600 dark:text-primary-400" strokeWidth={2} />
                       Professional Reflection
                     </h2>
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                       {summarySentences.map((sentence, idx) => (
                         <motion.div
                           key={idx}
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: idx * 0.15, duration: 0.5 }}
-                          className="relative pl-6"
+                          className="relative pl-7"
                         >
-                          <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-primary-400 to-primary-500 dark:from-primary-500 dark:to-primary-600 opacity-60 rounded-full" />
-                          <p className="text-base text-neutral-700 dark:text-neutral-300 leading-relaxed">
+                          <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b from-primary-400 to-primary-500 dark:from-primary-500 dark:to-primary-600 opacity-80 rounded-full" />
+                          <p className="text-xl text-neutral-900 dark:text-neutral-100 leading-relaxed font-semibold">
                             {sentence}
                           </p>
                         </motion.div>
@@ -930,21 +972,21 @@ export function RedesignedCompetenceTreeView() {
                       >
                         <div className="absolute left-0 top-0 w-4 h-4 bg-primary-500 rounded-full -translate-x-[9px]" />
                         
-                        <div className="space-y-3">
-                          <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-xl p-4">
-                            <p className="text-xs font-semibold text-primary-600 dark:text-primary-400 mb-1">
+                        <div className="space-y-4">
+                          <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-xl p-6">
+                            <p className="text-base font-extrabold text-primary-600 dark:text-primary-400 mb-3">
                               Question {idx + 1}
                             </p>
-                            <p className="text-neutral-800 dark:text-neutral-200">
+                            <p className="text-lg text-neutral-900 dark:text-neutral-100 leading-relaxed font-medium">
                               {entry.question}
                             </p>
                           </div>
                           
-                          <div className="bg-primary-50 dark:bg-primary-950/20 rounded-xl p-4">
-                            <p className="text-xs font-semibold text-neutral-600 dark:text-neutral-400 mb-1">
+                          <div className="bg-primary-50 dark:bg-primary-950/20 rounded-xl p-6">
+                            <p className="text-base font-extrabold text-neutral-800 dark:text-neutral-200 mb-3">
                               Your Answer
                             </p>
-                            <p className="text-neutral-800 dark:text-neutral-200 italic">
+                            <p className="text-lg text-neutral-900 dark:text-neutral-100 italic leading-relaxed font-medium">
                               "{entry.answer}"
                             </p>
                           </div>
@@ -954,7 +996,7 @@ export function RedesignedCompetenceTreeView() {
                               {entry.competencies.map((comp, cIdx) => (
                                 <span
                                   key={cIdx}
-                                  className="text-xs px-3 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded-full font-medium"
+                                  className="text-base px-5 py-2 bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-200 rounded-full font-bold"
                                 >
                                   {comp}
                                 </span>
@@ -993,57 +1035,6 @@ export function RedesignedCompetenceTreeView() {
         </div>
       </div>
 
-      {/* GPT Result Modal */}
-      {showGPTResult && gptResult && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowGPTResult(false)}>
-          <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 w-[90vw] max-w-4xl h-[80vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-200 dark:border-neutral-800">
-              <div>
-                <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">GPT Result</p>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400">Final response from GPT</p>
-              </div>
-              <button
-                onClick={() => setShowGPTResult(false)}
-                className="px-3 py-1.5 text-sm rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-              >
-                Close
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-auto px-4 py-3 space-y-4">
-              <div className="bg-neutral-50 dark:bg-neutral-800/60 rounded-lg p-4">
-                <p className="font-semibold mb-2 text-neutral-800 dark:text-neutral-100">Summary</p>
-                <p className="text-sm text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap">{gptResult.summary}</p>
-              </div>
-
-              <div className="bg-neutral-50 dark:bg-neutral-800/60 rounded-lg p-4">
-                <p className="font-semibold mb-2 text-neutral-800 dark:text-neutral-100">Competencies</p>
-                <div className="space-y-2">
-                  {gptResult.competencies && Array.isArray(gptResult.competencies) ? (
-                    gptResult.competencies.map((comp: any, idx: number) => (
-                      <div key={idx} className="bg-white dark:bg-neutral-900 rounded p-3 border border-neutral-200 dark:border-neutral-700">
-                        <p className="font-medium text-neutral-900 dark:text-neutral-100">{typeof comp === 'string' ? comp : comp.label || comp}</p>
-                        {typeof comp === 'object' && comp.evidence && (
-                          <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1 italic">{comp.evidence}</p>
-                        )}
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-sm text-neutral-500 dark:text-neutral-400">No competencies found</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="bg-neutral-50 dark:bg-neutral-800/60 rounded-lg p-4">
-                <p className="font-semibold mb-2 text-neutral-800 dark:text-neutral-100">Raw JSON</p>
-                <pre className="text-xs bg-neutral-100 dark:bg-neutral-900 rounded p-3 overflow-auto whitespace-pre-wrap break-words">
-                  {JSON.stringify(gptResult, null, 2)}
-                </pre>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

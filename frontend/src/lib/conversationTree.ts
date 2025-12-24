@@ -1,7 +1,9 @@
 /**
  * Simplified Conversation Tree System
  * 2 fixed opening questions + 5 AI follow-up placeholders
- * All mapped to Connection & Collaboration pillar
+ * Competencies map to all five pillars: Collaboration & Stakeholder Navigation,
+ * Decision Framing & Judgment, Execution & Ownership, Learning & Adaptation,
+ * Initiative & Impact Orientation
  */
 
 export enum ResponseCategory {
@@ -49,13 +51,13 @@ export interface ConversationResult {
  * Simplified Conversation Tree
  * - First 2 questions are fixed (Ary Opening Lines)
  * - Next 5 questions are AI-driven follow-ups (placeholders for now)
- * - All mapped to Connection & Collaboration pillar
+ * - Competencies map to all five pillars
  */
 export const conversationTree: Record<string, QuestionNode> = {
   // Fixed Question 1: Ary Opening Line
   'q1': {
     id: 'q1',
-    question: "Hello. My name is Ary — first, tell me your thoughts about an AI companion?",
+    question: "Hello. My name is Ary. First, tell me your thoughts about an AI companion?",
     answerOptions: [
       {
         id: 'a1-1',
@@ -101,7 +103,7 @@ export const conversationTree: Record<string, QuestionNode> = {
   // Fixed Question 2: Ary Opening Line
   'q2': {
     id: 'q2',
-    question: "Thanks for sharing. Are you preparing for anything at the moment — uni, internship, job applications, or something else?",
+    question: "Thanks for sharing. Are you preparing for anything at the moment? Uni, internship, job applications, or something else?",
     answerOptions: [
       {
         id: 'a2-1',

@@ -25,27 +25,30 @@ function extractCompetenciesFromHistory(history: ConversationEntry[]): Array<{ l
 
   // Competence detection patterns
   const patterns = [
-    // Execution & Delivery
+    // Execution & Ownership
     { keywords: ['plan', 'organize', 'execute', 'deliver', 'deadline', 'complete', 'finish', 'goal', 'achieve'], label: 'Planning', pillar: 'execution' },
     { keywords: ['structure', 'system', 'process', 'method'], label: 'Organization', pillar: 'execution' },
-    { keywords: ['initiative', 'proactive', 'take action', 'start'], label: 'Initiative', pillar: 'execution' },
+    { keywords: ['own', 'ownership', 'accountable', 'responsible', 'take ownership'], label: 'Ownership', pillar: 'execution' },
     
-    // Connection & Collaboration
+    // Collaboration & Stakeholder Navigation
     { keywords: ['team', 'collaborate', 'work together', 'together'], label: 'Teamwork', pillar: 'collaboration' },
     { keywords: ['help', 'support', 'assist', 'others'], label: 'Helpfulness', pillar: 'collaboration' },
     { keywords: ['communicate', 'listen', 'understand others'], label: 'Communication', pillar: 'collaboration' },
+    { keywords: ['stakeholder', 'navigate stakeholders', 'stakeholder management'], label: 'Stakeholder Navigation', pillar: 'collaboration' },
     
-    // Thinking & Problem-Solving
+    // Decision Framing & Judgment
     { keywords: ['think', 'analyze', 'strategic', 'solve', 'problem'], label: 'Problem-Solving', pillar: 'thinking' },
-    { keywords: ['idea', 'creative', 'innovate', 'design'], label: 'Innovation', pillar: 'thinking' },
+    { keywords: ['decision', 'decide', 'judgment', 'judgement', 'judge'], label: 'Decision-Making', pillar: 'thinking' },
+    { keywords: ['frame', 'framing', 'perspective', 'evaluate', 'assess'], label: 'Framing', pillar: 'thinking' },
     
-    // Self-Awareness & Growth
+    // Learning & Adaptation
     { keywords: ['learn', 'improve', 'grow', 'develop', 'practice'], label: 'Learning', pillar: 'growth' },
-    { keywords: ['reflect', 'self-aware', 'understand myself'], label: 'Self-Awareness', pillar: 'growth' },
-    { keywords: ['adapt', 'flexible', 'change', 'adjust'], label: 'Adaptability', pillar: 'growth' },
+    { keywords: ['adapt', 'flexible', 'change', 'adjust', 'adaptability'], label: 'Adaptability', pillar: 'growth' },
+    { keywords: ['reflection', 'reflect', 'feedback', 'continuous improvement'], label: 'Reflection', pillar: 'growth' },
     
-    // Purpose & Impact
-    { keywords: ['purpose', 'meaning', 'impact', 'contribute', 'mission'], label: 'Purpose-Driven', pillar: 'purpose' },
+    // Initiative & Impact Orientation
+    { keywords: ['initiative', 'proactive', 'take action', 'start', 'self-starter'], label: 'Initiative', pillar: 'purpose' },
+    { keywords: ['purpose', 'meaning', 'impact', 'contribute', 'mission'], label: 'Impact Orientation', pillar: 'purpose' },
     { keywords: ['motivate', 'passion', 'drive', 'aspire'], label: 'Motivation', pillar: 'purpose' },
   ];
 
@@ -77,17 +80,20 @@ function extractCompetenciesFromHistory(history: ConversationEntry[]): Array<{ l
 }
 
 // Competence labels organized by pillar for GPT selection
+// Pillars: 1. Collaboration & Stakeholder Navigation, 2. Decision Framing & Judgment,
+// 3. Execution & Ownership, 4. Learning & Adaptation, 5. Initiative & Impact Orientation
 const COMPETENCE_OPTIONS = {
-  execution: ['Planning', 'Organization', 'Goal-Driven', 'Execution', 'Results-Oriented', 'Initiative', 'Structure', 'Deadline Management', 'Systematic Approach', 'Efficiency', 'Productivity', 'Resilience', 'Persistence', 'Commitment'],
-  collaboration: ['Collaboration', 'Teamwork', 'Interpersonal Skills', 'Empathy', 'Communication', 'Active Listening', 'Helpfulness', 'Support', 'Leadership', 'Coordination', 'Client Focus', 'Relationship Building', 'Networking'],
-  thinking: ['Strategic Thinking', 'Problem-Solving', 'Analytical', 'Critical Thinking', 'Pattern Recognition', 'Innovation', 'Creativity', 'Ideation', 'Design Thinking', 'Logical Reasoning', 'Complex Thinking'],
-  growth: ['Self-Awareness', 'Reflection', 'Learning', 'Growth Mindset', 'Openness', 'Curiosity', 'Adaptability', 'Flexibility', 'Continuous Improvement', 'Self-Development', 'Feedback Seeking'],
-  purpose: ['Purpose-Driven', 'Values-Driven', 'Impact-Driven', 'Mission', 'Vision', 'Motivation', 'Passion', 'Intrinsic Drive', 'Ambition', 'Contribution', 'Social Impact'],
+  execution: ['Planning', 'Organization', 'Goal-Driven', 'Execution', 'Results-Oriented', 'Structure', 'Deadline Management', 'Systematic Approach', 'Efficiency', 'Productivity', 'Resilience', 'Persistence', 'Commitment', 'Ownership', 'Accountability'],
+  collaboration: ['Collaboration', 'Teamwork', 'Interpersonal Skills', 'Empathy', 'Communication', 'Active Listening', 'Helpfulness', 'Support', 'Leadership', 'Coordination', 'Client Focus', 'Relationship Building', 'Networking', 'Stakeholder Management', 'Stakeholder Engagement'],
+  thinking: ['Strategic Thinking', 'Problem-Solving', 'Analytical', 'Critical Thinking', 'Decision-Making', 'Judgment', 'Evaluation', 'Assessment', 'Framing', 'Perspective', 'Logical Reasoning', 'Complex Thinking'],
+  growth: ['Learning', 'Adaptability', 'Flexibility', 'Continuous Improvement', 'Development', 'Openness', 'Curiosity', 'Reflection', 'Skill Building', 'Feedback Seeking', 'Embracing Change'],
+  purpose: ['Initiative', 'Impact-Driven', 'Purpose-Driven', 'Values-Driven', 'Mission', 'Vision', 'Motivation', 'Passion', 'Intrinsic Drive', 'Ambition', 'Contribution', 'Social Impact', 'Self-Starter'],
 };
 
 const COMPETENCE_LIST = Object.values(COMPETENCE_OPTIONS).flat().join(', ');
 
-const SYSTEM_PROMPT = `You are Ary, an AI used for professional reflection. Ask short, neutral follow-up questions about work, study, tasks, goals, and professional approach.
+// System prompt for regular question-asking phase
+const QUESTION_PROMPT = `You are Ary, an AI used for professional reflection. Ask short, neutral follow-up questions about work, study, tasks, goals, and professional approach.
 
 Rules:
 - Ask a total of five follow-up questions, one at a time.
@@ -99,13 +105,17 @@ Rules:
 
 Conversational Flow:
 - Briefly acknowledge then ask; keep it neutral (no praise or judgement).
-- Avoid sounding like a questionnaire—make it feel like a natural follow-on.
+- Avoid sounding like a questionnaire. Make it feel like a natural follow-on.
 - Avoid repeating the same topic. Over 5 questions, explore different aspects naturally based on what the user shares: their approach to work, how they handle tasks, their thinking process, their goals, their learning style, etc. Do not force any particular topic.
 - If the user's answer is very short (e.g., under 8 words), ask a quick clarifier ("Could you share a quick example?") then proceed.
 - Before the fifth and final question, preface with "One last question:".
 
-Final Turn:
-When FINAL_TURN is provided, do not ask more questions. Return ONLY a valid JSON object (no extra text, no markdown code blocks). Use this exact structure:
+Your task: Generate the next follow-up question only. Return just the question text, nothing else.`;
+
+// System prompt for final turn (summary and competencies)
+const FINAL_TURN_PROMPT = `You are Ary, an AI used for professional reflection. Based on the conversation history provided, generate a summary and identify competencies.
+
+Your task: Return ONLY a valid JSON object (no extra text, no markdown code blocks). Use this exact structure:
 {
   "summary": "Three short sentences written in second person (you), reflecting what the user actually said about their work, study, or professional approach. Base this ONLY on what was explicitly mentioned in the conversation. Do not invent information. Never use 'the user', 'they', 'their', or third-person wording. The summary must be plain text, NOT a JSON string or object.",
   "competencies": [
@@ -149,9 +159,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Build messages array
+    // Build messages array with appropriate system prompt
+    // Use QUESTION_PROMPT for regular questions, FINAL_TURN_PROMPT for final step
+    const systemPrompt = isFinalTurn ? FINAL_TURN_PROMPT : QUESTION_PROMPT;
     const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
-      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'system', content: systemPrompt },
     ];
 
     // Add conversation history as pairs: assistant question, user answer
@@ -225,7 +237,7 @@ export async function POST(req: NextRequest) {
               }
             } catch (parseError) {
               // JSON might be truncated or malformed, try to extract what we can using regex
-              console.warn('Failed to parse nested JSON in summary (may be truncated), trying manual extraction', parseError);
+              // Failed to parse nested JSON in summary (may be truncated), trying manual extraction
               
               // Extract summary text using regex (handles escaped quotes and newlines)
               // Look for the innermost summary field (nested JSON contains the actual summary)
@@ -373,7 +385,6 @@ export async function POST(req: NextRequest) {
               // Use extracted competencies if we found any (prioritize nested over outer empty array)
               if (extractedComps.length > 0) {
                 competencies = extractedComps;
-                console.log(`Extracted ${extractedComps.length} competencies from nested/truncated JSON string`);
               }
             }
           }
@@ -381,21 +392,19 @@ export async function POST(req: NextRequest) {
 
         // Fallback: If GPT returns no competencies, extract from conversation history
         if (competencies.length === 0 && conversationHistory.length > 0) {
-          console.warn('GPT returned empty competencies, falling back to history extraction');
           competencies = extractCompetenciesFromHistory(conversationHistory);
         }
 
         return NextResponse.json({
           type: 'final',
           summary: summaryText,
-          competencies: competencies.map((comp: any) => ({
+          competencies: competencies.map((comp: { label: string; evidence?: string } | string) => ({
             label: typeof comp === 'string' ? comp : comp.label || comp,
             evidence: typeof comp === 'object' && comp.evidence ? comp.evidence : undefined,
           })),
         });
       } catch (parseError) {
-        console.error('Failed to parse GPT response:', parseError);
-        console.error('Response:', response);
+        // Failed to parse response - return empty result
         throw new Error('Failed to parse GPT response as JSON');
       }
     } else {
@@ -405,8 +414,8 @@ export async function POST(req: NextRequest) {
         question: response.trim(),
       });
     }
-  } catch (error: any) {
-    console.error('GPT API error:', error);
+  } catch (error) {
+    // GPT API error - return error response
     
     // Handle specific OpenAI errors
     if (error instanceof OpenAI.APIError) {
