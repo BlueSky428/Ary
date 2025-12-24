@@ -14,12 +14,12 @@ export default function DemoPage() {
       <Navigation />
 
       {/* Theme Toggle */}
-      <div className="fixed top-24 right-6 z-50">
+      <div className="fixed top-20 right-6 z-50">
         <ThemeToggle />
       </div>
 
       {/* Conversation Flow */}
-      <div className="pt-24 pb-6 h-full">
+      <div className="pt-16 h-full">
         <ConversationFlow />
       </div>
     </main>

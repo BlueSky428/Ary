@@ -6,7 +6,7 @@
  */
 
 import { motion } from 'framer-motion';
-import { Sparkles } from 'lucide-react';
+import { MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 
 export function LandingHero() {
@@ -15,18 +15,17 @@ export function LandingHero() {
       <div className="max-w-3xl mx-auto text-center">
         {/* Logo */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
-          className="inline-flex items-center justify-center mb-8"
+          className="inline-flex items-center justify-center mb-8 gap-4"
         >
           <div className="relative">
-            <div className="absolute inset-0 bg-primary-500/20 rounded-xl blur-xl" />
-            <div className="relative bg-gradient-to-br from-primary-500 to-accent-500 p-3 rounded-xl shadow-lg">
-              <Sparkles className="w-6 h-6 text-white" strokeWidth={2} />
+            <div className="relative bg-gradient-to-br from-primary-600 to-primary-700 p-2 rounded-lg shadow-sm">
+              <MessageCircle className="w-5 h-5 text-white" strokeWidth={2} />
             </div>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-neutral-900 dark:text-neutral-100 ml-3">
+          <h1 className="text-4xl md:text-5xl font-semibold text-neutral-900 dark:text-neutral-100">
             Ary
           </h1>
         </motion.div>

@@ -21,25 +21,23 @@ export function LandingHeroWithBackground() {
 
       {/* Logo - Top left */}
       <div className="absolute top-6 left-6 md:top-8 md:left-8 z-30">
-        <Link href="/" className="inline-flex items-center gap-3 group">
-        <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            transition={{ duration: 0.3 }}
+        <Link href="/" className="inline-flex items-center gap-2.5 group">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            whileHover={{ scale: 1.02 }}
+            transition={{ duration: 0.2 }}
             className="relative"
           >
-            <div className="absolute inset-0 bg-primary-500/20 rounded-xl blur-xl group-hover:opacity-75 transition-opacity" />
-            <div className="relative bg-gradient-to-br from-primary-500 to-accent-500 p-2 rounded-xl shadow-lg">
-              <MessageCircle className="w-5 h-5 text-white" strokeWidth={2.5} />
-          </div>
-        </motion.div>
+            <div className="relative bg-gradient-to-br from-primary-600 to-primary-700 p-2 rounded-lg shadow-sm">
+              <MessageCircle className="w-5 h-5 text-white" strokeWidth={2} />
+            </div>
+          </motion.div>
           <motion.span
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1, duration: 0.3 }}
-            className="text-xl font-bold text-white group-hover:text-primary-200 transition-colors drop-shadow-lg"
+            className="text-xl font-semibold text-white drop-shadow-md group-hover:text-white/90 transition-colors duration-200"
           >
             Ary
           </motion.span>

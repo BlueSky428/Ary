@@ -19,24 +19,22 @@ export function Navigation() {
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-40 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border-b border-neutral-200/50 dark:border-neutral-700/50 shadow-sm">
+    <nav className="fixed top-0 left-0 right-0 z-[100] bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border-b border-neutral-200/50 dark:border-neutral-700/50 shadow-sm">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <Link href="/" className="inline-flex items-center gap-3 group">
+          <Link href="/" className="inline-flex items-center gap-2.5 group">
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ duration: 0.3 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              whileHover={{ scale: 1.02 }}
+              transition={{ duration: 0.2 }}
               className="relative"
             >
-              <div className="absolute inset-0 bg-primary-500/20 rounded-xl blur-xl group-hover:opacity-75 transition-opacity" />
-              <div className="relative bg-gradient-to-br from-primary-500 to-accent-500 p-2 rounded-xl shadow-lg">
-                <MessageCircle className="w-5 h-5 text-white" strokeWidth={2.5} />
+              <div className="relative bg-gradient-to-br from-primary-600 to-primary-700 p-2 rounded-lg shadow-sm">
+                <MessageCircle className="w-5 h-5 text-white" strokeWidth={2} />
               </div>
             </motion.div>
-            <span className="text-xl font-bold text-neutral-900 dark:text-neutral-100 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+            <span className="text-xl font-semibold text-neutral-900 dark:text-neutral-100 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-200">
               Ary
             </span>
           </Link>

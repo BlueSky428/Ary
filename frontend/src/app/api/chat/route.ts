@@ -14,6 +14,7 @@ interface ChatRequest {
   conversationHistory: ConversationEntry[];
   questionCount: number;
   isFinalTurn: boolean;
+  isClarification?: boolean;
 }
 
 /**
@@ -23,55 +24,45 @@ function extractCompetenciesFromHistory(history: ConversationEntry[]): Array<{ l
   const allText = history.map(h => `${h.question} ${h.answer}`).join(' ').toLowerCase();
   const competencies: Array<{ label: string; evidence?: string }> = [];
 
-  // Competence detection patterns
+  // Competence detection patterns - Collaboration & Stakeholder Navigation only
   const patterns = [
-    // Execution & Ownership
-    { keywords: ['plan', 'organize', 'execute', 'deliver', 'deadline', 'complete', 'finish', 'goal', 'achieve'], label: 'Planning', pillar: 'execution' },
-    { keywords: ['structure', 'system', 'process', 'method'], label: 'Organization', pillar: 'execution' },
-    { keywords: ['own', 'ownership', 'accountable', 'responsible', 'take ownership'], label: 'Ownership', pillar: 'execution' },
-    
     // Collaboration & Stakeholder Navigation
     { keywords: ['team', 'collaborate', 'work together', 'together'], label: 'Teamwork', pillar: 'collaboration' },
     { keywords: ['help', 'support', 'assist', 'others'], label: 'Helpfulness', pillar: 'collaboration' },
     { keywords: ['communicate', 'listen', 'understand others'], label: 'Communication', pillar: 'collaboration' },
     { keywords: ['stakeholder', 'navigate stakeholders', 'stakeholder management'], label: 'Stakeholder Navigation', pillar: 'collaboration' },
-    
-    // Decision Framing & Judgment
-    { keywords: ['think', 'analyze', 'strategic', 'solve', 'problem'], label: 'Problem-Solving', pillar: 'thinking' },
-    { keywords: ['decision', 'decide', 'judgment', 'judgement', 'judge'], label: 'Decision-Making', pillar: 'thinking' },
-    { keywords: ['frame', 'framing', 'perspective', 'evaluate', 'assess'], label: 'Framing', pillar: 'thinking' },
-    
-    // Learning & Adaptation
-    { keywords: ['learn', 'improve', 'grow', 'develop', 'practice'], label: 'Learning', pillar: 'growth' },
-    { keywords: ['adapt', 'flexible', 'change', 'adjust', 'adaptability'], label: 'Adaptability', pillar: 'growth' },
-    { keywords: ['reflection', 'reflect', 'feedback', 'continuous improvement'], label: 'Reflection', pillar: 'growth' },
-    
-    // Initiative & Impact Orientation
-    { keywords: ['initiative', 'proactive', 'take action', 'start', 'self-starter'], label: 'Initiative', pillar: 'purpose' },
-    { keywords: ['purpose', 'meaning', 'impact', 'contribute', 'mission'], label: 'Impact Orientation', pillar: 'purpose' },
-    { keywords: ['motivate', 'passion', 'drive', 'aspire'], label: 'Motivation', pillar: 'purpose' },
+    { keywords: ['collaboration', 'collaborate', 'collaborative'], label: 'Collaboration', pillar: 'collaboration' },
+    { keywords: ['interpersonal', 'people skills', 'work with people'], label: 'Interpersonal Skills', pillar: 'collaboration' },
+    { keywords: ['empathy', 'empathetic', 'understanding others'], label: 'Empathy', pillar: 'collaboration' },
+    { keywords: ['leadership', 'lead', 'leading'], label: 'Leadership', pillar: 'collaboration' },
+    { keywords: ['coordination', 'coordinate', 'coordinating'], label: 'Coordination', pillar: 'collaboration' },
+    { keywords: ['relationship', 'relationships', 'building relationships'], label: 'Relationship Building', pillar: 'collaboration' },
+    { keywords: ['networking', 'network', 'connection'], label: 'Networking', pillar: 'collaboration' },
   ];
 
-  // Find matches
-  for (const pattern of patterns) {
-    if (pattern.keywords.some(kw => allText.includes(kw))) {
-      // Find evidence from conversation
-      const evidenceEntry = history.find(h => 
-        pattern.keywords.some(kw => h.answer.toLowerCase().includes(kw))
+  patterns.forEach(({ keywords, label }) => {
+    if (keywords.some(keyword => allText.includes(keyword))) {
+      // Try to find a sentence that contains the keyword as evidence
+      const sentences = history.flatMap(h => h.answer.split(/[.!?]+/));
+      const evidenceSentence = sentences.find(s => 
+        keywords.some(k => s.toLowerCase().includes(k))
       );
-      competencies.push({
-        label: pattern.label,
-        evidence: evidenceEntry ? `You mentioned ${pattern.keywords.find(kw => evidenceEntry.answer.toLowerCase().includes(kw))}...` : undefined,
-      });
-      // Limit to 4-6 competencies
-      if (competencies.length >= 6) break;
+      
+      if (evidenceSentence) {
+        competencies.push({
+          label,
+          evidence: evidenceSentence.trim().substring(0, 100), // Limit length
+        });
+      } else {
+        competencies.push({ label });
+      }
     }
-  }
+  });
 
-  // Ensure at least one competence
+  // If no competencies found, add a default
   if (competencies.length === 0) {
     competencies.push({
-      label: 'Professional Engagement',
+      label: 'Collaboration',
       evidence: 'You engaged thoughtfully in the conversation about your professional approach.',
     });
   }
@@ -79,78 +70,79 @@ function extractCompetenciesFromHistory(history: ConversationEntry[]): Array<{ l
   return competencies;
 }
 
-// Competence labels organized by pillar for GPT selection
-// Pillars: 1. Collaboration & Stakeholder Navigation, 2. Decision Framing & Judgment,
-// 3. Execution & Ownership, 4. Learning & Adaptation, 5. Initiative & Impact Orientation
+// Competence labels for Collaboration & Stakeholder Navigation pillar only
 const COMPETENCE_OPTIONS = {
-  execution: ['Planning', 'Organization', 'Goal-Driven', 'Execution', 'Results-Oriented', 'Structure', 'Deadline Management', 'Systematic Approach', 'Efficiency', 'Productivity', 'Resilience', 'Persistence', 'Commitment', 'Ownership', 'Accountability'],
   collaboration: ['Collaboration', 'Teamwork', 'Interpersonal Skills', 'Empathy', 'Communication', 'Active Listening', 'Helpfulness', 'Support', 'Leadership', 'Coordination', 'Client Focus', 'Relationship Building', 'Networking', 'Stakeholder Management', 'Stakeholder Engagement'],
-  thinking: ['Strategic Thinking', 'Problem-Solving', 'Analytical', 'Critical Thinking', 'Decision-Making', 'Judgment', 'Evaluation', 'Assessment', 'Framing', 'Perspective', 'Logical Reasoning', 'Complex Thinking'],
-  growth: ['Learning', 'Adaptability', 'Flexibility', 'Continuous Improvement', 'Development', 'Openness', 'Curiosity', 'Reflection', 'Skill Building', 'Feedback Seeking', 'Embracing Change'],
-  purpose: ['Initiative', 'Impact-Driven', 'Purpose-Driven', 'Values-Driven', 'Mission', 'Vision', 'Motivation', 'Passion', 'Intrinsic Drive', 'Ambition', 'Contribution', 'Social Impact', 'Self-Starter'],
 };
 
-const COMPETENCE_LIST = Object.values(COMPETENCE_OPTIONS).flat().join(', ');
+const COMPETENCE_LIST = COMPETENCE_OPTIONS.collaboration.join(', ');
 
-// System prompt for regular question-asking phase
-const QUESTION_PROMPT = `You are Ary, an AI used for professional reflection. Ask short, neutral follow-up questions about work, study, tasks, goals, and professional approach.
+// System prompt for question-asking phase - Optimized
+const QUESTION_PROMPT = `You are Ary, an AI system for professional articulation. Extract what the user has done at work and express it clearly. Use a warm, conversational, and curious tone.
 
 Rules:
-- Ask a total of five follow-up questions, one at a time.
-- Keep each question under 18 words.
-- Each question must relate to the user's previous answers and include a tiny contextual hook (1–2 nouns/verbs) from the last answer.
-- Vary neutral openers (e.g., "Understood,", "Noted,", "Quick follow-up:", "One thing I'm curious about:") to avoid repetition.
-- Avoid emotional or mental-health language; do not ask "How are you?" or anything about feelings or well-being.
-- Do not give advice, guidance, or suggestions for improvement.
+- Focus on actions, responsibilities, collaboration, and outcomes only
+- Do not ask about feelings, thoughts, motivations, or plans
+- Do not give advice or use personality/trait language
+- If an answer is vague, ask for concrete examples
+- Reference their previous answers to show you're listening
+- Keep questions concise and natural
 
-Conversational Flow:
-- Briefly acknowledge then ask; keep it neutral (no praise or judgement).
-- Avoid sounding like a questionnaire. Make it feel like a natural follow-on.
-- Avoid repeating the same topic. Over 5 questions, explore different aspects naturally based on what the user shares: their approach to work, how they handle tasks, their thinking process, their goals, their learning style, etc. Do not force any particular topic.
-- If the user's answer is very short (e.g., under 8 words), ask a quick clarifier ("Could you share a quick example?") then proceed.
-- Before the fifth and final question, preface with "One last question:".
+7 PURPOSES TO COMPLETE (work through in order, 1-7):
+1. Grounding - Identify concrete work/project/experience
+2. Role/Responsibility - Identify what they were personally responsible for
+3. Collaboration Context - Identify who else was involved and how they worked together
+4. Actions Taken - Identify specific actions they performed
+5. Outcome/Result - Identify concrete outcome or result
+6. Scale/Significance - Identify scope, complexity, or significance
+7. Scope/Continuity - Identify if recurring or one-time
 
-Your task: Generate the next follow-up question only. Return just the question text, nothing else.`;
+For each purpose:
+- Generate a natural, context-aware question referencing their previous answers
+- If their answer is vague/abstract, ask a clarifying probe for that SAME purpose
+- Do not advance to next purpose until you have a clear answer (max 2 clarification probes per purpose)
 
-// System prompt for final turn (summary and competencies)
-const FINAL_TURN_PROMPT = `You are Ary, an AI used for professional reflection. Based on the conversation history provided, generate a summary and identify competencies.
+COMPLETION CHECK — Before generating any question, check if you have clear answers for ALL 7 purposes:
 
-Your task: Return ONLY a valid JSON object (no extra text, no markdown code blocks). Use this exact structure:
+1. Grounding - Do you know what concrete work/project/experience? (YES/NO)
+2. Role - Do you know what they were responsible for? (YES/NO)
+3. Collaboration - Do you know who else was involved and how? (YES/NO)
+4. Actions - Do you know specific actions they performed? (YES/NO)
+5. Outcome - Do you know a concrete result? (YES/NO)
+6. Scale - Do you understand scope/complexity? (YES/NO)
+7. Scope/Continuity - Do you know if recurring or one-time? (YES/NO)
+
+If ALL 7 are YES → Return ONLY "FINAL" (just that word).
+
+If ANY is NO → Generate a question for the lowest-numbered purpose (1-7) that needs more information. Work through purposes in order.
+
+Return only the question text, or "FINAL" if all 7 purposes are satisfied.`;
+
+// System prompt for final turn (summary and competencies) - Optimized
+const FINAL_TURN_PROMPT = `You are Ary. Extract what the user has done at work and express it clearly. Do not evaluate, coach, advise, or assess.
+
+Return ONLY a valid JSON object (no extra text, no markdown):
+
 {
-  "summary": "Three short sentences written in second person (you), reflecting what the user actually said about their work, study, or professional approach. Base this ONLY on what was explicitly mentioned in the conversation. Do not invent information. Never use 'the user', 'they', 'their', or third-person wording. The summary must be plain text, NOT a JSON string or object.",
+  "summary": "Three sentences max, second person (you), referencing concrete actions/outcomes from the conversation. Plain text only, not JSON.",
   "competencies": [
     {
-      "label": "One of the competence labels from the provided list below",
-      "evidence": "Optional short evidence phrase (one line max) only if directly reflected in user's wording"
+      "label": "One competence label from the provided list (Collaboration & Stakeholder Navigation only)",
+      "evidence": "One sentence grounded in user's words that backs the label"
     }
   ]
 }
 
-CRITICAL - READ CAREFULLY:
-- Return ONLY the JSON object, nothing else
-- Do NOT wrap the JSON in markdown code blocks
-- Do NOT put the entire object as a string in the summary field
-- The summary field must contain plain text only (NOT JSON, NOT a stringified object)
-- The competencies field must be a JSON array of objects (NOT a string)
-- Do NOT nest the entire response object inside the summary field as a string
-- Write the summary as plain readable text, not as JSON code
-
-Available Competence Labels (select 4-6 that are MOST evidenced in the conversation):
-${COMPETENCE_LIST}
-
-Important:
-- "summary" must be a plain text string (3 sentences), NOT a JSON object or JSON string
-- "competencies" must be an array of 4-6 objects
-- "label" MUST be one of the competence labels from the list above (use exact spelling)
-- Only select competencies that you can point to specific evidence for in the user's actual words
-- Evidence should refer to linguistic cues from the conversation, not personality traits
-- Select competencies that best represent what the user demonstrated through their answers
-- No scores, no percentages, no emotions`;
+Rules:
+- Return ONLY JSON object, nothing else
+- Summary: plain text string (3 sentences max), second person, concrete actions/outcomes only
+- Competencies: array of 4-6 objects, select from provided list, evidence must be in user's words
+- No scores, rankings, or interpretations - just what they did`;
 
 export async function POST(req: NextRequest) {
   try {
     const body: ChatRequest = await req.json();
-    const { conversationHistory, questionCount, isFinalTurn } = body;
+    const { conversationHistory, questionCount, isFinalTurn, isClarification } = body;
 
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(
@@ -176,219 +168,131 @@ export async function POST(req: NextRequest) {
       }
     });
 
-    // For final turn, add special instruction
+    // If we have 7+ main questions, strongly prompt GPT to check completion
+    if (!isFinalTurn && questionCount >= 7) {
+      messages.push({
+        role: 'user',
+        content: `You have ${questionCount} main question answers. Check if you have clear answers for ALL 7 purposes. If yes, return "FINAL". If no, ask for the first missing purpose.`,
+      });
+    }
+
+    // For final turn, add special instruction with competence list
     if (isFinalTurn) {
       messages.push({
         role: 'user',
-        content: `FINAL_TURN: Generate the final summary and competencies based on the conversation above. Select 4-6 competencies from this list that are most evidenced: ${COMPETENCE_LIST}`,
+        content: `Generate summary and competencies. Select 4-6 from: ${COMPETENCE_LIST}`,
       });
     }
 
     // Call OpenAI API
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini', // Cost-effective model
-      messages,
-      temperature: isFinalTurn ? 0.7 : 0.8, // Slightly more creative for questions
-      max_tokens: isFinalTurn ? 2000 : 100, // Increased significantly to prevent JSON truncation
+      model: 'gpt-4o-mini',
+      messages: messages as OpenAI.Chat.Completions.ChatCompletionMessageParam[],
+      temperature: isFinalTurn ? 0.7 : 0.9,
+      max_tokens: isFinalTurn ? 2000 : 200,
       response_format: isFinalTurn ? { type: 'json_object' } : undefined,
     });
 
-    const response = completion.choices[0].message.content;
-
-    if (!response) {
-      throw new Error('No response from OpenAI');
-    }
+    const response = completion.choices[0]?.message?.content || '';
 
     if (isFinalTurn) {
       // Parse JSON response
       try {
-        const parsed = JSON.parse(response);
-        
-        // Validate structure
-        if (!parsed.summary || !parsed.competencies) {
-          throw new Error('Invalid response structure');
-        }
+        let parsed = JSON.parse(response);
 
-        // Handle case where GPT returns entire JSON as a string in summary field
-        let summaryText = parsed.summary;
-        let competencies = Array.isArray(parsed.competencies) ? parsed.competencies : [];
-        
-        if (typeof summaryText === 'string') {
-          const trimmed = summaryText.trim();
-          // Check if summary contains entire JSON object as string
-          // This happens when GPT double-encodes the JSON response
-          if (trimmed.startsWith('{') && (trimmed.includes('"summary"') || trimmed.includes('"competencies"'))) {
-            try {
-              // Try to parse the nested JSON string
-              const nestedParsed = JSON.parse(trimmed);
-              
-              // If nested object has summary and competencies, use them (prioritize nested over outer)
-              if (typeof nestedParsed === 'object' && nestedParsed !== null) {
-                if (nestedParsed.summary && typeof nestedParsed.summary === 'string') {
-                  summaryText = nestedParsed.summary;
-                }
-                if (Array.isArray(nestedParsed.competencies)) {
-                  // Use nested competencies if they exist, even if empty array (means we successfully parsed)
-                  // Only override if outer competencies is empty or nested has items
-                  if (competencies.length === 0 || nestedParsed.competencies.length > 0) {
-                    competencies = nestedParsed.competencies;
-                  }
-                }
-              }
-            } catch (parseError) {
-              // JSON might be truncated or malformed, try to extract what we can using regex
-              // Failed to parse nested JSON in summary (may be truncated), trying manual extraction
-              
-              // Extract summary text using regex (handles escaped quotes and newlines)
-              // Look for the innermost summary field (nested JSON contains the actual summary)
-              // Use a more robust regex that finds the inner summary field value
-              // This regex needs to handle multi-line strings and escaped characters
-              const summaryRegex = /"summary"\s*:\s*"((?:[^"\\]|\\.|\\n)*?)"(?:\s*[,}])/gs;
-              let summaryMatches: RegExpMatchArray[] = [];
-              let match;
-              
-              // Reset regex
-              summaryRegex.lastIndex = 0;
-              while ((match = summaryRegex.exec(trimmed)) !== null) {
-                summaryMatches.push(match);
-              }
-              
-              if (summaryMatches.length > 0) {
-                // Take the last match (innermost summary field in nested JSON)
-                const selectedMatch = summaryMatches[summaryMatches.length - 1];
-                if (selectedMatch && selectedMatch[1]) {
-                  summaryText = selectedMatch[1]
-                    .replace(/\\"/g, '"')
-                    .replace(/\\n/g, '\n')
-                    .replace(/\\t/g, '\t')
-                    .replace(/\\\\/g, '\\')
-                    .replace(/\\r/g, '\r');
-                }
-              } else {
-                // Fallback: try to extract summary even if regex fails
-                // Look for pattern: "summary": "..." and extract until closing quote
-                const summaryStart = trimmed.indexOf('"summary"');
-                if (summaryStart !== -1) {
-                  const colonIdx = trimmed.indexOf(':', summaryStart);
-                  if (colonIdx !== -1) {
-                    const quoteStart = trimmed.indexOf('"', colonIdx);
-                    if (quoteStart !== -1) {
-                      // Find the matching closing quote (handling escaped quotes)
-                      let quoteEnd = quoteStart + 1;
-                      while (quoteEnd < trimmed.length) {
-                        if (trimmed[quoteEnd] === '"' && trimmed[quoteEnd - 1] !== '\\') {
-                          break;
-                        }
-                        quoteEnd++;
-                      }
-                      if (quoteEnd < trimmed.length) {
-                        const extracted = trimmed.substring(quoteStart + 1, quoteEnd);
-                        summaryText = extracted
-                          .replace(/\\"/g, '"')
-                          .replace(/\\n/g, '\n')
-                          .replace(/\\t/g, '\t')
-                          .replace(/\\\\/g, '\\')
-                          .replace(/\\r/g, '\r');
-                      }
-                    }
-                  }
-                }
-              }
-              
-              // Extract competencies - look for all competence objects anywhere in the string
-              // Handle both complete and truncated JSON strings
+        // Handle nested JSON strings (double-encoded)
+        if (typeof parsed.summary === 'string' && parsed.summary.includes('"summary"')) {
+          try {
+            const innerParsed = JSON.parse(parsed.summary);
+            parsed = innerParsed;
+          } catch (parseError) {
+            // JSON might be truncated or malformed, try to extract what we can using regex
+            // Extract summary text using regex (handles escaped quotes and newlines)
+            // Look for the innermost summary field (nested JSON contains the actual summary)
+            // This regex needs to handle multi-line strings and escaped characters
+            const summaryRegex = /"summary"\s*:\s*"((?:[^"\\]|\\.|\\n)*?)"(?:\s*[,}])/gs;
+            let summaryMatches: RegExpMatchArray[] = [];
+            let match;
+            
+            while ((match = summaryRegex.exec(parsed.summary)) !== null) {
+              summaryMatches.push(match);
+            }
+            
+            // Use the last (innermost) summary if multiple found
+            if (summaryMatches.length > 0) {
+              const lastMatch = summaryMatches[summaryMatches.length - 1];
+              parsed.summary = lastMatch[1].replace(/\\n/g, ' ').replace(/\\"/g, '"');
+            }
+
+            // Extract competencies array using regex
+            const compArrayRegex = /"competencies"\s*:\s*\[(.*?)\](?:\s*[,}])/s;
+            const compArrayMatch = compArrayRegex.exec(parsed.summary);
+            if (compArrayMatch) {
+              const compArrayStr = compArrayMatch[1];
+              // Extract individual competence objects
+              const compObjRegex = /\{\s*"label"\s*:\s*"([^"]+)"\s*(?:,\s*"evidence"\s*:\s*"([^"]*)")?\s*\}/g;
               const extractedComps: Array<{ label: string; evidence?: string }> = [];
+              let compMatch;
               
-              // First, try to find the competencies array start
-              const compArrayStart = trimmed.indexOf('"competencies"');
-              if (compArrayStart !== -1) {
-                // Find the array start bracket
-                const arrayStartIdx = trimmed.indexOf('[', compArrayStart);
-                if (arrayStartIdx !== -1) {
-                  // Extract everything from the array start to the end (or to a reasonable limit)
-                  // This handles truncated JSON by taking what we can get
-                  const arrayContentStart = arrayStartIdx + 1;
-                  const remainingText = trimmed.substring(arrayContentStart);
-                  
-                  // Extract all label-value pairs first (this handles truncated objects better)
-                  // Strategy: Find all "label": "value" patterns, then find their corresponding evidence if it exists
-                  const labelRegex = /"label"\s*:\s*"((?:[^"\\]|\\.)*)"/g;
-                  const foundLabels = new Map<number, string>(); // position -> label
-                  let labelMatch;
-                  
-                  while ((labelMatch = labelRegex.exec(remainingText)) !== null) {
-                    const label = labelMatch[1].replace(/\\"/g, '"').replace(/\\n/g, '\n').replace(/\\t/g, '\t');
-                    foundLabels.set(labelMatch.index, label);
-                  }
-                  
-                  // For each label, try to find its evidence
-                  const labelPositions = Array.from(foundLabels.keys()).sort((a, b) => a - b);
-                  
-                  for (let i = 0; i < labelPositions.length; i++) {
-                    const labelPos = labelPositions[i];
-                    const label = foundLabels.get(labelPos)!;
-                    const nextLabelPos = i + 1 < labelPositions.length ? labelPositions[i + 1] : remainingText.length;
-                    
-                    // Search for evidence between this label and the next label (or end)
-                    const searchRange = remainingText.substring(labelPos, nextLabelPos);
-                    let evidence: string | undefined = undefined;
-                    
-                    // Look for evidence pattern - handle both complete and truncated strings
-                    const evidencePattern = /"evidence"\s*:\s*"/;
-                    const evidencePatternMatch = searchRange.match(evidencePattern);
-                    
-                    if (evidencePatternMatch && evidencePatternMatch.index !== undefined) {
-                      // Found evidence field start
-                      const evidenceStartIdx = evidencePatternMatch.index + evidencePatternMatch[0].length;
-                      
-                      // Extract evidence value - handle truncated strings
-                      // Find the closing quote (if it exists) or take until end of search range
-                      let evidenceEndIdx = evidenceStartIdx;
-                      let foundClosingQuote = false;
-                      
-                      // Look for closing quote, handling escaped quotes
-                      while (evidenceEndIdx < searchRange.length) {
-                        const char = searchRange[evidenceEndIdx];
-                        if (char === '"') {
-                          // Check if it's escaped
-                          let escapeCount = 0;
-                          let checkIdx = evidenceEndIdx - 1;
-                          while (checkIdx >= evidenceStartIdx && searchRange[checkIdx] === '\\') {
-                            escapeCount++;
-                            checkIdx--;
-                          }
-                          // If even number of backslashes, this is a real closing quote
-                          if (escapeCount % 2 === 0) {
-                            foundClosingQuote = true;
-                            break;
-                          }
-                        }
-                        evidenceEndIdx++;
-                      }
-                      
-                      if (!foundClosingQuote) {
-                        // No closing quote found (truncated), take everything to end of search range
-                        evidenceEndIdx = searchRange.length;
-                      }
-                      
-                      const evidenceRaw = searchRange.substring(evidenceStartIdx, evidenceEndIdx);
-                      if (evidenceRaw) {
-                        evidence = evidenceRaw.replace(/\\"/g, '"').replace(/\\n/g, '\n').replace(/\\t/g, '\t').replace(/\\r/g, '\r');
-                      }
-                    }
-                    
-                    extractedComps.push({ label, evidence });
-                  }
-                }
+              while ((compMatch = compObjRegex.exec(compArrayStr)) !== null) {
+                extractedComps.push({
+                  label: compMatch[1],
+                  evidence: compMatch[2] || undefined,
+                });
               }
               
-              // Use extracted competencies if we found any (prioritize nested over outer empty array)
               if (extractedComps.length > 0) {
-                competencies = extractedComps;
+                parsed.competencies = extractedComps;
               }
             }
           }
         }
+
+        let summaryText = parsed.summary || '';
+        let competencies = parsed.competencies || [];
+
+        // If competencies is a string, try to parse it
+        if (typeof competencies === 'string') {
+          try {
+            competencies = JSON.parse(competencies);
+          } catch (e) {
+            competencies = [];
+          }
+        }
+
+        // Ensure competencies is an array
+        if (!Array.isArray(competencies)) {
+          competencies = [];
+        }
+
+        // Clean up competencies - handle both string and object formats
+        competencies = competencies.map((comp: { label: string; evidence?: string } | string) => {
+          if (typeof comp === 'string') {
+            return { label: comp };
+          }
+          return {
+            label: comp.label || comp,
+            evidence: comp.evidence || undefined,
+          };
+        }).filter((comp: { label: string; evidence?: string }) => comp.label);
+
+        // Handle truncated evidence strings
+        competencies = competencies.map((comp: { label: string; evidence?: string }) => {
+          if (comp.evidence && comp.evidence.length > 200) {
+            // Evidence might be truncated, try to extract complete sentences
+            const sentences = comp.evidence.match(/[^.!?]*[.!?]+/g);
+            if (sentences && sentences.length > 0) {
+              // Take first complete sentence
+              comp.evidence = sentences[0].trim();
+            } else {
+              // No complete sentences, truncate at word boundary
+              const truncated = comp.evidence.substring(0, 200);
+              const lastSpace = truncated.lastIndexOf(' ');
+              comp.evidence = lastSpace > 0 ? truncated.substring(0, lastSpace) + '...' : truncated + '...';
+            }
+          }
+          return comp;
+        });
 
         // Fallback: If GPT returns no competencies, extract from conversation history
         if (competencies.length === 0 && conversationHistory.length > 0) {
@@ -408,10 +312,111 @@ export async function POST(req: NextRequest) {
         throw new Error('Failed to parse GPT response as JSON');
       }
     } else {
+      // Check if GPT returned "FINAL" indicating all 7 purposes are satisfied
+      const trimmedResponse = response.trim();
+      const upperResponse = trimmedResponse.toUpperCase();
+      
+      // Check for FINAL signal - be more flexible in detection (case-insensitive)
+      const isFinalSignal = upperResponse === 'FINAL' || 
+                           upperResponse.startsWith('FINAL') ||
+                           upperResponse.includes('FINAL');
+      
+      if (isFinalSignal) {
+        // GPT determined all 7 purposes are satisfied - trigger final synthesis
+        // Make a recursive call with isFinalTurn=true to get the final summary
+        const finalMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
+          { role: 'system', content: FINAL_TURN_PROMPT },
+        ];
+        
+        conversationHistory.forEach((entry) => {
+          if (entry.question) {
+            finalMessages.push({ role: 'assistant', content: entry.question });
+          }
+          if (entry.answer) {
+            finalMessages.push({ role: 'user', content: entry.answer });
+          }
+        });
+        
+        finalMessages.push({
+          role: 'user',
+          content: `Generate summary and competencies. Select 4-6 from: ${COMPETENCE_LIST}`,
+        });
+        
+        const finalCompletion = await openai.chat.completions.create({
+          model: 'gpt-4o-mini',
+          messages: finalMessages,
+          temperature: 0.7,
+          max_tokens: 2000,
+          response_format: { type: 'json_object' },
+        });
+        
+        const finalResponse = finalCompletion.choices[0]?.message?.content || '';
+        let parsed = JSON.parse(finalResponse);
+        
+        // Handle nested JSON (same logic as above)
+        if (typeof parsed.summary === 'string' && parsed.summary.includes('"summary"')) {
+          try {
+            const innerParsed = JSON.parse(parsed.summary);
+            parsed = innerParsed;
+          } catch (parseError) {
+            // Handle truncation same way as above
+            const summaryRegex = /"summary"\s*:\s*"((?:[^"\\]|\\.|\\n)*?)"(?:\s*[,}])/gs;
+            let summaryMatches: RegExpMatchArray[] = [];
+            let match;
+            while ((match = summaryRegex.exec(parsed.summary)) !== null) {
+              summaryMatches.push(match);
+            }
+            if (summaryMatches.length > 0) {
+              const lastMatch = summaryMatches[summaryMatches.length - 1];
+              parsed.summary = lastMatch[1].replace(/\\n/g, ' ').replace(/\\"/g, '"');
+            }
+          }
+        }
+        
+        let summaryText = parsed.summary || '';
+        let competencies = parsed.competencies || [];
+        
+        if (typeof competencies === 'string') {
+          try {
+            competencies = JSON.parse(competencies);
+          } catch (e) {
+            competencies = [];
+          }
+        }
+        
+        if (!Array.isArray(competencies)) {
+          competencies = [];
+        }
+        
+        competencies = competencies.map((comp: { label: string; evidence?: string } | string) => {
+          if (typeof comp === 'string') {
+            return { label: comp };
+          }
+          return {
+            label: comp.label || comp,
+            evidence: comp.evidence || undefined,
+          };
+        }).filter((comp: { label: string; evidence?: string }) => comp.label);
+        
+        // Fallback: If GPT returns no competencies, extract from conversation history
+        if (competencies.length === 0 && conversationHistory.length > 0) {
+          competencies = extractCompetenciesFromHistory(conversationHistory);
+        }
+        
+        return NextResponse.json({
+          type: 'final',
+          summary: summaryText,
+          competencies: competencies.map((comp: { label: string; evidence?: string } | string) => ({
+            label: typeof comp === 'string' ? comp : comp.label || comp,
+            evidence: typeof comp === 'object' && comp.evidence ? comp.evidence : undefined,
+          })),
+        });
+      }
+      
       // Return question
       return NextResponse.json({
         type: 'question',
-        question: response.trim(),
+        question: trimmedResponse,
       });
     }
   } catch (error) {
@@ -441,4 +446,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-

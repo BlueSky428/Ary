@@ -7,6 +7,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { MessageCircle } from 'lucide-react';
 
 export function Footer() {
   return (
@@ -21,8 +22,11 @@ export function Footer() {
               transition={{ duration: 0.4 }}
               className="text-center md:text-left"
             >
-              <Link href="/" className="inline-block mb-2">
-                <h3 className="text-xl font-bold bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">
+              <Link href="/" className="inline-flex items-center gap-2 mb-2 group">
+                <div className="relative bg-gradient-to-br from-primary-600 to-primary-700 p-1.5 rounded-lg shadow-sm">
+                  <MessageCircle className="w-4 h-4 text-white" strokeWidth={2} />
+                </div>
+                <h3 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
                   Ary
                 </h3>
               </Link>

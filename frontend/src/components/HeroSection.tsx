@@ -6,7 +6,7 @@
  */
 
 import { motion } from 'framer-motion';
-import { Sparkles } from 'lucide-react';
+import { MessageCircle } from 'lucide-react';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -56,9 +56,8 @@ export function HeroSection() {
             className="inline-flex items-center justify-center mb-8"
           >
             <div className="relative">
-              <div className="absolute inset-0 bg-primary-500/20 rounded-full blur-xl" />
-              <div className="relative bg-gradient-to-br from-primary-500 to-primary-600 p-4 rounded-2xl shadow-soft">
-                <Sparkles className="w-8 h-8 text-white" strokeWidth={2} />
+              <div className="relative bg-gradient-to-br from-primary-600 to-primary-700 p-3 rounded-lg shadow-sm">
+                <MessageCircle className="w-6 h-6 text-white" strokeWidth={2} />
               </div>
             </div>
           </motion.div>
