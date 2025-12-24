@@ -428,11 +428,14 @@ export async function POST(req: NextRequest) {
         { status: error.status || 500 }
       );
     }
-
+    
+    // Handle generic errors
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    
     return NextResponse.json(
       {
         error: 'Failed to generate response',
-        message: error.message || 'Unknown error',
+        message: errorMessage,
       },
       { status: 500 }
     );
