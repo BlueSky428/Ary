@@ -277,7 +277,20 @@ export function ConversationFlow() {
   // Start conversation handler
   const handleStartConversation = () => {
     setHasStarted(true);
-    loadNextAIQuestion([], false);
+    
+    // Add initial greeting message
+    const greetingMessage: Message = {
+      questionId: 'greeting',
+      question: "Hi! I'm Ary. Let's explore your collaboration experiences together.",
+      answerId: '',
+      answer: '',
+    };
+    setMessages([greetingMessage]);
+    
+    // Load first AI question after a brief delay
+    setTimeout(() => {
+      loadNextAIQuestion([], false);
+    }, 500);
   };
 
   // Debug: Skip to completion (for testing only)
@@ -545,25 +558,25 @@ export function ConversationFlow() {
         <div className="w-full mx-auto h-full flex flex-col bg-white dark:bg-neutral-900 rounded-2xl shadow-xl border border-neutral-200/50 dark:border-neutral-800/50 overflow-hidden relative">
           
         {/* Header */}
-          <div className="flex-shrink-0 px-6 py-3 border-b border-neutral-200/80 dark:border-neutral-800/80 bg-white dark:bg-neutral-900">
+          <div className="flex-shrink-0 px-6 py-3.5 border-b border-neutral-200/80 dark:border-neutral-800/80 bg-white dark:bg-neutral-900">
             <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary-600 to-primary-700 flex items-center justify-center shadow-sm">
-                  <MessageCircle className="w-5 h-5 text-white" strokeWidth={2} />
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-600 to-primary-700 flex items-center justify-center shadow-sm flex-shrink-0">
+                  <MessageCircle className="w-4 h-4 text-white" strokeWidth={2} />
                 </div>
-                <div>
-                  <h1 className="text-base font-bold text-neutral-900 dark:text-neutral-100">
+                <div className="min-w-0">
+                  <h1 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 leading-none">
                     Ary
                   </h1>
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                    {!hasStarted ? 'Ready to start' : isComplete ? 'Complete' : `${completedSteps}/${totalSteps} purposes completed`}
+                  <p className="text-xs text-neutral-600 dark:text-neutral-500 leading-tight mt-1">
+                    {!hasStarted ? 'Ready to start' : isComplete ? 'Complete' : `${completedSteps}/${totalSteps} completed`}
                   </p>
               </div>
             </div>
               
               {/* Progress Bar - Only show after conversation starts */}
               {hasStarted && (
-                <div className="flex-1 max-w-[200px] ml-4">
+                <div className="flex-1 max-w-[180px] ml-auto">
                   <div className="w-full h-2 bg-neutral-200 dark:bg-neutral-800 rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
@@ -791,7 +804,8 @@ export function ConversationFlow() {
                   </div>
               </div>
 
-              {/* Answer */}
+              {/* Answer - Only show if there's an answer */}
+              {msg.answer && (
                 <div className="flex items-start gap-3 justify-end">
                   <div className="flex-1 min-w-0 flex justify-end">
                     <div className="bg-gradient-to-br from-primary-500 to-primary-600 dark:from-primary-600 dark:to-primary-700 rounded-2xl rounded-tr-md px-4 py-3 relative group inline-block max-w-[85%]">
@@ -804,6 +818,7 @@ export function ConversationFlow() {
                     <span className="text-neutral-600 dark:text-neutral-300 text-xs font-semibold">Y</span>
                   </div>
                 </div>
+              )}
               </div>
           ))}
 
