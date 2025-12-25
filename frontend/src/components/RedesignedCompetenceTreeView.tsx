@@ -283,7 +283,13 @@ export function RedesignedCompetenceTreeView() {
     // First, try to get GPT-provided competencies with evidence
     const gptCompetencies = getGPTCompetencies();
     
-    // Get pillar keywords for matching
+    // DEMO MODE: For collaboration pillar, return ALL GPT competencies without filtering
+    // The conversation is designed for collaboration, so all extracted competencies belong to this pillar
+    if (pillarId === 'collaboration' && gptCompetencies.length > 0) {
+      return gptCompetencies;
+    }
+    
+    // Get pillar keywords for matching (for other pillars in future MVP)
     const pillarKeywords = pillarCompetencies[pillarId]?.keywords || [];
     
     // Match GPT competencies to this pillar using improved matching
