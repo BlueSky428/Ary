@@ -29,6 +29,7 @@ const COLLABORATION_COMPETENCIES = [
 
 interface CompetenceBubble {
   label: string;
+  pillar?: string; // Which pillar this competency belongs to
   evidence?: string; // Optional one-line evidence phrase
 }
 
@@ -264,17 +265,25 @@ export function RedesignedCompetenceTreeView() {
   // Get GPT competencies with evidence (if available)
   const getGPTCompetencies = (): CompetenceBubble[] => {
     // Use state instead of directly accessing sessionStorage
-    if (!gptResult) return [];
+    if (!gptResult) {
+      console.log('[CompetenceTree] No gptResult found');
+      return [];
+    }
     
     try {
       if (gptResult.competencies && Array.isArray(gptResult.competencies)) {
-        return gptResult.competencies.map((comp: { label: string; evidence?: string } | string) => ({
-          label: typeof comp === 'string' ? comp : comp.label || comp,
+        const mapped = gptResult.competencies.map((comp: { label: string; pillar?: string; evidence?: string } | string) => ({
+          label: typeof comp === 'string' ? comp : comp.label || comp || '',
+          pillar: typeof comp === 'object' && comp.pillar ? comp.pillar : undefined,
           evidence: typeof comp === 'object' && comp.evidence ? comp.evidence : undefined,
         }));
+        console.log(`[CompetenceTree] Extracted ${mapped.length} competencies from GPT result:`, mapped.map((c: CompetenceBubble) => `${c.label} (pillar: ${c.pillar || 'none'})`));
+        return mapped;
+      } else {
+        console.log('[CompetenceTree] gptResult.competencies is not an array:', gptResult.competencies);
       }
     } catch (e) {
-      // Failed to parse GPT result, using fallback
+      console.error('[CompetenceTree] Failed to parse GPT result:', e);
     }
     return [];
   };
@@ -283,17 +292,27 @@ export function RedesignedCompetenceTreeView() {
     // First, try to get GPT-provided competencies with evidence
     const gptCompetencies = getGPTCompetencies();
     
-    // DEMO MODE: For collaboration pillar, return ALL GPT competencies without filtering
-    // The conversation is designed for collaboration, so all extracted competencies belong to this pillar
-    if (pillarId === 'collaboration' && gptCompetencies.length > 0) {
-      return gptCompetencies;
+    // Filter competencies by pillar ID (GPT now includes pillar field in each competency)
+    const pillarMatches = gptCompetencies.filter(comp => {
+      // If competency has a pillar field, match by that
+      if (comp.pillar) {
+        return comp.pillar === pillarId;
+      }
+      // Fallback: if no pillar field, use keyword matching (backward compatibility)
+      return false;
+    });
+    
+    // If we have matches by pillar field, return them
+    if (pillarMatches.length > 0) {
+      console.log(`[CompetenceTree] Found ${pillarMatches.length} competencies for pillar '${pillarId}':`, pillarMatches.map(c => c.label));
+      return pillarMatches;
     }
     
-    // Get pillar keywords for matching (for other pillars in future MVP)
+    // Fallback: Get pillar keywords for matching (for old format or backward compatibility)
     const pillarKeywords = pillarCompetencies[pillarId]?.keywords || [];
     
     // Match GPT competencies to this pillar using improved matching
-    const pillarMatches = gptCompetencies.filter(gptComp => {
+    const pillarMatchesByKeywords = gptCompetencies.filter(gptComp => {
       const normalizedLabel = normalize(gptComp.label);
       return pillarKeywords.some(keyword => {
         const normalizedKeyword = normalize(keyword);
@@ -313,8 +332,8 @@ export function RedesignedCompetenceTreeView() {
     });
 
     // If we have GPT matches with evidence, use them directly
-    if (pillarMatches.length > 0) {
-      return pillarMatches;
+    if (pillarMatchesByKeywords.length > 0) {
+      return pillarMatchesByKeywords;
     }
 
     // Fallback: Match result.competencies to pillar keywords (for non-GPT results)

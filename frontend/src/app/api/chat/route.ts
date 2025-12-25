@@ -225,14 +225,24 @@ and do not expect further user input`;
 // System prompt for final turn (summary and competencies) - Professional articulation
 const FINAL_TURN_PROMPT = `You are Ary, an AI system for professional articulation. Your task is to synthesize the user's experience into sophisticated professional competencies and a high-level summary that reveals strategic methodology and thinking.
 
+CRITICAL: Generate competencies for ALL 5 PILLARS, with EXACTLY 4-5 competencies per pillar. Organize competencies by pillar. Each competency must be assigned to the appropriate pillar based on the demonstrated skill/approach revealed in the conversation.
+
+The 5 pillars are:
+1. "collaboration" - Collaboration & Stakeholder Navigation (collaboration, teamwork, stakeholder management, interpersonal skills, communication, support, coordination, relationship building, navigating people dynamics)
+2. "execution" - Execution & Ownership (execution, ownership, delivery, results, implementation, accountability, follow-through, responsibility)
+3. "thinking" - Decision Framing & Judgment (decision-making, judgment, framing, thinking, analysis, strategic thinking, problem-solving, reasoning)
+4. "growth" - Learning & Adaptation (learning, adaptation, growth, development, continuous improvement, skill development, adaptability, resilience)
+5. "purpose" - Initiative & Impact Orientation (initiative, impact, purpose, orientation, proactivity, driving change, goal-setting, vision)
+
 Return ONLY a valid JSON object (no extra text, no markdown):
 
 {
   "summary": "A professional summary in second person (you), written in sophisticated, analytical language. Articulate the strategic methodology and thinking behind their approach. Use high-level conceptual language that reveals HOW and WHY they worked, not just WHAT they did. Frame their actions in terms of strategic principles, problem-framing, knowledge translation, structured execution, and outcome validation. Use sophisticated terminology like 'framed', 'translated', 'structured', 'converted', 'signal', 'boundary setting', 'asymmetry', 'validation'. Write 3-5 sentences that reveal their operational methodology at a high conceptual level.",
   "competencies": [
     {
-      "label": "A sophisticated, conceptual competency label that captures the strategic principle or methodology demonstrated (e.g., 'Outcome Definition & Boundary Setting', 'Complexity Translation Into Actionable Steps', 'Knowledge Gap Translation Across Asymmetry', 'Performance Simulation Under Evaluation'). Focus on HOW they think and operate, not just what they did. Create abstract, professional labels that reveal their approach.",
-      "evidence": "2-3 sentences that explain the strategic thinking and methodology demonstrated. Articulate WHY and HOW this competency was applied, not just describe the actions. Use sophisticated analytical language that reveals their approach to problem-solving, knowledge translation, or execution."
+      "pillar": "collaboration",
+      "label": "A sophisticated, abstract, conceptual competency label that captures the strategic principle or methodology demonstrated in this pillar's domain. Focus on HOW they think and operate, not just what they did. Create unique labels based on their specific approach revealed in the conversation.",
+      "evidence": "2-3 sentences explaining the strategic thinking and methodology demonstrated in this pillar's context. Articulate WHY and HOW this competency was applied, based on what they revealed in the conversation."
     }
   ]
 }
@@ -240,8 +250,8 @@ Return ONLY a valid JSON object (no extra text, no markdown):
 Rules:
 - Return ONLY JSON object, nothing else
 - Summary: Sophisticated, analytical, high-level language. Reveal strategic methodology and thinking. Use conceptual framing (how they framed problems, translated knowledge, structured execution, validated outcomes). Second person (you). Think at the level of operational principles and strategic approaches.
-- Competencies: Generate 4-6 competency labels that are abstract and conceptual, revealing HOW they think and operate. Examples: "Outcome Definition & Boundary Setting", "Complexity Translation Into Actionable Steps", "Knowledge Gap Translation Across Asymmetry", "Structured Preparation & Progress Control", "Performance Simulation Under Evaluation", "Execution Readiness & Signal Amplification". These should reveal their strategic approach, not just list skills.
-- Evidence: For each competency, provide 2-3 sentences explaining the strategic thinking and methodology. Articulate WHY they approached things this way, HOW they applied strategic principles, and WHAT methodology they used. Go beyond describing actions to revealing their operational thinking.
+- Competencies: Generate EXACTLY 4-5 competencies for EACH of the 5 pillars (20-25 total competencies). Each competency object MUST include a "pillar" field with one of: "collaboration", "execution", "thinking", "growth", "purpose". Create unique, abstract, conceptual competency labels based on what they revealed in the conversation. Labels should reveal HOW they think and operate in that pillar's domain. Do not use generic skills - focus on their specific strategic approach and methodology. Always provide exactly 4-5 competencies per pillar.
+- Evidence: For each competency, provide 2-3 sentences explaining the strategic thinking and methodology demonstrated in that pillar's context. Base this on specific details from their conversation. Articulate WHY they approached situations this way, HOW they applied strategic principles, and WHAT methodology they used. Go beyond describing actions to revealing their operational thinking.
 - Language: Use sophisticated, analytical professional language. Think like a strategic consultant or executive coach - reveal methodology, strategic thinking, and operational principles. Use terms like 'framed', 'translated', 'structured', 'enforced', 'validated', 'converted', 'signal', 'asymmetry', 'boundary setting', 'readiness validation'.`;
 
 export async function POST(req: NextRequest) {
@@ -298,7 +308,7 @@ export async function POST(req: NextRequest) {
     if (isFinalTurn) {
       messages.push({
         role: 'user',
-        content: `Generate a professional summary and competencies. Create custom competency labels that accurately reflect their demonstrated skills and expertise. Provide deep insights, strategic value articulation, and professional-level language throughout.`,
+        content: `Generate a professional summary and competencies for ALL 5 PILLARS. Create EXACTLY 4-5 competencies per pillar (20-25 total). Each competency must include a "pillar" field ("collaboration", "execution", "thinking", "growth", or "purpose"). Organize competencies by pillar based on the demonstrated skills/approaches. Focus on HOW they operate (framing, translation, structuring, validation) rather than just WHAT they did. Provide analytical, high-level language that reveals their operational principles.`,
       });
     }
 
@@ -385,15 +395,17 @@ export async function POST(req: NextRequest) {
         }
 
         // Clean up competencies - handle both string and object formats
-        competencies = competencies.map((comp: { label: string; evidence?: string } | string) => {
+        // Support both old format (label, evidence) and new format (pillar, label, evidence)
+        competencies = competencies.map((comp: { label?: string; pillar?: string; evidence?: string } | string) => {
           if (typeof comp === 'string') {
-            return { label: comp };
+            return { label: comp, pillar: undefined };
           }
           return {
-            label: comp.label || comp,
+            label: comp.label || '',
+            pillar: comp.pillar || undefined,
             evidence: comp.evidence || undefined,
           };
-        }).filter((comp: { label: string; evidence?: string }) => comp.label);
+        }).filter((comp: { label: string; pillar?: string; evidence?: string }) => comp.label);
 
         // Handle very long evidence strings (keep longer evidence but ensure it's reasonable)
         competencies = competencies.map((comp: { label: string; evidence?: string }) => {
@@ -481,7 +493,7 @@ export async function POST(req: NextRequest) {
         
         finalMessages.push({
           role: 'user',
-          content: `Generate sophisticated competencies and summary. Create abstract, conceptual competency labels that reveal their strategic methodology and thinking approach. Focus on HOW they operate (framing, translation, structuring, validation) rather than just WHAT they did. Provide analytical, high-level language that reveals their operational principles.`,
+          content: `Generate sophisticated competencies and summary for ALL 5 PILLARS. Create EXACTLY 4-5 competencies per pillar (20-25 total). Each competency must include a "pillar" field ("collaboration", "execution", "thinking", "growth", or "purpose"). Organize competencies by pillar based on the demonstrated skills/approaches. Focus on HOW they operate (framing, translation, structuring, validation) rather than just WHAT they did. Provide analytical, high-level language that reveals their operational principles.`,
         });
         
         const finalCompletion = await openai.chat.completions.create({
