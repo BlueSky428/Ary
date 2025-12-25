@@ -51,14 +51,14 @@ function extractCompetenciesFromHistory(history: ConversationEntry[]): Array<{ l
       );
       
       if (evidenceSentence) {
-        competencies.push({
+      competencies.push({
           label,
           evidence: evidenceSentence.trim().substring(0, 100), // Limit length
-        });
+      });
       } else {
         competencies.push({ label });
-      }
     }
+  }
   });
 
   // If no competencies found, add a default
@@ -321,7 +321,7 @@ export async function POST(req: NextRequest) {
 
         // Handle nested JSON strings (double-encoded)
         if (typeof parsed.summary === 'string' && parsed.summary.includes('"summary"')) {
-          try {
+            try {
             const innerParsed = JSON.parse(parsed.summary);
             parsed = innerParsed;
           } catch (parseError) {
@@ -341,8 +341,8 @@ export async function POST(req: NextRequest) {
             if (summaryMatches.length > 0) {
               const lastMatch = summaryMatches[summaryMatches.length - 1];
               parsed.summary = lastMatch[1].replace(/\\n/g, ' ').replace(/\\"/g, '"');
-            }
-
+              }
+              
             // Extract competencies array using regex
             const compArrayRegex = /"competencies"\s*:\s*\[(.*?)\](?:\s*[,}])/s;
             const compArrayMatch = compArrayRegex.exec(parsed.summary);
@@ -350,22 +350,22 @@ export async function POST(req: NextRequest) {
               const compArrayStr = compArrayMatch[1];
               // Extract individual competence objects
               const compObjRegex = /\{\s*"label"\s*:\s*"([^"]+)"\s*(?:,\s*"evidence"\s*:\s*"([^"]*)")?\s*\}/g;
-              const extractedComps: Array<{ label: string; evidence?: string }> = [];
+                  const extractedComps: Array<{ label: string; evidence?: string }> = [];
               let compMatch;
-              
+                  
               while ((compMatch = compObjRegex.exec(compArrayStr)) !== null) {
-                extractedComps.push({
+                    extractedComps.push({
                   label: compMatch[1],
                   evidence: compMatch[2] || undefined,
-                });
-              }
-              
-              if (extractedComps.length > 0) {
+                    });
+                  }
+                  
+                  if (extractedComps.length > 0) {
                 parsed.competencies = extractedComps;
+                  }
+                }
               }
             }
-          }
-        }
 
         let summaryText = parsed.summary || '';
         let competencies = parsed.competencies || [];
@@ -511,7 +511,7 @@ export async function POST(req: NextRequest) {
             if (summaryMatches.length > 0) {
               const lastMatch = summaryMatches[summaryMatches.length - 1];
               parsed.summary = lastMatch[1].replace(/\\n/g, ' ').replace(/\\"/g, '"');
-            }
+              }
           }
         }
         
@@ -519,7 +519,7 @@ export async function POST(req: NextRequest) {
         let competencies = parsed.competencies || [];
         
         if (typeof competencies === 'string') {
-          try {
+                try {
             competencies = JSON.parse(competencies);
           } catch (e) {
             competencies = [];
@@ -528,7 +528,7 @@ export async function POST(req: NextRequest) {
         
         if (!Array.isArray(competencies)) {
           competencies = [];
-        }
+                  }
         
         competencies = competencies.map((comp: { label: string; evidence?: string } | string) => {
           if (typeof comp === 'string') {
@@ -539,12 +539,12 @@ export async function POST(req: NextRequest) {
             evidence: comp.evidence || undefined,
           };
         }).filter((comp: { label: string; evidence?: string }) => comp.label);
-        
+
         // Fallback: If GPT returns no competencies, extract from conversation history
         if (competencies.length === 0 && conversationHistory.length > 0) {
           competencies = extractCompetenciesFromHistory(conversationHistory);
         }
-        
+
         return NextResponse.json({
           type: 'final',
           summary: summaryText,
@@ -596,7 +596,7 @@ export async function POST(req: NextRequest) {
     
     // Handle generic errors
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    
+
     return NextResponse.json(
       {
         error: 'Failed to generate response',

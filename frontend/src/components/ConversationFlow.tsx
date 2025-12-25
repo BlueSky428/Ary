@@ -501,7 +501,7 @@ Rules:
     // Add initial greeting message
     const greetingMessage: Message = {
       questionId: 'greeting',
-      question: "Hi! I'm Ary. Let's explore your collaboration experiences together.",
+      question: "Hi! I'm Ary.",
       answerId: '',
       answer: '',
     };
