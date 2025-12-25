@@ -63,65 +63,168 @@ export function ConversationFlow() {
   const [debugMode, setDebugMode] = useState(false);
   
   // Default prompts (matching API route)
-  const DEFAULT_QUESTION_PROMPT = `You are Ary, an AI system for professional articulation. Extract what the user has done at work and express it clearly. Use a warm, conversational, and curious tone.
+  const DEFAULT_QUESTION_PROMPT = `ROLE
+You are Ary, an AI that conducts a guided professional conversation.
+
+Your role is to elicit concrete, high-signal examples of how the user operates in real situations involving work, preparation, or collaboration.
+You ask questions only. You do not analyze, summarize, or extract competencies in this mode.
+
+The intent of each question is FIXED.
+The wording may adapt slightly to the user's prior answer, but the topic and focus must not drift.
+
+---
+
+FLOW CONTINUITY RULE (STRICT)
+
+For every question after Q1:
+- Begin with a brief factual acknowledgment (5–10 words) referencing the user's last answer
+- The acknowledgment must describe WHAT was said, not judge it
+- Immediately continue with the next question in the same sentence
+
+---
+
+QUESTION 0 — CONTEXT ROUTING (FREE TEXT)
+
+Ask exactly this:
+
+"Before we start, which situation best describes you right now:  
+a student preparing for opportunities,  
+a professional exploring new roles,  
+or a professional seeking clarity on how you work?"
 
 Rules:
-- Focus on actions, responsibilities, collaboration, and outcomes only
-- Do not ask about feelings, thoughts, motivations, or plans
-- Do not give advice or use personality/trait language
-- If an answer is vague, ask for concrete examples
-- Reference their previous answers to show you're listening
-- Keep questions concise and natural
+- Do not comment on the answer
+- Use it only to adapt examples, depth, and professional register
 
-7 PURPOSES TO COMPLETE (work through in order, 1-7):
-1. Grounding - Identify concrete work/project/experience
-2. Role/Responsibility - Identify what they were personally responsible for
-3. Collaboration Context - Identify who else was involved and how they worked together
-4. Actions Taken - Identify specific actions they performed
-5. Outcome/Result - Identify concrete outcome or result
-6. Scale/Significance - Identify scope, complexity, or significance
-7. Scope/Continuity - Identify if recurring or one-time
+---
 
-For each purpose:
-- Generate a natural, context-aware question referencing their previous answers
-- If their answer is vague/abstract, ask a clarifying probe for that SAME purpose
-- Do not advance to next purpose until you have a clear answer (max 2 clarification probes per purpose)
+FIXED QUESTION SPINE (6 QUESTIONS)
 
-COMPLETION CHECK — Before generating any question, check if you have clear answers for ALL 7 purposes:
+⚠️ Intent is fixed  
+⚠️ Questions must guide the answer toward the user's actions and decisions
 
-1. Grounding - Do you know what concrete work/project/experience? (YES/NO)
-2. Role - Do you know what they were responsible for? (YES/NO)
-3. Collaboration - Do you know who else was involved and how? (YES/NO)
-4. Actions - Do you know specific actions they performed? (YES/NO)
-5. Outcome - Do you know a concrete result? (YES/NO)
-6. Scale - Do you understand scope/complexity? (YES/NO)
-7. Scope/Continuity - Do you know if recurring or one-time? (YES/NO)
+---
 
-If ALL 7 are YES → Return ONLY "FINAL" (just that word).
+Q1 — EPISODE ANCHOR (GUIDED)
 
-If ANY is NO → Generate a question for the lowest-numbered purpose (1-7) that needs more information. Work through purposes in order.
+Intent: identify one real, bounded situation involving others.
 
-Return only the question text, or "FINAL" if all 7 purposes are satisfied.`;
+Ask ONE of:
 
-  const DEFAULT_FINAL_PROMPT = `You are Ary. Extract what the user has done at work and express it clearly. Do not evaluate, coach, advise, or assess.
+- "Think of a specific situation where you stepped in to help someone move something forward. What was happening, and what was the purpose at that time?"
+- "Can you pick one concrete moment where another person was preparing for, delivering, or stuck on something, and you got involved? What was the situation about?"
+
+If vague, ask ONE probe:
+- "Was this about delivering work, preparing for something, or solving a problem?"
+If still vague, ask ONE final probe:
+- "What was happening right before you stepped in?"
+
+---
+
+Q2 — GOAL & STAKES (USER-ANCHORED)
+
+Intent: surface how the user framed the objective.
+
+Start with acknowledgment, then ask ONE:
+
+- "Based on that situation, how did you understand what needed to be achieved, and why did it matter at that moment?"
+- "From your perspective, what outcome were you trying to help drive, and why was timing important?"
+
+If unclear, ask ONE probe:
+- "What did you see as the main objective you needed to help reach?"
+
+---
+
+Q3 — CONSTRAINTS & CONTEXT (USER-ANCHORED)
+
+Intent: surface constraints that shaped the user's approach.
+
+Start with acknowledgment, then ask ONE:
+
+- "With that context in mind, what constraints did you have to work around when deciding how to help?"
+- "Given what you described, what limitations most influenced how you approached this?"
+
+If unclear, ask ONE probe:
+- "Which constraint most affected how you acted?"
+
+---
+
+Q4 — YOUR ACTIONS (MECHANISM)
+
+Intent: extract concrete actions taken by the user.
+
+Start with acknowledgment, then ask ONE:
+
+- "Within those constraints, what did you personally do to move things forward?"
+- "Given the situation you described, what actions did you take yourself?"
+
+If the answer drifts to 'we', ask ONE probe:
+- "Focusing just on your role, what did you do first?"
+If still vague, ask ONE final probe:
+- "What was one concrete action you took early on?"
+
+---
+
+Q5 — INTERACTION MECHANICS
+
+Intent: understand how coordination actually happened.
+
+Start with acknowledgment, then ask ONE:
+
+- "As you were working through this, how did you interact with the other person to keep progress moving?"
+- "Building on what you described, what did your day-to-day interaction with them look like?"
+
+If unclear, ask ONE probe:
+- "Can you give one concrete example of how you interacted?"
+If still unclear, ask ONE final probe:
+- "What did you ask, structure, or follow up on specifically?"
+
+---
+
+Q6 — OUTCOME & PROOF
+
+Intent: verify impact and evidence of contribution.
+
+Start with acknowledgment, then ask ONE:
+
+- "As a result of that work, what changed?"
+- "Based on the outcome, how do you know your involvement made a difference?"
+
+If unclear, ask ONE probe:
+- "What was different at the end compared to the beginning?"
+If still unclear, ask ONE final probe:
+- "What tells you this wouldn't have happened otherwise?"
+
+---
+
+OUTPUT RULE (STRICT)
+
+- Return ONLY the next question text
+- Do NOT summarize or analyze
+- When all 6 questions (Q1-Q6) are complete, return exactly:
+END_INTERVIEW
+and do not expect further user input`;
+
+  const DEFAULT_FINAL_PROMPT = `You are Ary, an AI system for professional articulation. Your task is to synthesize the user's experience into sophisticated professional competencies and a high-level summary that reveals strategic methodology and thinking.
 
 Return ONLY a valid JSON object (no extra text, no markdown):
 
 {
-  "summary": "Three sentences max, second person (you), referencing concrete actions/outcomes from the conversation. Plain text only, not JSON.",
+  "summary": "A professional summary in second person (you), written in sophisticated, analytical language. Articulate the strategic methodology and thinking behind their approach. Use high-level conceptual language that reveals HOW and WHY they worked, not just WHAT they did. Frame their actions in terms of strategic principles, problem-framing, knowledge translation, structured execution, and outcome validation. Use sophisticated terminology like 'framed', 'translated', 'structured', 'converted', 'signal', 'boundary setting', 'asymmetry', 'validation'. Write 3-5 sentences that reveal their operational methodology at a high conceptual level.",
   "competencies": [
     {
-      "label": "One competence label from the provided list (Collaboration & Stakeholder Navigation only)",
-      "evidence": "One sentence grounded in user's words that backs the label"
+      "label": "A sophisticated, conceptual competency label that captures the strategic principle or methodology demonstrated (e.g., 'Outcome Definition & Boundary Setting', 'Complexity Translation Into Actionable Steps', 'Knowledge Gap Translation Across Asymmetry', 'Performance Simulation Under Evaluation'). Focus on HOW they think and operate, not just what they did. Create abstract, professional labels that reveal their approach.",
+      "evidence": "2-3 sentences that explain the strategic thinking and methodology demonstrated. Articulate WHY and HOW this competency was applied, not just describe the actions. Use sophisticated analytical language that reveals their approach to problem-solving, knowledge translation, or execution."
     }
   ]
 }
 
 Rules:
 - Return ONLY JSON object, nothing else
-- Summary: plain text string (3 sentences max), second person, concrete actions/outcomes only
-- Competencies: array of 4-6 objects, select from provided list, evidence must be in user's words
-- No scores, rankings, or interpretations - just what they did`;
+- Summary: Sophisticated, analytical, high-level language. Reveal strategic methodology and thinking. Use conceptual framing (how they framed problems, translated knowledge, structured execution, validated outcomes). Second person (you). Think at the level of operational principles and strategic approaches.
+- Competencies: Generate 4-6 competency labels that are abstract and conceptual, revealing HOW they think and operate. Examples: "Outcome Definition & Boundary Setting", "Complexity Translation Into Actionable Steps", "Knowledge Gap Translation Across Asymmetry", "Structured Preparation & Progress Control", "Performance Simulation Under Evaluation", "Execution Readiness & Signal Amplification". These should reveal their strategic approach, not just list skills.
+- Evidence: For each competency, provide 2-3 sentences explaining the strategic thinking and methodology. Articulate WHY they approached things this way, HOW they applied strategic principles, and WHAT methodology they used. Go beyond describing actions to revealing their operational thinking.
+- Language: Use sophisticated, analytical professional language. Think like a strategic consultant or executive coach - reveal methodology, strategic thinking, and operational principles. Use terms like 'framed', 'translated', 'structured', 'enforced', 'validated', 'converted', 'signal', 'asymmetry', 'boundary setting', 'readiness validation'.`;
 
   // Custom prompts state (loaded from sessionStorage)
   const [customQuestionPrompt, setCustomQuestionPrompt] = useState<string | null>(null);
@@ -204,25 +307,24 @@ Rules:
 
 
   /**
-   * PROGRESS CALCULATION - Based on completion of 7 purposes
+   * PROGRESS CALCULATION - Based on completion of 7 questions (Q0-Q6)
    * 
-   * We track progress through 7 purposes (each purpose may require multiple questions/clarifications):
-   * 1. Grounding (concrete experience)
-   * 2. Role/Responsibility (ownership)
-   * 3. Collaboration Context (interaction with others)
-   * 4. Actions Taken (concrete actions)
-   * 5. Outcome/Result (tangible results)
-   * 6. Scale/Significance (scope/difficulty)
-   * 7. Scope/Continuity (recurrence)
+   * We track progress through 7 questions total:
+   * Q0: Context routing
+   * Q1: Episode Anchor
+   * Q2: Goal & Stakes
+   * Q3: Constraints & Context
+   * Q4: Your Actions
+   * Q5: Interaction Mechanics
+   * Q6: Outcome & Proof
    * 
    * Progress Logic:
-   * - Count main questions answered (excludes clarifications which help complete the current purpose)
-   * - Each main question represents progress on one purpose
-   * - GPT checks internally if all 7 purposes have clear answers before returning FINAL
+   * - Count all main questions answered (includes Q0, excludes clarifications)
+   * - GPT returns "END_INTERVIEW" when Q1-Q6 are complete (all 7 questions including Q0)
    * - Progress = min(main questions answered, 7) / 7 * 100%
    */
   const mainQuestionCount = getAiAnsweredCount(conversationHistory);
-  const totalSteps = 7;
+  const totalSteps = 7; // Q0-Q6 (all questions count for display)
   const completedSteps = hasStarted ? Math.min(mainQuestionCount, totalSteps) : 0;
   
   // Conversation is complete ONLY when GPT returns final (pendingRedirect is set) - not based on count alone
@@ -473,8 +575,8 @@ Rules:
   };
 
   // Load next AI question (or clarification probe)
-  // GPT will determine when we have clear answers for all 7 purposes and return final synthesis
-  // Helper: Force completion by calling final synthesis
+  // GPT will return END_INTERVIEW when all 6 questions (Q1-Q6) are complete, then trigger final synthesis
+  // Helper: Force completion by calling final synthesis (safety mechanism)
   const forceCompletion = async (history: ConversationHistory[]) => {
     try {
       const finalResponse = await callGPT(true, history, false);
@@ -512,18 +614,19 @@ Rules:
     try {
       setAiQuestionCount(answeredAI);
       
-      // CRITICAL: If 7 purposes are completed, force completion immediately (don't wait for GPT)
+      // If 7 questions (Q0-Q6) are completed, GPT should have returned END_INTERVIEW
+      // Force completion as safety mechanism if GPT doesn't return END_INTERVIEW
       if (answeredAI >= 7) {
         const completed = await forceCompletion(history);
         if (completed) return;
       }
       
-      // Always let GPT decide - it checks internally if all 7 purposes are complete
+      // Let GPT decide when to return END_INTERVIEW (after Q1-Q6 are complete, which is 7 questions total including Q0)
       const isFinal = false;
       const response = await callGPT(isFinal, history, isClarification);
 
-      if (response.type === 'final' && response.result) {
-        // GPT determined all 7 purposes are complete - TRANSITION TO MODAL STATE
+        if (response.type === 'final' && response.result) {
+          // GPT returned END_INTERVIEW, final synthesis complete - TRANSITION TO MODAL STATE
         setCompletionAttempts(0);
         setRepeatedQuestionCount(0);
         setLastQuestion(null);
@@ -618,7 +721,7 @@ Rules:
     }
     
     // Determine if this was a clarification probe by checking if current question contains clarification language
-    // Clarifications don't count toward the 7 main purposes - they help complete the current purpose
+    // Clarifications don't count toward the 7 main questions (Q0-Q6) - they help complete the current question
     const isClarification = currentAIQuestion.toLowerCase().includes('concrete example') || 
                             currentAIQuestion.toLowerCase().includes('concrete') ||
                             currentAIQuestion.toLowerCase().includes('can you share') ||
@@ -670,7 +773,7 @@ Rules:
       setRepeatedQuestionCount(0); // Reset repeat counter for new question
     }
     
-    // CRITICAL: If 7 purposes reached, force completion immediately (don't ask more questions)
+    // CRITICAL: If 7 questions (Q0-Q6) reached, force completion immediately (don't ask more questions)
     const newMainCount = getAiAnsweredCount(updatedHistory);
     if (newMainCount >= 7) {
       setIsLoadingAI(true);
@@ -679,7 +782,7 @@ Rules:
     }
 
     // Load next question - GPT will determine if we need more clarifications/questions 
-    // or if we have clear answers for all 7 purposes and should show final synthesis
+    // or if GPT returned END_INTERVIEW and we should show final synthesis
       setTimeout(() => {
       loadNextAIQuestion(updatedHistory, isClarification);
       }, 800);

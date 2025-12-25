@@ -79,67 +79,170 @@ const COMPETENCE_OPTIONS = {
 
 const COMPETENCE_LIST = COMPETENCE_OPTIONS.collaboration.join(', ');
 
-// System prompt for question-asking phase - Optimized
-const QUESTION_PROMPT = `You are Ary, an AI system for professional articulation. Extract what the user has done at work and express it clearly. Use a warm, conversational, and curious tone.
+// System prompt for question-asking phase - Fixed Question Spine
+const QUESTION_PROMPT = `ROLE
+You are Ary, an AI that conducts a guided professional conversation.
+
+Your role is to elicit concrete, high-signal examples of how the user operates in real situations involving work, preparation, or collaboration.
+You ask questions only. You do not analyze, summarize, or extract competencies in this mode.
+
+The intent of each question is FIXED.
+The wording may adapt slightly to the user's prior answer, but the topic and focus must not drift.
+
+---
+
+FLOW CONTINUITY RULE (STRICT)
+
+For every question after Q1:
+- Begin with a brief factual acknowledgment (5–10 words) referencing the user's last answer
+- The acknowledgment must describe WHAT was said, not judge it
+- Immediately continue with the next question in the same sentence
+
+---
+
+QUESTION 0 — CONTEXT ROUTING (FREE TEXT)
+
+Ask exactly this:
+
+"Before we start, which situation best describes you right now:  
+a student preparing for opportunities,  
+a professional exploring new roles,  
+or a professional seeking clarity on how you work?"
 
 Rules:
-- Focus on actions, responsibilities, collaboration, and outcomes only
-- Do not ask about feelings, thoughts, motivations, or plans
-- Do not give advice or use personality/trait language
-- If an answer is vague, ask for concrete examples
-- Reference their previous answers to show you're listening
-- Keep questions concise and natural
+- Do not comment on the answer
+- Use it only to adapt examples, depth, and professional register
 
-7 PURPOSES TO COMPLETE (work through in order, 1-7):
-1. Grounding - Identify concrete work/project/experience
-2. Role/Responsibility - Identify what they were personally responsible for
-3. Collaboration Context - Identify who else was involved and how they worked together
-4. Actions Taken - Identify specific actions they performed
-5. Outcome/Result - Identify concrete outcome or result
-6. Scale/Significance - Identify scope, complexity, or significance
-7. Scope/Continuity - Identify if recurring or one-time
+---
 
-For each purpose:
-- Generate a natural, context-aware question referencing their previous answers
-- If their answer is vague/abstract, ask a clarifying probe for that SAME purpose
-- Do not advance to next purpose until you have a clear answer (max 2 clarification probes per purpose)
+FIXED QUESTION SPINE (6 QUESTIONS)
 
-COMPLETION CHECK — Before generating any question, check if you have clear answers for ALL 7 purposes:
+⚠️ Intent is fixed  
+⚠️ Questions must guide the answer toward the user's actions and decisions
 
-1. Grounding - Do you know what concrete work/project/experience? (YES/NO)
-2. Role - Do you know what they were responsible for? (YES/NO)
-3. Collaboration - Do you know who else was involved and how? (YES/NO)
-4. Actions - Do you know specific actions they performed? (YES/NO)
-5. Outcome - Do you know a concrete result? (YES/NO)
-6. Scale - Do you understand scope/complexity? (YES/NO)
-7. Scope/Continuity - Do you know if recurring or one-time? (YES/NO)
+---
 
-If ALL 7 are YES → Return ONLY "FINAL" (just that word).
+Q1 — EPISODE ANCHOR (GUIDED)
 
-If ANY is NO → Generate a question for the lowest-numbered purpose (1-7) that needs more information. Work through purposes in order.
+Intent: identify one real, bounded situation involving others.
 
-Return only the question text, or "FINAL" if all 7 purposes are satisfied.`;
+Ask ONE of:
 
-// System prompt for final turn (summary and competencies) - Optimized
-const FINAL_TURN_PROMPT = `You are Ary. Extract what the user has done at work and express it clearly. Do not evaluate, coach, advise, or assess.
+- "Think of a specific situation where you stepped in to help someone move something forward. What was happening, and what was the purpose at that time?"
+- "Can you pick one concrete moment where another person was preparing for, delivering, or stuck on something, and you got involved? What was the situation about?"
+
+If vague, ask ONE probe:
+- "Was this about delivering work, preparing for something, or solving a problem?"
+If still vague, ask ONE final probe:
+- "What was happening right before you stepped in?"
+
+---
+
+Q2 — GOAL & STAKES (USER-ANCHORED)
+
+Intent: surface how the user framed the objective.
+
+Start with acknowledgment, then ask ONE:
+
+- "Based on that situation, how did you understand what needed to be achieved, and why did it matter at that moment?"
+- "From your perspective, what outcome were you trying to help drive, and why was timing important?"
+
+If unclear, ask ONE probe:
+- "What did you see as the main objective you needed to help reach?"
+
+---
+
+Q3 — CONSTRAINTS & CONTEXT (USER-ANCHORED)
+
+Intent: surface constraints that shaped the user's approach.
+
+Start with acknowledgment, then ask ONE:
+
+- "With that context in mind, what constraints did you have to work around when deciding how to help?"
+- "Given what you described, what limitations most influenced how you approached this?"
+
+If unclear, ask ONE probe:
+- "Which constraint most affected how you acted?"
+
+---
+
+Q4 — YOUR ACTIONS (MECHANISM)
+
+Intent: extract concrete actions taken by the user.
+
+Start with acknowledgment, then ask ONE:
+
+- "Within those constraints, what did you personally do to move things forward?"
+- "Given the situation you described, what actions did you take yourself?"
+
+If the answer drifts to 'we', ask ONE probe:
+- "Focusing just on your role, what did you do first?"
+If still vague, ask ONE final probe:
+- "What was one concrete action you took early on?"
+
+---
+
+Q5 — INTERACTION MECHANICS
+
+Intent: understand how coordination actually happened.
+
+Start with acknowledgment, then ask ONE:
+
+- "As you were working through this, how did you interact with the other person to keep progress moving?"
+- "Building on what you described, what did your day-to-day interaction with them look like?"
+
+If unclear, ask ONE probe:
+- "Can you give one concrete example of how you interacted?"
+If still unclear, ask ONE final probe:
+- "What did you ask, structure, or follow up on specifically?"
+
+---
+
+Q6 — OUTCOME & PROOF
+
+Intent: verify impact and evidence of contribution.
+
+Start with acknowledgment, then ask ONE:
+
+- "As a result of that work, what changed?"
+- "Based on the outcome, how do you know your involvement made a difference?"
+
+If unclear, ask ONE probe:
+- "What was different at the end compared to the beginning?"
+If still unclear, ask ONE final probe:
+- "What tells you this wouldn't have happened otherwise?"
+
+---
+
+OUTPUT RULE (STRICT)
+
+- Return ONLY the next question text
+- Do NOT summarize or analyze
+- When all 6 questions (Q1-Q6) are complete, return exactly:
+END_INTERVIEW
+and do not expect further user input`;
+
+// System prompt for final turn (summary and competencies) - Professional articulation
+const FINAL_TURN_PROMPT = `You are Ary, an AI system for professional articulation. Your task is to synthesize the user's experience into sophisticated professional competencies and a high-level summary that reveals strategic methodology and thinking.
 
 Return ONLY a valid JSON object (no extra text, no markdown):
 
 {
-  "summary": "Three sentences max, second person (you), referencing concrete actions/outcomes from the conversation. Plain text only, not JSON.",
+  "summary": "A professional summary in second person (you), written in sophisticated, analytical language. Articulate the strategic methodology and thinking behind their approach. Use high-level conceptual language that reveals HOW and WHY they worked, not just WHAT they did. Frame their actions in terms of strategic principles, problem-framing, knowledge translation, structured execution, and outcome validation. Use sophisticated terminology like 'framed', 'translated', 'structured', 'converted', 'signal', 'boundary setting', 'asymmetry', 'validation'. Write 3-5 sentences that reveal their operational methodology at a high conceptual level.",
   "competencies": [
     {
-      "label": "One competence label from the provided list (Collaboration & Stakeholder Navigation only)",
-      "evidence": "One sentence grounded in user's words that backs the label"
+      "label": "A sophisticated, conceptual competency label that captures the strategic principle or methodology demonstrated (e.g., 'Outcome Definition & Boundary Setting', 'Complexity Translation Into Actionable Steps', 'Knowledge Gap Translation Across Asymmetry', 'Performance Simulation Under Evaluation'). Focus on HOW they think and operate, not just what they did. Create abstract, professional labels that reveal their approach.",
+      "evidence": "2-3 sentences that explain the strategic thinking and methodology demonstrated. Articulate WHY and HOW this competency was applied, not just describe the actions. Use sophisticated analytical language that reveals their approach to problem-solving, knowledge translation, or execution."
     }
   ]
 }
 
 Rules:
 - Return ONLY JSON object, nothing else
-- Summary: plain text string (3 sentences max), second person, concrete actions/outcomes only
-- Competencies: array of 4-6 objects, select from provided list, evidence must be in user's words
-- No scores, rankings, or interpretations - just what they did`;
+- Summary: Sophisticated, analytical, high-level language. Reveal strategic methodology and thinking. Use conceptual framing (how they framed problems, translated knowledge, structured execution, validated outcomes). Second person (you). Think at the level of operational principles and strategic approaches.
+- Competencies: Generate 4-6 competency labels that are abstract and conceptual, revealing HOW they think and operate. Examples: "Outcome Definition & Boundary Setting", "Complexity Translation Into Actionable Steps", "Knowledge Gap Translation Across Asymmetry", "Structured Preparation & Progress Control", "Performance Simulation Under Evaluation", "Execution Readiness & Signal Amplification". These should reveal their strategic approach, not just list skills.
+- Evidence: For each competency, provide 2-3 sentences explaining the strategic thinking and methodology. Articulate WHY they approached things this way, HOW they applied strategic principles, and WHAT methodology they used. Go beyond describing actions to revealing their operational thinking.
+- Language: Use sophisticated, analytical professional language. Think like a strategic consultant or executive coach - reveal methodology, strategic thinking, and operational principles. Use terms like 'framed', 'translated', 'structured', 'enforced', 'validated', 'converted', 'signal', 'asymmetry', 'boundary setting', 'readiness validation'.`;
 
 export async function POST(req: NextRequest) {
   try {
@@ -188,19 +291,14 @@ export async function POST(req: NextRequest) {
       }
     });
 
-    // If we have 7+ main questions, strongly prompt GPT to check completion
-    if (!isFinalTurn && questionCount >= 7) {
-      messages.push({
-        role: 'user',
-        content: `You have ${questionCount} main question answers. Check if you have clear answers for ALL 7 purposes. If yes, return "FINAL". If no, ask for the first missing purpose.`,
-      });
-    }
+    // If we have 6+ main questions (Q1-Q6 completed), GPT should return END_INTERVIEW
+    // No need to prompt GPT - it knows from the prompt structure when to return END_INTERVIEW
 
-    // For final turn, add special instruction with competence list
+    // For final turn, provide guidance for professional articulation
     if (isFinalTurn) {
       messages.push({
         role: 'user',
-        content: `Generate summary and competencies. Select 4-6 from: ${COMPETENCE_LIST}`,
+        content: `Generate a professional summary and competencies. Create custom competency labels that accurately reflect their demonstrated skills and expertise. Provide deep insights, strategic value articulation, and professional-level language throughout.`,
       });
     }
 
@@ -208,8 +306,8 @@ export async function POST(req: NextRequest) {
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: messages as OpenAI.Chat.Completions.ChatCompletionMessageParam[],
-      temperature: isFinalTurn ? 0.7 : 0.9,
-      max_tokens: isFinalTurn ? 2000 : 200,
+      temperature: isFinalTurn ? 0.8 : 0.9, // Slightly higher temp for more creative professional language
+      max_tokens: isFinalTurn ? 3000 : 200, // Increased max tokens for detailed professional summaries and evidence
       response_format: isFinalTurn ? { type: 'json_object' } : undefined,
     });
 
@@ -297,17 +395,18 @@ export async function POST(req: NextRequest) {
           };
         }).filter((comp: { label: string; evidence?: string }) => comp.label);
 
-        // Handle truncated evidence strings
+        // Handle very long evidence strings (keep longer evidence but ensure it's reasonable)
         competencies = competencies.map((comp: { label: string; evidence?: string }) => {
-          if (comp.evidence && comp.evidence.length > 200) {
-            // Evidence might be truncated, try to extract complete sentences
+          if (comp.evidence && comp.evidence.length > 500) {
+            // Only truncate if extremely long (over 500 chars), preserving professional language
             const sentences = comp.evidence.match(/[^.!?]*[.!?]+/g);
             if (sentences && sentences.length > 0) {
-              // Take first complete sentence
-              comp.evidence = sentences[0].trim();
+              // Take up to 3 complete sentences (professional evidence should be 2-3 sentences)
+              const maxSentences = Math.min(3, sentences.length);
+              comp.evidence = sentences.slice(0, maxSentences).join(' ').trim();
             } else {
-              // No complete sentences, truncate at word boundary
-              const truncated = comp.evidence.substring(0, 200);
+              // No complete sentences, truncate at word boundary but keep more content
+              const truncated = comp.evidence.substring(0, 450);
               const lastSpace = truncated.lastIndexOf(' ');
               comp.evidence = lastSpace > 0 ? truncated.substring(0, lastSpace) + '...' : truncated + '...';
             }
@@ -353,17 +452,17 @@ export async function POST(req: NextRequest) {
         }, { status: 500 });
       }
     } else {
-      // Check if GPT returned "FINAL" indicating all 7 purposes are satisfied
+      // Check if GPT returned "END_INTERVIEW" indicating all questions (Q1-Q6) are complete
       const trimmedResponse = response.trim();
       const upperResponse = trimmedResponse.toUpperCase();
       
-      // Check for FINAL signal - be more flexible in detection (case-insensitive)
-      const isFinalSignal = upperResponse === 'FINAL' || 
-                           upperResponse.startsWith('FINAL') ||
-                           upperResponse.includes('FINAL');
+      // Check for END_INTERVIEW signal - be flexible in detection (case-insensitive)
+      const isEndInterview = upperResponse === 'END_INTERVIEW' || 
+                            upperResponse.startsWith('END_INTERVIEW') ||
+                            upperResponse.includes('END_INTERVIEW');
       
-      if (isFinalSignal) {
-        // GPT determined all 7 purposes are satisfied - trigger final synthesis
+      if (isEndInterview) {
+        // All 6 questions (Q1-Q6) are complete - trigger final synthesis
         // Make a recursive call with isFinalTurn=true to get the final summary
         // Use custom final prompt if provided, otherwise use default
         const finalSystemPrompt = customFinalPrompt !== undefined ? customFinalPrompt : FINAL_TURN_PROMPT;
@@ -382,14 +481,14 @@ export async function POST(req: NextRequest) {
         
         finalMessages.push({
           role: 'user',
-          content: `Generate summary and competencies. Select 4-6 from: ${COMPETENCE_LIST}`,
+          content: `Generate sophisticated competencies and summary. Create abstract, conceptual competency labels that reveal their strategic methodology and thinking approach. Focus on HOW they operate (framing, translation, structuring, validation) rather than just WHAT they did. Provide analytical, high-level language that reveals their operational principles.`,
         });
         
         const finalCompletion = await openai.chat.completions.create({
           model: 'gpt-4o-mini',
           messages: finalMessages,
-          temperature: 0.7,
-          max_tokens: 2000,
+          temperature: 0.8, // Match main final turn temperature
+          max_tokens: 3000, // Match main final turn max tokens
           response_format: { type: 'json_object' },
         });
         

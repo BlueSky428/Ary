@@ -243,7 +243,8 @@ export function RedesignedCompetenceTreeView() {
       comps.some(pc => normalize(pc) === normalize(comp) || normalize(comp).includes(normalize(pc)) || normalize(pc).includes(normalize(comp)))
     );
     // For demo: Only Collaboration is active, all others are locked
-    const isActive = id === 'collaboration' && matched.length > 0;
+    // Collaboration should always be active (regardless of matches, as matching happens in getPillarCompetencies)
+    const isActive = id === 'collaboration';
     const isLocked = id !== 'collaboration';
     return {
       id,
