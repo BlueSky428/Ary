@@ -487,7 +487,7 @@ export async function POST(req: NextRequest) {
         const finalCompletion = await openai.chat.completions.create({
           model: 'gpt-4o-mini',
           messages: finalMessages,
-          temperature: 0.8, // Match main final turn temperature
+          temperature: 0.5, // Match main final turn temperature
           max_tokens: 3000, // Match main final turn max tokens
           response_format: { type: 'json_object' },
         });
