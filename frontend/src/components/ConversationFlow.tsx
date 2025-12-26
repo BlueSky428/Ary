@@ -877,7 +877,7 @@ Rules:
                     Welcome to Ary
                   </h2>
                   <p className="text-neutral-600 dark:text-neutral-400">
-                    Let's explore your professional experience together
+                    A conversation to surface execution patterns in real situations
                   </p>
                 </div>
 
@@ -889,51 +889,7 @@ Rules:
                         How This Works
                       </h3>
                       <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed">
-                        I'll ask you 7 questions about your work experiences. Please answer with concrete examples of what you've actually done, focusing on actions, responsibilities, and outcomes.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4 mb-8">
-                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-3">
-                    Guidelines
-                  </h3>
-                  
-                  <div className="space-y-3">
-                    <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-primary-500 text-white flex items-center justify-center flex-shrink-0 mt-0.5 text-sm font-semibold">
-                        1
-                      </div>
-                      <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed">
-                        <strong className="text-neutral-900 dark:text-neutral-100">Focus on actions:</strong> Describe what you did, not how you felt or what you plan to do.
-                      </p>
-                    </div>
-
-                    <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-primary-500 text-white flex items-center justify-center flex-shrink-0 mt-0.5 text-sm font-semibold">
-                        2
-                      </div>
-                      <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed">
-                        <strong className="text-neutral-900 dark:text-neutral-100">Be specific:</strong> Provide concrete examples with actual situations, roles, and outcomes.
-                      </p>
-                    </div>
-
-                    <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-primary-500 text-white flex items-center justify-center flex-shrink-0 mt-0.5 text-sm font-semibold">
-                        3
-                      </div>
-                      <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed">
-                        <strong className="text-neutral-900 dark:text-neutral-100">Collaboration focus:</strong> We'll explore how you work with others and navigate stakeholders.
-                      </p>
-                    </div>
-
-                    <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-primary-500 text-white flex items-center justify-center flex-shrink-0 mt-0.5 text-sm font-semibold">
-                        4
-                      </div>
-                      <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed">
-                        <strong className="text-neutral-900 dark:text-neutral-100">Clarification is okay:</strong> I may ask follow-up questions if I need more detail - these don't count toward the 7 questions.
+                        Ary will ask 7 questions about a real situation involving work, preparation, or collaboration.
                       </p>
                     </div>
                   </div>
@@ -991,25 +947,25 @@ Rules:
                   
                   <div className="bg-gradient-to-br from-primary-50 to-accent-50/30 dark:from-primary-950/20 dark:to-accent-950/10 rounded-2xl p-8 mb-6 border border-primary-200/50 dark:border-primary-800/50 space-y-4 text-left">
                     <p className="text-lg text-neutral-700 dark:text-neutral-300 leading-relaxed">
-                      Thank you for sharing your professional experiences with me. I&apos;ve analyzed your responses and prepared a comprehensive reflection.
+                    The structured input phase is finished.
                     </p>
                     
                     <div className="pt-4 border-t border-primary-200/50 dark:border-primary-700/50">
                       <p className="text-base font-semibold text-neutral-900 dark:text-neutral-100 mb-3">
-                        What you&apos;ll see next:
+                      What happens next:
                       </p>
                       <ul className="space-y-2 text-neutral-700 dark:text-neutral-300">
                         <li className="flex items-start gap-2">
                           <span className="text-primary-600 dark:text-primary-400 mt-1">•</span>
-                          <span>Your <strong>Competence Tree</strong> visualization showing your collaboration and stakeholder navigation strengths</span>
+                          <span>A capability articulation is generated from the interaction</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <span className="text-primary-600 dark:text-primary-400 mt-1">•</span>
-                          <span>A detailed <strong>summary</strong> of our conversation</span>
+                          <span>Output is rendered as a structured projection</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <span className="text-primary-600 dark:text-primary-400 mt-1">•</span>
-                          <span>Specific <strong>competencies</strong> identified from your responses with evidence</span>
+                          <span>No additional input is required</span>
                         </li>
                       </ul>
                     </div>
