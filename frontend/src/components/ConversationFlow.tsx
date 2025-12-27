@@ -1340,20 +1340,20 @@ Return ONLY the JSON object, nothing else.`;
         </div>
       </div>
 
-      {/* Prompt Edit Panel - Always Available */}
-      <PromptEditPanel
+      {/* Prompt Edit Panel - Hidden */}
+      {/* <PromptEditPanel
         questionPrompt={customQuestionPrompt || DEFAULT_QUESTION_PROMPT}
         finalPrompt={customFinalPrompt || DEFAULT_FINAL_PROMPT}
         compilerPrompt={customCompilerPrompt || DEFAULT_COMPILER_PROMPT}
         onSave={handleSavePrompts}
         onReset={handleResetPrompts}
-      />
+      /> */}
 
-      {/* GPT Debug Panel - Always Available */}
-      <GPTDebugPanel
+      {/* GPT Debug Panel - Hidden */}
+      {/* <GPTDebugPanel
         entries={gptDebugEntries}
         onClear={() => setGptDebugEntries([])}
-      />
+      /> */}
     </div>
   );
 }
