@@ -236,9 +236,49 @@ Rules:
 - Evidence: For each competency, provide 2-3 sentences explaining the strategic thinking and methodology demonstrated in that pillar's context. Base this on specific details from their conversation. Articulate WHY they approached situations this way, HOW they applied strategic principles, and WHAT methodology they used. Go beyond describing actions to revealing their operational thinking.
 - Language: Use sophisticated, analytical professional language. Think like a strategic consultant or executive coach - reveal methodology, strategic thinking, and operational principles. Use terms like 'framed', 'translated', 'structured', 'enforced', 'validated', 'converted', 'signal', 'asymmetry', 'boundary setting', 'readiness validation'.`;
 
+  const DEFAULT_COMPILER_PROMPT = `You are Ary's articulation compiler. Your task is to transform raw conversation transcripts into clean, neutral, domain-agnostic narratives.
+
+INPUT: A raw conversation transcript containing:
+- Questions and answers in natural language
+- Personal address ("you", "I", "my")
+- Reflection-style phrasing
+- Conversational elements
+- Outcome language
+
+YOUR TASK: Rewrite the conversation into a single, continuous narrative paragraph that:
+- Removes all personal address (replace "you"/"I" with neutral terms like "the professional", "the individual", "they")
+- Removes reflection language and conversational phrasing
+- Removes personal pronouns and ownership language
+- Preserves only: actions, sequence, structure, verification logic
+- Uses neutral, third-person perspective
+- Maintains temporal sequence of events
+- Keeps verification/outcome logic intact
+
+OUTPUT FORMAT:
+Return ONLY a valid JSON object:
+{
+  "narrative": "A single continuous paragraph describing the situation, actions, and outcomes in neutral, third-person language. The narrative should flow naturally from beginning to end, describing what happened, how it was structured, and how effectiveness was verified."
+}
+
+CRITICAL RULES:
+- Do NOT analyze or extract competencies (that happens in the next step)
+- Do NOT summarize - rewrite the entire narrative
+- Do NOT use second person ("you") or first person ("I")
+- Do NOT include reflection or meta-commentary
+- Do preserve the logical sequence and structure of what happened
+- Do use professional, neutral language
+- The output should read like a factual case study, not a conversation
+
+Example transformation:
+Input: "I first talked to him to grasp his knowledge, then I could identify what was missing from the job description because I have a good understanding of the trading activity described"
+Output: "The professional began by assessing the individual's existing knowledge against formal role requirements to identify key gaps."
+
+Return ONLY the JSON object, nothing else.`;
+
   // Custom prompts state (loaded from sessionStorage)
   const [customQuestionPrompt, setCustomQuestionPrompt] = useState<string | null>(null);
   const [customFinalPrompt, setCustomFinalPrompt] = useState<string | null>(null);
+  const [customCompilerPrompt, setCustomCompilerPrompt] = useState<string | null>(null);
   
   // GPT Debug history state
   const [gptDebugEntries, setGptDebugEntries] = useState<GPTDebugEntry[]>([]);
@@ -248,6 +288,7 @@ Rules:
   const [aiQuestionCount, setAiQuestionCount] = useState(0);
   const [textAnswer, setTextAnswer] = useState('');
   const [isLoadingAI, setIsLoadingAI] = useState(false);
+  const [loadingStep, setLoadingStep] = useState<'question' | 'compiler' | 'final' | null>(null);
   
   // CRITICAL STATE VARIABLES - determine which state we're in (MUTUALLY EXCLUSIVE)
   const [currentAIQuestion, setCurrentAIQuestion] = useState<string | null>(null); // CHATTING state when set
@@ -388,11 +429,77 @@ Rules:
     router.push('/competence-tree');
   }, [router]);
 
+  // Call compiler API to convert raw conversation to clean narrative
+  const callCompiler = async (
+    historySnapshot: ConversationHistory[]
+  ): Promise<{ type: 'compiled'; narrative: string } | null> => {
+    try {
+      const requestBody: any = {
+        conversationHistory: historySnapshot.map(h => ({
+          question: h.question,
+          answer: h.answer,
+        })),
+        questionCount: getAiAnsweredCount(historySnapshot),
+        isFinalTurn: false,
+        isCompiler: true,
+      };
+
+      // Include custom compiler prompt if it exists
+      if (customCompilerPrompt !== null) {
+        requestBody.customCompilerPrompt = customCompilerPrompt;
+      }
+
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Compiler API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      // Capture debug information for compiler
+      if (data.debug) {
+        const debugEntry: GPTDebugEntry = {
+          id: `compiler-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          timestamp: new Date(),
+          type: 'compiler',
+          request: data.debug.request || {
+            messages: [],
+            model: 'gpt-4o-mini',
+            temperature: 0.7,
+            max_tokens: 1000,
+          },
+          response: {
+            type: 'compiled',
+            content: data.narrative || '',
+            raw: data.debug.rawResponse,
+          },
+        };
+        setGptDebugEntries(prev => [...prev, debugEntry]);
+      }
+      
+      if (data.type === 'compiled' && data.narrative) {
+        return { type: 'compiled', narrative: data.narrative };
+      } else {
+        console.error('[callCompiler] Unexpected response format:', data);
+        return null;
+      }
+    } catch (error) {
+      console.error('[callCompiler] Error calling compiler:', error);
+      return null;
+    }
+  };
+
   // Call GPT API for next question or final synthesis
   const callGPT = async (
     isFinal: boolean,
     historySnapshot: ConversationHistory[],
-    isClarification: boolean = false
+    isClarification: boolean = false,
+    compiledNarrative?: string
   ): Promise<{ type: 'question' | 'final'; question?: string; result?: GPTResult }> => {
     try {
       // Always include custom prompts if they exist (even if empty string, pass them)
@@ -405,6 +512,11 @@ Rules:
         isFinalTurn: isFinal,
         isClarification: isClarification,
       };
+
+      // Include compiled narrative if provided
+      if (compiledNarrative) {
+        requestBody.compiledNarrative = compiledNarrative;
+      }
 
       // Include custom prompts if they exist
       if (customQuestionPrompt !== null) {
@@ -588,9 +700,29 @@ Rules:
   // Load next AI question (or clarification probe)
   // GPT will return END_INTERVIEW when all 6 questions (Q1-Q6) are complete, then trigger final synthesis
   // Helper: Force completion by calling final synthesis (safety mechanism)
+  // Two-step process: 1) Compile raw transcript to clean narrative, 2) Extract competencies from compiled narrative
   const forceCompletion = async (history: ConversationHistory[]) => {
     try {
-      const finalResponse = await callGPT(true, history, false);
+      // Step 1: Call compiler to convert raw conversation to clean narrative
+      console.log('[forceCompletion] Step 1: Calling compiler to convert raw transcript to clean narrative');
+      setLoadingStep('compiler');
+      const compilerResult = await callCompiler(history);
+      
+      let compiledNarrative: string | undefined;
+      
+      if (compilerResult && compilerResult.type === 'compiled' && compilerResult.narrative) {
+        compiledNarrative = compilerResult.narrative;
+        console.log('[forceCompletion] Compiler successful, compiled narrative length:', compiledNarrative.length);
+      } else {
+        // Compiler failed - fall back to direct final extraction (backward compatibility)
+        console.warn('[forceCompletion] Compiler failed, falling back to direct final extraction');
+      }
+      
+      // Step 2: Call final extraction with compiled narrative (or raw history if compiler failed)
+      console.log('[forceCompletion] Step 2: Calling final extraction with', compiledNarrative ? 'compiled narrative' : 'raw conversation history');
+      setLoadingStep('final');
+      const finalResponse = await callGPT(true, history, false, compiledNarrative);
+      
       if (finalResponse.type === 'final' && finalResponse.result) {
         setCompletionAttempts(0);
         setRepeatedQuestionCount(0);
@@ -599,11 +731,33 @@ Rules:
         setIsAIQuestion(false);
         setPendingRedirect({ history, result: finalResponse.result });
         setIsLoadingAI(false);
+        setLoadingStep(null);
         return true;
-        }
+      }
     } catch (error) {
-      console.error('Error forcing completion:', error);
+      console.error('[forceCompletion] Error in completion process:', error);
+      // Try fallback: direct extraction without compiler
+      try {
+        console.log('[forceCompletion] Attempting fallback: direct extraction without compiler');
+        setLoadingStep('final');
+        const fallbackResponse = await callGPT(true, history, false);
+        if (fallbackResponse.type === 'final' && fallbackResponse.result) {
+          setCompletionAttempts(0);
+          setRepeatedQuestionCount(0);
+          setLastQuestion(null);
+          setCurrentAIQuestion(null);
+          setIsAIQuestion(false);
+          setPendingRedirect({ history, result: fallbackResponse.result });
+          setIsLoadingAI(false);
+          setLoadingStep(null);
+          return true;
+        }
+      } catch (fallbackError) {
+        console.error('[forceCompletion] Fallback also failed:', fallbackError);
+        setLoadingStep(null);
+      }
     }
+    setLoadingStep(null);
     return false;
   };
 
@@ -622,14 +776,32 @@ Rules:
     const answeredAI = getAiAnsweredCount(history);
     
     setIsLoadingAI(true);
+    setLoadingStep('question');
     try {
       setAiQuestionCount(answeredAI);
       
       // If 7 questions (Q0-Q6) are completed, GPT should have returned END_INTERVIEW
       // Force completion as safety mechanism if GPT doesn't return END_INTERVIEW
       if (answeredAI >= 7) {
+        console.log('[ConversationFlow] loadNextAIQuestion: 7 questions completed, forcing final synthesis');
         const completed = await forceCompletion(history);
-        if (completed) return;
+        if (completed) {
+          console.log('[ConversationFlow] loadNextAIQuestion: Final synthesis completed successfully');
+          return; // Success
+        } else {
+          // Retry once
+          console.error('[ConversationFlow] loadNextAIQuestion: Completion failed, retrying...');
+          const retryCompleted = await forceCompletion(history);
+          if (retryCompleted) {
+            console.log('[ConversationFlow] loadNextAIQuestion: Retry successful');
+            return;
+          } else {
+            console.error('[ConversationFlow] loadNextAIQuestion: Both attempts failed. Stopping.');
+            setIsLoadingAI(false);
+            setLoadingStep(null);
+            return; // CRITICAL: Don't continue to ask more questions
+          }
+        }
       }
       
       // Let GPT decide when to return END_INTERVIEW (after Q1-Q6 are complete, which is 7 questions total including Q0)
@@ -645,6 +817,7 @@ Rules:
         setIsAIQuestion(false);
         setPendingRedirect({ history, result: response.result }); // Set redirect → enter MODAL state
         setIsLoadingAI(false);
+        setLoadingStep(null);
         return; // Conversation complete
       } 
       
@@ -675,21 +848,28 @@ Rules:
       // Unexpected response - log and try to continue
       console.warn('Unexpected GPT response:', response);
       setIsLoadingAI(false);
+      setLoadingStep(null);
     } catch (error) {
       console.error('Error loading next question:', error);
       setIsLoadingAI(false);
+      setLoadingStep(null);
       // On error, if we have 7+ questions, assume completion and try to finish
       if (answeredAI >= 7) {
         try {
+          setLoadingStep('final');
           const finalResponse = await callGPT(true, history, false);
           if (finalResponse.type === 'final' && finalResponse.result) {
             setCurrentAIQuestion(null);
             setIsAIQuestion(false);
             setPendingRedirect({ history, result: finalResponse.result });
+            setIsLoadingAI(false);
+            setLoadingStep(null);
           }
         } catch (finalError) {
           // If final synthesis fails, redirect anyway
-      setTimeout(() => navigateToResults(history), 1500);
+          setIsLoadingAI(false);
+          setLoadingStep(null);
+          setTimeout(() => navigateToResults(history), 1500);
         }
       }
     }
@@ -787,16 +967,32 @@ Rules:
     // CRITICAL: If 7 questions (Q0-Q6) reached, force completion immediately (don't ask more questions)
     const newMainCount = getAiAnsweredCount(updatedHistory);
     if (newMainCount >= 7) {
+      console.log('[ConversationFlow] handleTextAnswerSubmit: 7 questions reached, forcing completion');
       setIsLoadingAI(true);
       const completed = await forceCompletion(updatedHistory);
-      if (completed) return;
+      if (completed) {
+        console.log('[ConversationFlow] handleTextAnswerSubmit: Completion successful');
+        return; // Success - stop here
+      } else {
+        // Retry once in case of transient failure
+        console.error('[ConversationFlow] handleTextAnswerSubmit: Completion failed, retrying once...');
+        const retryCompleted = await forceCompletion(updatedHistory);
+        if (retryCompleted) {
+          console.log('[ConversationFlow] handleTextAnswerSubmit: Retry successful');
+          return; // Retry successful
+        } else {
+          console.error('[ConversationFlow] handleTextAnswerSubmit: Retry also failed. Stopping to prevent infinite loop.');
+          setIsLoadingAI(false);
+          setLoadingStep(null);
+          return; // CRITICAL: Stop here - don't continue to loadNextAIQuestion
+        }
+      }
     }
 
-    // Load next question - GPT will determine if we need more clarifications/questions 
-    // or if GPT returned END_INTERVIEW and we should show final synthesis
-      setTimeout(() => {
+    // Load next question - ONLY if we haven't reached 7 questions
+    setTimeout(() => {
       loadNextAIQuestion(updatedHistory, isClarification);
-      }, 800);
+    }, 800);
   };
 
   const handleFinish = () => {
@@ -1057,7 +1253,7 @@ Rules:
               </motion.div>
             )}
 
-            {/* Loading AI Question - Show while loading next question (CHATTING state) */}
+            {/* Loading States - Show specific message for each step */}
             {hasStarted && isLoadingAI && !pendingRedirect && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -1066,36 +1262,19 @@ Rules:
               >
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-600 to-primary-700 flex items-center justify-center flex-shrink-0 shadow-sm">
                   <Loader2 className="w-4 h-4 text-white animate-spin" />
-                  </div>
-                <div className="flex-shrink-0">
-                  <div className="bg-neutral-100 dark:bg-neutral-800 rounded-2xl rounded-tl-md px-4 py-3 inline-block">
-                    <p className="text-neutral-500 dark:text-neutral-400 text-[15px]">
-                      Thinking...
-                </p>
-                  </div>
-                </div>
-              </motion.div>
-          )}
-
-
-            {/* Loading Final Synthesis - Show while loading final synthesis (transitioning to MODAL state) */}
-            {hasStarted && isLoadingAI && pendingRedirect === null && mainQuestionCount >= 7 && (
-            <motion.div
-                initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-                className="flex items-start gap-3"
-              >
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-600 to-primary-700 flex items-center justify-center flex-shrink-0 shadow-sm">
-                  <Loader2 className="w-4 h-4 text-white animate-spin" />
                 </div>
                 <div className="flex-shrink-0">
                   <div className="bg-neutral-100 dark:bg-neutral-800 rounded-2xl rounded-tl-md px-4 py-3 inline-block">
                     <p className="text-neutral-500 dark:text-neutral-400 text-[15px]">
-                      Analyzing your responses...
+                      {loadingStep === 'compiler' 
+                        ? 'Compiling narrative...' 
+                        : loadingStep === 'final' 
+                        ? 'Extracting competencies...' 
+                        : 'Thinking...'}
                     </p>
                   </div>
                 </div>
-            </motion.div>
+              </motion.div>
             )}
 
             <div ref={messagesEndRef} />
@@ -1154,6 +1333,7 @@ Rules:
       <PromptEditPanel
         questionPrompt={customQuestionPrompt || DEFAULT_QUESTION_PROMPT}
         finalPrompt={customFinalPrompt || DEFAULT_FINAL_PROMPT}
+        compilerPrompt={customCompilerPrompt || DEFAULT_COMPILER_PROMPT}
         onSave={handleSavePrompts}
         onReset={handleResetPrompts}
       />

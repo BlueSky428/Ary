@@ -12,31 +12,35 @@ import { Settings, X, Save, RotateCcw } from 'lucide-react';
 interface PromptEditPanelProps {
   questionPrompt: string;
   finalPrompt: string;
-  onSave: (questionPrompt: string, finalPrompt: string) => void;
+  compilerPrompt: string;
+  onSave: (questionPrompt: string, finalPrompt: string, compilerPrompt: string) => void;
   onReset: () => void;
 }
 
-export function PromptEditPanel({ questionPrompt, finalPrompt, onSave, onReset }: PromptEditPanelProps) {
+export function PromptEditPanel({ questionPrompt, finalPrompt, compilerPrompt, onSave, onReset }: PromptEditPanelProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [localQuestionPrompt, setLocalQuestionPrompt] = useState(questionPrompt);
   const [localFinalPrompt, setLocalFinalPrompt] = useState(finalPrompt);
+  const [localCompilerPrompt, setLocalCompilerPrompt] = useState(compilerPrompt);
   const [isDirty, setIsDirty] = useState(false);
 
   // Update local state when props change
   useEffect(() => {
     setLocalQuestionPrompt(questionPrompt);
     setLocalFinalPrompt(finalPrompt);
+    setLocalCompilerPrompt(compilerPrompt);
     setIsDirty(false);
-  }, [questionPrompt, finalPrompt]);
+  }, [questionPrompt, finalPrompt, compilerPrompt]);
 
   const handleSave = () => {
-    onSave(localQuestionPrompt, localFinalPrompt);
+    onSave(localQuestionPrompt, localFinalPrompt, localCompilerPrompt);
     setIsDirty(false);
   };
 
   const handleReset = () => {
     setLocalQuestionPrompt(questionPrompt);
     setLocalFinalPrompt(finalPrompt);
+    setLocalCompilerPrompt(compilerPrompt);
     setIsDirty(false);
     onReset();
   };
@@ -44,9 +48,11 @@ export function PromptEditPanel({ questionPrompt, finalPrompt, onSave, onReset }
   // Update dirty state when prompts change
   useEffect(() => {
     setIsDirty(
-      localQuestionPrompt !== questionPrompt || localFinalPrompt !== finalPrompt
+      localQuestionPrompt !== questionPrompt || 
+      localFinalPrompt !== finalPrompt ||
+      localCompilerPrompt !== compilerPrompt
     );
-  }, [localQuestionPrompt, localFinalPrompt, questionPrompt, finalPrompt]);
+  }, [localQuestionPrompt, localFinalPrompt, localCompilerPrompt, questionPrompt, finalPrompt, compilerPrompt]);
 
   if (!isOpen) {
     return (
@@ -77,7 +83,7 @@ export function PromptEditPanel({ questionPrompt, finalPrompt, onSave, onReset }
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
           onClick={(e) => e.stopPropagation()}
-          className="bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col border border-neutral-200 dark:border-neutral-800"
+          className="bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col border border-neutral-200 dark:border-neutral-800"
         >
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-neutral-200 dark:border-neutral-800">
@@ -110,10 +116,26 @@ export function PromptEditPanel({ questionPrompt, finalPrompt, onSave, onReset }
               />
             </div>
 
+            {/* Compiler Prompt */}
+            <div>
+              <label className="block text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
+                Compiler Prompt (COMPILER_PROMPT) - Articulation Pre-Processor
+              </label>
+              <textarea
+                value={localCompilerPrompt}
+                onChange={(e) => setLocalCompilerPrompt(e.target.value)}
+                className="w-full h-48 p-4 bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-lg font-mono text-sm text-neutral-900 dark:text-neutral-100 resize-y focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400"
+                placeholder="Enter compiler prompt..."
+              />
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                Transforms raw conversation transcript to clean, neutral narrative
+              </p>
+            </div>
+
             {/* Final Prompt */}
             <div>
               <label className="block text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
-                Final Turn Prompt (FINAL_TURN_PROMPT)
+                Final Turn Prompt (FINAL_TURN_PROMPT) - Articulation Extractor
               </label>
               <textarea
                 value={localFinalPrompt}
@@ -121,6 +143,9 @@ export function PromptEditPanel({ questionPrompt, finalPrompt, onSave, onReset }
                 className="w-full h-48 p-4 bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-lg font-mono text-sm text-neutral-900 dark:text-neutral-100 resize-y focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400"
                 placeholder="Enter final turn prompt..."
               />
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                Extracts competencies from compiled narrative
+              </p>
             </div>
           </div>
 

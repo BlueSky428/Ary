@@ -12,7 +12,7 @@ import { Terminal, X, ChevronDown, ChevronUp, Copy, Check } from 'lucide-react';
 export interface GPTDebugEntry {
   id: string;
   timestamp: Date;
-  type: 'question' | 'final';
+  type: 'question' | 'final' | 'compiler';
   request: {
     messages: Array<{ role: string; content: string }>;
     model: string;
@@ -20,11 +20,11 @@ export interface GPTDebugEntry {
     max_tokens: number;
   };
   response: {
-    type: 'question' | 'final';
+    type: 'question' | 'final' | 'compiled';
     content: string | object;
     raw?: string;
   };
-  isClarification: boolean;
+  isClarification?: boolean;
 }
 
 interface GPTDebugPanelProps {
@@ -162,10 +162,14 @@ export function GPTDebugPanel({ entries, onClear }: GPTDebugPanelProps) {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <div className={`w-2 h-2 rounded-full ${
-                              entry.type === 'final' ? 'bg-green-500' : 'bg-blue-500'
+                              entry.type === 'final' ? 'bg-green-500' : 
+                              entry.type === 'compiler' ? 'bg-purple-500' : 
+                              'bg-blue-500'
                             }`} />
                             <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-                              {entry.type === 'final' ? 'Final Synthesis' : `Question #${index + 1}`}
+                              {entry.type === 'final' ? 'Final Synthesis' : 
+                               entry.type === 'compiler' ? 'Compiler (Articulation)' : 
+                               `Question #${index + 1}`}
                             </span>
                             {entry.isClarification && (
                               <span className="text-xs bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 px-2 py-0.5 rounded">
@@ -184,9 +188,13 @@ export function GPTDebugPanel({ entries, onClear }: GPTDebugPanelProps) {
                         </div>
                         {!isExpanded && (
                           <div className="mt-2 text-sm text-neutral-600 dark:text-neutral-400 truncate">
-                            {entry.type === 'question' && typeof entry.response.content === 'string'
+                            {entry.type === 'compiler' && typeof entry.response.content === 'string'
+                              ? `Compiled narrative: ${entry.response.content.substring(0, 100)}...`
+                              : entry.type === 'question' && typeof entry.response.content === 'string'
                               ? entry.response.content.substring(0, 100) + '...'
-                              : 'Final response with summary and competencies'}
+                              : entry.type === 'final'
+                              ? 'Final response with summary and competencies'
+                              : 'Compiled narrative'}
                           </div>
                         )}
                       </div>

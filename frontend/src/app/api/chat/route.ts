@@ -15,8 +15,11 @@ interface ChatRequest {
   questionCount: number;
   isFinalTurn: boolean;
   isClarification?: boolean;
+  isCompiler?: boolean;
+  compiledNarrative?: string;
   customQuestionPrompt?: string;
   customFinalPrompt?: string;
+  customCompilerPrompt?: string;
 }
 
 /**
@@ -222,10 +225,57 @@ OUTPUT RULE (STRICT)
 END_INTERVIEW
 and do not expect further user input`;
 
-// System prompt for final turn (summary and competencies) - Professional articulation
-const FINAL_TURN_PROMPT = `You are Ary, an AI system for professional articulation. Your task is to synthesize the user's experience into sophisticated professional competencies and a high-level summary that reveals strategic methodology and thinking.
+// System prompt for compilation phase - Articulation Pre-Processor
+const COMPILER_PROMPT = `You are Ary's articulation compiler. Your task is to transform raw conversation transcripts into clean, neutral, domain-agnostic narratives.
 
-CRITICAL: Generate competencies for ALL 5 PILLARS, with EXACTLY 4-5 competencies per pillar. Organize competencies by pillar. Each competency must be assigned to the appropriate pillar based on the demonstrated skill/approach revealed in the conversation.
+INPUT: A raw conversation transcript containing:
+- Questions and answers in natural language
+- Personal address ("you", "I", "my")
+- Reflection-style phrasing
+- Conversational elements
+- Outcome language
+
+YOUR TASK: Rewrite the conversation into a single, continuous narrative paragraph that:
+- Removes all personal address (replace "you"/"I" with neutral terms like "the professional", "the individual", "they")
+- Removes reflection language and conversational phrasing
+- Removes personal pronouns and ownership language
+- Preserves only: actions, sequence, structure, verification logic
+- Uses neutral, third-person perspective
+- Maintains temporal sequence of events
+- Keeps verification/outcome logic intact
+
+OUTPUT FORMAT:
+Return ONLY a valid JSON object:
+{
+  "narrative": "A single continuous paragraph describing the situation, actions, and outcomes in neutral, third-person language. The narrative should flow naturally from beginning to end, describing what happened, how it was structured, and how effectiveness was verified."
+}
+
+CRITICAL RULES:
+- Do NOT analyze or extract competencies (that happens in the next step)
+- Do NOT summarize - rewrite the entire narrative
+- Do NOT use second person ("you") or first person ("I")
+- Do NOT include reflection or meta-commentary
+- Do preserve the logical sequence and structure of what happened
+- Do use professional, neutral language
+- The output should read like a factual case study, not a conversation
+
+Example transformation:
+Input: "I first talked to him to grasp his knowledge, then I could identify what was missing from the job description because I have a good understanding of the trading activity described"
+Output: "The professional began by assessing the individual's existing knowledge against formal role requirements to identify key gaps."
+
+Return ONLY the JSON object, nothing else.`;
+
+// System prompt for final turn (summary and competencies) - Professional articulation
+const FINAL_TURN_PROMPT = `You are Ary, an AI system for professional articulation. Your task is to extract sophisticated professional competencies and a high-level summary from a compiled articulation narrative.
+
+INPUT: You will receive a clean, neutral, third-person articulation narrative (already compiled from raw conversation). This narrative contains no personal pronouns, no reflection language, and no conversational elements - only actions, sequence, structure, and verification logic.
+
+Since the narrative is already clean and normalized, you can focus solely on:
+1. Extracting competencies from the structured actions and approaches described
+2. Identifying the strategic methodology and thinking patterns
+3. Organizing competencies by pillar based on demonstrated capabilities
+
+CRITICAL: Generate competencies for ALL 5 PILLARS, with EXACTLY 4-5 competencies per pillar. Organize competencies by pillar. Each competency must be assigned to the appropriate pillar based on the demonstrated skill/approach revealed in the narrative.
 
 The 5 pillars are:
 1. "collaboration" - Collaboration & Stakeholder Navigation (collaboration, teamwork, stakeholder management, interpersonal skills, communication, support, coordination, relationship building, navigating people dynamics)
@@ -241,8 +291,8 @@ Return ONLY a valid JSON object (no extra text, no markdown):
   "competencies": [
     {
       "pillar": "collaboration",
-      "label": "A sophisticated, abstract, conceptual competency label that captures the strategic principle or methodology demonstrated in this pillar's domain. Focus on HOW they think and operate, not just what they did. Create unique labels based on their specific approach revealed in the conversation.",
-      "evidence": "2-3 sentences explaining the strategic thinking and methodology demonstrated in this pillar's context. Articulate WHY and HOW this competency was applied, based on what they revealed in the conversation."
+      "label": "A sophisticated, abstract, conceptual competency label that captures the strategic principle or methodology demonstrated in this pillar's domain. Focus on HOW they think and operate, not just what they did. Create unique labels based on their specific approach revealed in the narrative.",
+      "evidence": "2-3 sentences explaining the strategic thinking and methodology demonstrated in this pillar's context. Articulate WHY and HOW this competency was applied, based on what was described in the narrative."
     }
   ]
 }
@@ -250,14 +300,14 @@ Return ONLY a valid JSON object (no extra text, no markdown):
 Rules:
 - Return ONLY JSON object, nothing else
 - Summary: Sophisticated, analytical, high-level language. Reveal strategic methodology and thinking. Use conceptual framing (how they framed problems, translated knowledge, structured execution, validated outcomes). Second person (you). Think at the level of operational principles and strategic approaches.
-- Competencies: Generate EXACTLY 4-5 competencies for EACH of the 5 pillars (20-25 total competencies). Each competency object MUST include a "pillar" field with one of: "collaboration", "execution", "thinking", "growth", "purpose". Create unique, abstract, conceptual competency labels based on what they revealed in the conversation. Labels should reveal HOW they think and operate in that pillar's domain. Do not use generic skills - focus on their specific strategic approach and methodology. Always provide exactly 4-5 competencies per pillar.
-- Evidence: For each competency, provide 2-3 sentences explaining the strategic thinking and methodology demonstrated in that pillar's context. Base this on specific details from their conversation. Articulate WHY they approached situations this way, HOW they applied strategic principles, and WHAT methodology they used. Go beyond describing actions to revealing their operational thinking.
+- Competencies: Generate EXACTLY 4-5 competencies for EACH of the 5 pillars (20-25 total competencies). Each competency object MUST include a "pillar" field with one of: "collaboration", "execution", "thinking", "growth", "purpose". Create unique, abstract, conceptual competency labels based on what was described in the narrative. Labels should reveal HOW they think and operate in that pillar's domain. Do not use generic skills - focus on their specific strategic approach and methodology. Always provide exactly 4-5 competencies per pillar.
+- Evidence: For each competency, provide 2-3 sentences explaining the strategic thinking and methodology demonstrated in that pillar's context. Base this on specific details from the narrative. Articulate WHY they approached situations this way, HOW they applied strategic principles, and WHAT methodology they used. Go beyond describing actions to revealing their operational thinking.
 - Language: Use sophisticated, analytical professional language. Think like a strategic consultant or executive coach - reveal methodology, strategic thinking, and operational principles. Use terms like 'framed', 'translated', 'structured', 'enforced', 'validated', 'converted', 'signal', 'asymmetry', 'boundary setting', 'readiness validation'.`;
 
 export async function POST(req: NextRequest) {
   try {
     const body: ChatRequest = await req.json();
-    const { conversationHistory, questionCount, isFinalTurn, isClarification, customQuestionPrompt, customFinalPrompt } = body;
+    const { conversationHistory, questionCount, isFinalTurn, isClarification, isCompiler, compiledNarrative, customQuestionPrompt, customFinalPrompt, customCompilerPrompt } = body;
 
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(
@@ -266,10 +316,80 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // COMPILER MODE: Transform raw conversation transcript to clean narrative
+    if (isCompiler) {
+      console.log('[GPT API] Compiler mode: converting raw transcript to clean narrative');
+      
+      const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
+        { role: 'system', content: COMPILER_PROMPT },
+      ];
+
+      // Format conversation transcript as input
+      const transcript = conversationHistory.map((entry, idx) => {
+        return `Question ${idx + 1}\n${entry.question}\nYour Answer\n"${entry.answer}"`;
+      }).join('\n\n');
+
+      messages.push({
+        role: 'user',
+        content: `Convert this conversation transcript into a clean, neutral narrative:\n\n${transcript}`,
+      });
+
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: messages,
+        temperature: 0.7,
+        max_tokens: 1000,
+        response_format: { type: 'json_object' },
+      });
+
+      const rawResponse = completion.choices[0]?.message?.content || '';
+      
+      try {
+        const parsed = JSON.parse(rawResponse);
+        const narrative = parsed.narrative || '';
+        
+        if (!narrative) {
+          throw new Error('Compiler returned empty narrative');
+        }
+
+        return NextResponse.json({
+          type: 'compiled',
+          narrative: narrative,
+          debug: {
+            request: {
+              messages: messages,
+              model: 'gpt-4o-mini',
+              temperature: 0.7,
+              max_tokens: 1000,
+            },
+            rawResponse: rawResponse,
+          },
+        });
+      } catch (parseError) {
+        console.error('[GPT API] Compiler JSON parse error:', parseError);
+        return NextResponse.json({
+          error: 'Failed to parse compiler response',
+          debug: {
+            rawResponse: rawResponse.substring(0, 500),
+          },
+        }, { status: 500 });
+      }
+    }
+
+    // CRITICAL: If we have 7+ main questions (Q0-Q6 completed), force final turn
+    // Don't ask any more questions - go straight to final synthesis
+    let shouldForceFinalTurn = false;
+    if (!isFinalTurn && questionCount >= 7) {
+      console.log('[GPT API] 7 main questions completed (questionCount=' + questionCount + '), forcing final turn instead of asking more questions');
+      shouldForceFinalTurn = true;
+    }
+
+    const actuallyFinalTurn = isFinalTurn || shouldForceFinalTurn;
+
     // Build messages array with appropriate system prompt
     // Use custom prompts if provided (check for undefined, not truthy, to allow empty strings)
     // Use QUESTION_PROMPT for regular questions, FINAL_TURN_PROMPT for final step
-    const systemPrompt = isFinalTurn 
+    const systemPrompt = actuallyFinalTurn 
       ? (customFinalPrompt !== undefined ? customFinalPrompt : FINAL_TURN_PROMPT)
       : (customQuestionPrompt !== undefined ? customQuestionPrompt : QUESTION_PROMPT);
     
@@ -277,9 +397,12 @@ export async function POST(req: NextRequest) {
     if (process.env.NODE_ENV === 'development') {
       console.log('[GPT API] Using prompt:', {
         isFinalTurn,
+        questionCount,
+        shouldForceFinalTurn,
+        actuallyFinalTurn,
         customQuestionPromptProvided: customQuestionPrompt !== undefined,
         customFinalPromptProvided: customFinalPrompt !== undefined,
-        usingCustomPrompt: isFinalTurn 
+        usingCustomPrompt: actuallyFinalTurn 
           ? (customFinalPrompt !== undefined)
           : (customQuestionPrompt !== undefined),
         promptLength: systemPrompt.length,
@@ -291,24 +414,41 @@ export async function POST(req: NextRequest) {
       { role: 'system', content: systemPrompt },
     ];
 
-    // Add conversation history as pairs: assistant question, user answer
-    conversationHistory.forEach((entry) => {
-      if (entry.question) {
-        messages.push({ role: 'assistant', content: entry.question });
+    // For final turn, use compiled narrative if provided, otherwise use conversation history
+    if (actuallyFinalTurn) {
+      if (compiledNarrative) {
+        // Use compiled narrative (from compiler step) - send as single user message
+        console.log('[GPT API] Final turn: Using compiled narrative for extraction');
+        messages.push({
+          role: 'user',
+          content: `Extract competencies and generate a summary from this articulation narrative:\n\n${compiledNarrative}\n\nGenerate a professional summary and competencies for ALL 5 PILLARS. Create EXACTLY 4-5 competencies per pillar (20-25 total). Each competency must include a "pillar" field ("collaboration", "execution", "thinking", "growth", or "purpose"). Organize competencies by pillar based on the demonstrated skills/approaches. Focus on HOW they operate (framing, translation, structuring, validation) rather than just WHAT they did. Provide analytical, high-level language that reveals their operational principles.`,
+        });
+      } else {
+        // Fallback: Use conversation history (backward compatibility)
+        console.log('[GPT API] Final turn: Using raw conversation history (no compiled narrative provided)');
+        conversationHistory.forEach((entry) => {
+          if (entry.question) {
+            messages.push({ role: 'assistant', content: entry.question });
+          }
+          if (entry.answer) {
+            messages.push({ role: 'user', content: entry.answer });
+          }
+        });
+        
+        messages.push({
+          role: 'user',
+          content: `Generate a professional summary and competencies for ALL 5 PILLARS. Create EXACTLY 4-5 competencies per pillar (20-25 total). Each competency must include a "pillar" field ("collaboration", "execution", "thinking", "growth", or "purpose"). Organize competencies by pillar based on the demonstrated skills/approaches. Focus on HOW they operate (framing, translation, structuring, validation) rather than just WHAT they did. Provide analytical, high-level language that reveals their operational principles.`,
+        });
       }
-      if (entry.answer) {
-        messages.push({ role: 'user', content: entry.answer });
-      }
-    });
-
-    // If we have 6+ main questions (Q1-Q6 completed), GPT should return END_INTERVIEW
-    // No need to prompt GPT - it knows from the prompt structure when to return END_INTERVIEW
-
-    // For final turn, provide guidance for professional articulation
-    if (isFinalTurn) {
-      messages.push({
-        role: 'user',
-        content: `Generate a professional summary and competencies for ALL 5 PILLARS. Create EXACTLY 4-5 competencies per pillar (20-25 total). Each competency must include a "pillar" field ("collaboration", "execution", "thinking", "growth", or "purpose"). Organize competencies by pillar based on the demonstrated skills/approaches. Focus on HOW they operate (framing, translation, structuring, validation) rather than just WHAT they did. Provide analytical, high-level language that reveals their operational principles.`,
+    } else {
+      // Regular question-asking mode: Add conversation history as pairs
+      conversationHistory.forEach((entry) => {
+        if (entry.question) {
+          messages.push({ role: 'assistant', content: entry.question });
+        }
+        if (entry.answer) {
+          messages.push({ role: 'user', content: entry.answer });
+        }
       });
     }
 
@@ -316,15 +456,15 @@ export async function POST(req: NextRequest) {
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: messages as OpenAI.Chat.Completions.ChatCompletionMessageParam[],
-      temperature: isFinalTurn ? 0.8 : 0.9, // Slightly higher temp for more creative professional language
-      max_tokens: isFinalTurn ? 3000 : 200, // Increased max tokens for detailed professional summaries and evidence
-      response_format: isFinalTurn ? { type: 'json_object' } : undefined,
+      temperature: actuallyFinalTurn ? 0.8 : 0.9, // Slightly higher temp for more creative professional language
+      max_tokens: actuallyFinalTurn ? 3000 : 200, // Increased max tokens for detailed professional summaries and evidence
+      response_format: actuallyFinalTurn ? { type: 'json_object' } : undefined,
     });
 
     const rawResponse = completion.choices[0]?.message?.content || '';
     const response = rawResponse;
 
-    if (isFinalTurn) {
+    if (actuallyFinalTurn) {
       // Parse JSON response
       try {
         let parsed = JSON.parse(response);
@@ -442,8 +582,8 @@ export async function POST(req: NextRequest) {
             request: {
               messages: messages,
               model: 'gpt-4o-mini',
-              temperature: isFinalTurn ? 0.7 : 0.9,
-              max_tokens: isFinalTurn ? 2000 : 200,
+              temperature: actuallyFinalTurn ? 0.7 : 0.9,
+              max_tokens: actuallyFinalTurn ? 2000 : 200,
             },
             rawResponse: rawResponse,
           },
@@ -456,8 +596,8 @@ export async function POST(req: NextRequest) {
             request: {
               messages: messages,
               model: 'gpt-4o-mini',
-              temperature: isFinalTurn ? 0.7 : 0.9,
-              max_tokens: isFinalTurn ? 2000 : 200,
+              temperature: actuallyFinalTurn ? 0.7 : 0.9,
+              max_tokens: actuallyFinalTurn ? 2000 : 200,
             },
             rawResponse: rawResponse,
           },
@@ -475,26 +615,36 @@ export async function POST(req: NextRequest) {
       
       if (isEndInterview) {
         // All 6 questions (Q1-Q6) are complete - trigger final synthesis
-        // Make a recursive call with isFinalTurn=true to get the final summary
-        // Use custom final prompt if provided, otherwise use default
+        // Note: This path should not be used with the compiler architecture
+        // The compiler should be called before reaching final turn
+        // This is kept for backward compatibility
         const finalSystemPrompt = customFinalPrompt !== undefined ? customFinalPrompt : FINAL_TURN_PROMPT;
         const finalMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
           { role: 'system', content: finalSystemPrompt },
         ];
         
-        conversationHistory.forEach((entry) => {
-          if (entry.question) {
-            finalMessages.push({ role: 'assistant', content: entry.question });
-          }
-          if (entry.answer) {
-            finalMessages.push({ role: 'user', content: entry.answer });
-          }
-        });
-        
-        finalMessages.push({
-          role: 'user',
-          content: `Generate sophisticated competencies and summary for ALL 5 PILLARS. Create EXACTLY 4-5 competencies per pillar (20-25 total). Each competency must include a "pillar" field ("collaboration", "execution", "thinking", "growth", or "purpose"). Organize competencies by pillar based on the demonstrated skills/approaches. Focus on HOW they operate (framing, translation, structuring, validation) rather than just WHAT they did. Provide analytical, high-level language that reveals their operational principles.`,
-        });
+        // Use compiled narrative if provided, otherwise use conversation history
+        if (compiledNarrative) {
+          finalMessages.push({
+            role: 'user',
+            content: `Extract competencies and generate a summary from this articulation narrative:\n\n${compiledNarrative}\n\nGenerate sophisticated competencies and summary for ALL 5 PILLARS. Create EXACTLY 4-5 competencies per pillar (20-25 total). Each competency must include a "pillar" field ("collaboration", "execution", "thinking", "growth", or "purpose"). Organize competencies by pillar based on the demonstrated skills/approaches. Focus on HOW they operate (framing, translation, structuring, validation) rather than just WHAT they did. Provide analytical, high-level language that reveals their operational principles.`,
+          });
+        } else {
+          // Fallback: Use conversation history
+          conversationHistory.forEach((entry) => {
+            if (entry.question) {
+              finalMessages.push({ role: 'assistant', content: entry.question });
+            }
+            if (entry.answer) {
+              finalMessages.push({ role: 'user', content: entry.answer });
+            }
+          });
+          
+          finalMessages.push({
+            role: 'user',
+            content: `Generate sophisticated competencies and summary for ALL 5 PILLARS. Create EXACTLY 4-5 competencies per pillar (20-25 total). Each competency must include a "pillar" field ("collaboration", "execution", "thinking", "growth", or "purpose"). Organize competencies by pillar based on the demonstrated skills/approaches. Focus on HOW they operate (framing, translation, structuring, validation) rather than just WHAT they did. Provide analytical, high-level language that reveals their operational principles.`,
+          });
+        }
         
         const finalCompletion = await openai.chat.completions.create({
           model: 'gpt-4o-mini',
@@ -584,8 +734,8 @@ export async function POST(req: NextRequest) {
           request: {
             messages: messages,
             model: 'gpt-4o-mini',
-            temperature: isFinalTurn ? 0.7 : 0.9,
-            max_tokens: isFinalTurn ? 2000 : 200,
+            temperature: actuallyFinalTurn ? 0.7 : 0.9,
+            max_tokens: actuallyFinalTurn ? 2000 : 200,
           },
           rawResponse: rawResponse,
         },
