@@ -1143,7 +1143,7 @@ Return ONLY the JSON object, nothing else.`;
                   
                   <div className="bg-gradient-to-br from-primary-50 to-accent-50/30 dark:from-primary-950/20 dark:to-accent-950/10 rounded-2xl p-8 mb-6 border border-primary-200/50 dark:border-primary-800/50 space-y-4 text-left">
                     <p className="text-lg text-neutral-700 dark:text-neutral-300 leading-relaxed">
-                    The structured input phase is finished.
+                    The conversation phase is finished.
                     </p>
                     
                     <div className="pt-4 border-t border-primary-200/50 dark:border-primary-700/50">
@@ -1153,11 +1153,11 @@ Return ONLY the JSON object, nothing else.`;
                       <ul className="space-y-2 text-neutral-700 dark:text-neutral-300">
                         <li className="flex items-start gap-2">
                           <span className="text-primary-600 dark:text-primary-400 mt-1">•</span>
-                          <span>A capability articulation is generated from the interaction</span>
+                          <span>●	An articulation is generated from the conversation</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <span className="text-primary-600 dark:text-primary-400 mt-1">•</span>
-                          <span>Output is rendered as a structured projection</span>
+                          <span>●	The result is presented as a clear, structured projection</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <span className="text-primary-600 dark:text-primary-400 mt-1">•</span>
