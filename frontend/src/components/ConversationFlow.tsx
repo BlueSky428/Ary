@@ -1153,11 +1153,11 @@ Return ONLY the JSON object, nothing else.`;
                       <ul className="space-y-2 text-neutral-700 dark:text-neutral-300">
                         <li className="flex items-start gap-2">
                           <span className="text-primary-600 dark:text-primary-400 mt-1">•</span>
-                          <span>●	An articulation is generated from the conversation</span>
+                          <span>An articulation is generated from the conversation</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <span className="text-primary-600 dark:text-primary-400 mt-1">•</span>
-                          <span>●	The result is presented as a clear, structured projection</span>
+                          <span>The result is presented as a clear, structured projection</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <span className="text-primary-600 dark:text-primary-400 mt-1">•</span>
