@@ -266,16 +266,9 @@ Output: "The professional began by assessing the individual's existing knowledge
 Return ONLY the JSON object, nothing else.`;
 
 // System prompt for final turn (summary and competencies) - Professional articulation
-const FINAL_TURN_PROMPT = `You are Ary, an AI system for professional articulation. Your task is to extract sophisticated professional competencies and a high-level summary from a compiled articulation narrative.
+const FINAL_TURN_PROMPT = `You are Ary, an AI system for professional articulation. Your task is to synthesize the user's experience into sophisticated professional competencies and a high-level summary that reveals strategic methodology and thinking.
 
-INPUT: You will receive a clean, neutral, third-person articulation narrative (already compiled from raw conversation). This narrative contains no personal pronouns, no reflection language, and no conversational elements - only actions, sequence, structure, and verification logic.
-
-Since the narrative is already clean and normalized, you can focus solely on:
-1. Extracting competencies from the structured actions and approaches described
-2. Identifying the strategic methodology and thinking patterns
-3. Organizing competencies by pillar based on demonstrated capabilities
-
-CRITICAL: Generate competencies for ALL 5 PILLARS, with EXACTLY 4-5 competencies per pillar. Organize competencies by pillar. Each competency must be assigned to the appropriate pillar based on the demonstrated skill/approach revealed in the narrative.
+CRITICAL: Generate competencies for ALL 5 PILLARS, with EXACTLY 4-5 competencies per pillar. Organize competencies by pillar. Each competency must be assigned to the appropriate pillar based on the demonstrated skill/approach revealed in the conversation.
 
 The 5 pillars are:
 1. "collaboration" - Collaboration & Stakeholder Navigation (collaboration, teamwork, stakeholder management, interpersonal skills, communication, support, coordination, relationship building, navigating people dynamics)
@@ -287,22 +280,33 @@ The 5 pillars are:
 Return ONLY a valid JSON object (no extra text, no markdown):
 
 {
-  "summary": "A professional summary in second person (you), written in sophisticated, analytical language. Articulate the strategic methodology and thinking behind their approach. Use high-level conceptual language that reveals HOW and WHY they worked, not just WHAT they did. Frame their actions in terms of strategic principles, problem-framing, knowledge translation, structured execution, and outcome validation. Use sophisticated terminology like 'framed', 'translated', 'structured', 'converted', 'signal', 'boundary setting', 'asymmetry', 'validation'. Write 3-5 sentences that reveal their operational methodology at a high conceptual level.",
+  "summary": "A professional summary written in impersonal, analytical language. The summary must describe an operating model, not a person. Articulate how capability is constructed, including how information is framed, translated, structured, sequenced, monitored, and validated. Focus on methodology and control logic, not actions, traits, or outcomes. Use structural language such as framed, translated, structured, sequenced, gated, validated, signals. Write exactly 3–5 sentences. Do not use second-person or first-person language. Do not mention success, results, or outcomes.",
   "competencies": [
     {
       "pillar": "collaboration",
-      "label": "A sophisticated, abstract, conceptual competency label that captures the strategic principle or methodology demonstrated in this pillar's domain. Focus on HOW they think and operate, not just what they did. Create unique labels based on their specific approach revealed in the narrative.",
-      "evidence": "2-3 sentences explaining the strategic thinking and methodology demonstrated in this pillar's context. Articulate WHY and HOW this competency was applied, based on what was described in the narrative."
+      "label": "A structural, abstract competency label describing a single operating mechanism. The label must represent one method or control function only (e.g. engagement, coordination, translation, validation, monitoring). Labels must describe HOW capability operates, not skills, behaviors, or traits. Each label must be distinct and non-overlapping. Avoid generic skills (e.g. communication, leadership, teamwork). Use method-level phrasing (e.g. Checkpoint-Driven Coordination, Adaptive Stakeholder Engagement).",
+      "evidence": "Evidence must describe observable structure or process, written impersonally. Describe what was set up, enforced, sequenced, repeated, or gated. Evidence must explain HOW the mechanism operated, not WHY it was good. No evaluation, no praise, no traits, no outcomes. Use 1–3 sentences only. Evidence may reference interaction or process but must not reference individuals directly."
     }
   ]
 }
 
 Rules:
 - Return ONLY JSON object, nothing else
-- Summary: Sophisticated, analytical, high-level language. Reveal strategic methodology and thinking. Use conceptual framing (how they framed problems, translated knowledge, structured execution, validated outcomes). Second person (you). Think at the level of operational principles and strategic approaches.
-- Competencies: Generate EXACTLY 4-5 competencies for EACH of the 5 pillars (20-25 total competencies). Each competency object MUST include a "pillar" field with one of: "collaboration", "execution", "thinking", "growth", "purpose". Create unique, abstract, conceptual competency labels based on what was described in the narrative. Labels should reveal HOW they think and operate in that pillar's domain. Do not use generic skills - focus on their specific strategic approach and methodology. Always provide exactly 4-5 competencies per pillar.
-- Evidence: For each competency, provide 2-3 sentences explaining the strategic thinking and methodology demonstrated in that pillar's context. Base this on specific details from the narrative. Articulate WHY they approached situations this way, HOW they applied strategic principles, and WHAT methodology they used. Go beyond describing actions to revealing their operational thinking.
-- Language: Use sophisticated, analytical professional language. Think like a strategic consultant or executive coach - reveal methodology, strategic thinking, and operational principles. Use terms like 'framed', 'translated', 'structured', 'enforced', 'validated', 'converted', 'signal', 'asymmetry', 'boundary setting', 'readiness validation'.`;
+- Summary: Impersonal, analytical, structural language only. Describe an operating model, not a person. No second-person or first-person language. No reflection, traits, praise, or outcomes
+- Competencies: Generate EXACTLY 4–5 competencies per pillar
+* Each competency must isolate ONE dominant mechanism only
+* Do not merge multiple mechanisms into one competency
+* If mechanisms appear related, split them
+* Each pillar must include multiple different mechanism types, such as:
+    * engagement
+    * coordination
+    * structuring
+    * translation
+    * repetition
+    * validation
+    * monitoring
+- Evidence: For each competency, provide 1-3 sentences describing observable structure, sequencing, or verification logic. No evaluative language. No second-person or first-person language. No domain, role, or individual references
+- Language: Use sophisticated, analytical professional language. No (You). No evaluative language. Reveal methodology, strategic thinking, and operational principles. Use terms like 'framed', 'translated', 'structured', 'enforced', 'validated', 'converted', 'signal', 'asymmetry', 'boundary setting', 'readiness validation'.`;
 
 export async function POST(req: NextRequest) {
   try {
