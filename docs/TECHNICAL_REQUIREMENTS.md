@@ -90,7 +90,7 @@
 
 **Public:**
 - `POST /api/demo/analyze` - Demo inference
-- `POST /api/demo/waitlist` - Join waitlist
+- `POST /api/demo/waitlist` - Join early access list
 
 **Authenticated:**
 - `POST /api/auth/register` - User registration

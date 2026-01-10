@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, Mail, Loader2 } from 'lucide-react';
 
 type CommitmentAnswer = 'yes' | 'no' | null;
-type UseCase = 'cv-update' | 'cover-letter' | 'job-applications' | 'interview-prep' | 'exploring' | null;
+type UseCase = 'articulating-thinking' | 'explicit-judgment' | 'high-stakes-preparation' | 'structuring-experience' | 'system-curiosity' | null;
 
 export function WaitlistForm() {
   const [email, setEmail] = useState('');
@@ -30,7 +30,7 @@ export function WaitlistForm() {
     }
 
     if (!useCase) {
-      setError('Please select how you will use Ary');
+      setError('Please select what you are most interested in using Ary for');
       return;
     }
 
@@ -118,7 +118,7 @@ export function WaitlistForm() {
             {/* Commitment Question */}
             <div>
               <label className="block text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-3">
-                Will you return to articulate your strengths for a specific job application?
+                Will you return to Ary for a specific professional context later?
               </label>
               <div className="flex gap-3">
                 <button
@@ -141,7 +141,7 @@ export function WaitlistForm() {
                       : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                   }`}
                 >
-                  No
+                  Not sure yet
                 </button>
               </div>
             </div>
@@ -149,15 +149,15 @@ export function WaitlistForm() {
             {/* Segmentation Question */}
             <div>
               <label className="block text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-3">
-                What will you use Ary for first?
+                What are you most interested in using Ary for?
               </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3">
                 {[
-                  { id: 'cv-update' as UseCase, label: 'CV update' },
-                  { id: 'cover-letter' as UseCase, label: 'Cover letter' },
-                  { id: 'job-applications' as UseCase, label: 'Job applications' },
-                  { id: 'interview-prep' as UseCase, label: 'Interview prep' },
-                  { id: 'exploring' as UseCase, label: 'Just exploring' },
+                  { id: 'articulating-thinking' as UseCase, label: 'Articulating how I think and make decisions' },
+                  { id: 'explicit-judgment' as UseCase, label: 'Making my professional judgment explicit and reviewable' },
+                  { id: 'high-stakes-preparation' as UseCase, label: 'Preparing for high-stakes evaluations or transitions' },
+                  { id: 'structuring-experience' as UseCase, label: 'Exploring how my experience can be structured' },
+                  { id: 'system-curiosity' as UseCase, label: 'I\'m curious about the system' },
                 ].map((option) => (
                   <button
                     key={option.id}
@@ -209,7 +209,7 @@ export function WaitlistForm() {
                 </>
               ) : (
                 <>
-                  <span>Join Waitlist</span>
+                  <span>Join early access list</span>
                   <Mail className="w-5 h-5" />
                 </>
               )}

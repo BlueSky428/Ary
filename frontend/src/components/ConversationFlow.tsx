@@ -1084,7 +1084,7 @@ Return ONLY the JSON object, nothing else.`;
                     Welcome to Ary
                   </h2>
                   <p className="text-neutral-600 dark:text-neutral-400">
-                    A conversation to surface execution patterns in real situations
+                    A structured conversation compiled into an inspectable decision artifact
                   </p>
                 </div>
 
@@ -1096,7 +1096,7 @@ Return ONLY the JSON object, nothing else.`;
                         How This Works
                       </h3>
                       <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed">
-                        Ary will ask 7 questions about a real situation involving work, preparation, or collaboration.
+                        Ary will ask a small number of questions about a real professional situation.
                       </p>
                     </div>
                   </div>
@@ -1164,15 +1164,15 @@ Return ONLY the JSON object, nothing else.`;
                       <ul className="space-y-2 text-neutral-700 dark:text-neutral-300">
                         <li className="flex items-start gap-2">
                           <span className="text-primary-600 dark:text-primary-400">•</span>
-                          <span>An articulation is generated from the conversation</span>
+                          <span>A compiled decision artifact is generated from the conversation</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <span className="text-primary-600 dark:text-primary-400">•</span>
-                          <span>The result is presented as a clear, structured projection</span>
+                          <span>The artifact renders observed reasoning structures in a clear, structured format</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <span className="text-primary-600 dark:text-primary-400">•</span>
-                          <span>No additional input is required</span>
+                          <span>No further input is required at this stage</span>
                         </li>
                       </ul>
                     </div>
@@ -1190,7 +1190,7 @@ Return ONLY the JSON object, nothing else.`;
                     aria-label="View your competence tree and conversation results"
                   >
                     <ArrowRight className="w-5 h-5" aria-hidden="true" />
-                    <span>View My Results</span>
+                    <span>View Structured Output</span>
                   </motion.button>
                 </div>
               </motion.div>

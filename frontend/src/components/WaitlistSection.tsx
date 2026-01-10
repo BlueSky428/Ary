@@ -45,7 +45,7 @@ export function WaitlistSection() {
               transition={{ delay: 0.3 }}
               className="text-3xl md:text-4xl font-light text-neutral-900 dark:text-neutral-100 mb-4"
             >
-              Join the waitlist
+              Join the early access list
             </motion.h2>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -54,7 +54,7 @@ export function WaitlistSection() {
               transition={{ delay: 0.4 }}
               className="text-lg text-neutral-600 dark:text-neutral-300"
             >
-              Be among the first to experience Ary when we launch.
+              Be among the first to experience Ary.
             </motion.p>
           </div>
 

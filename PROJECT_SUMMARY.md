@@ -196,5 +196,5 @@ The foundation is solid. The next phase is implementing the database layer and c
 
 ---
 
-**Built with care for professional clarity and growth.** 🌱
+**Built for inspectable, defensible human judgment.** 🌱
 

@@ -4,7 +4,7 @@
  * Redesigned Competence Tree View
  * Five pillars: Collaboration & Stakeholder Navigation, Decision Framing & Judgment,
  * Execution & Ownership, Learning & Adaptation, Initiative & Impact Orientation
- * Tab order: Competence Tree → Breakdown → Conversation
+ * Tab order: Compiled Artifact → Conversation
  */
 
 import { useState, useEffect } from 'react';
@@ -12,7 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { 
   Users, Target, Scale, BookOpen, Rocket,
-  MessageSquare, ArrowRight, Sparkles
+  MessageSquare, ArrowRight, Sparkles, FileText, Layers
 } from 'lucide-react';
 import type { ConversationResult, ConversationHistory } from '@/lib/conversationResults';
 
@@ -37,7 +37,7 @@ export function RedesignedCompetenceTreeView() {
   const router = useRouter();
   const [conversationResult, setConversationResult] = useState<ConversationResult | null>(null);
   const [conversationHistory, setConversationHistory] = useState<ConversationHistory[]>([]);
-  const [activeTab, setActiveTab] = useState<'tree' | 'breakdown' | 'conversation'>('tree');
+  const [activeTab, setActiveTab] = useState<'breakdown' | 'conversation'>('breakdown');
   const [selectedPillarId, setSelectedPillarId] = useState<string | null>(null);
   const [gptResult, setGptResult] = useState<any>(null);
 
@@ -405,7 +405,7 @@ export function RedesignedCompetenceTreeView() {
     if (fallbackCompetencies.length === 0) {
       fallbackCompetencies.push({ 
         label: 'Collaboration', 
-        evidence: 'You engaged thoughtfully in professional reflection.' 
+        evidence: 'You engaged thoughtfully in Compiled Summary.' 
       });
     }
     
@@ -441,8 +441,7 @@ export function RedesignedCompetenceTreeView() {
           {/* Tabs */}
           <div className="flex gap-2 mb-5 border-b border-neutral-200 dark:border-neutral-800">
             {[
-              { id: 'tree' as const, label: 'Competence Tree' },
-              { id: 'breakdown' as const, label: 'Breakdown' },
+              { id: 'breakdown' as const, label: 'Compiled Artifact' },
               { id: 'conversation' as const, label: 'Conversation' },
             ].map(tab => (
               <button
@@ -467,122 +466,6 @@ export function RedesignedCompetenceTreeView() {
 
           {/* Tab Content */}
           <AnimatePresence mode="wait">
-            {activeTab === 'tree' && (
-              <motion.div
-                key="tree"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="bg-white dark:bg-neutral-900 rounded-2xl p-6 shadow-lg border border-neutral-200/50 dark:border-neutral-700/50"
-              >
-                <div className="mb-4">
-                  <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 mb-1.5">
-                    Your Competence Tree
-                  </h2>
-                  <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                    Click on the pillar to see your competence breakdown.
-                  </p>
-                </div>
-                
-                <div className="relative h-[600px] flex items-center justify-center bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-800/30 dark:to-neutral-900/50 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-visible">
-                  {/* Central Core */}
-                  <motion.div
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.6, ease: "easeOut" }}
-                    className="absolute z-20"
-                  >
-                    <div className="relative w-36 h-36 bg-gradient-to-br from-neutral-700 to-neutral-800 dark:from-neutral-800 dark:to-neutral-900 rounded-full shadow-2xl border-4 border-white/30 flex items-center justify-center">
-                      <div className="absolute inset-0 bg-gradient-to-br from-primary-400/20 to-accent-400/20 rounded-full blur-xl animate-pulse" />
-                      <div className="text-center relative z-10">
-                        <p className="text-white text-base font-bold leading-tight">Identity</p>
-                        <p className="text-white text-base font-bold leading-tight">Core</p>
-                      </div>
-                    </div>
-                  </motion.div>
-
-                  {/* Pillars - Radial layout (Collaboration active, others locked) */}
-                  {pillars.map((pillar, idx) => {
-                    const Icon = pillar.icon;
-                    // Position pillars in a circle around the center
-                    const angle = (idx / pillars.length) * Math.PI * 2 - Math.PI / 2;
-                    const radius = 190; // Same radius as before
-                    const x = Math.cos(angle) * radius;
-                    const y = Math.sin(angle) * radius;
-
-                    return (
-                      <motion.div
-                        key={pillar.id}
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{ 
-                          scale: 1,
-                          opacity: pillar.isLocked ? 0.4 : 1,
-                          x,
-                          y,
-                        }}
-                        transition={{ delay: idx * 0.1, type: "spring", stiffness: 200 }}
-                        className={`absolute z-10 ${pillar.isActive && !pillar.isLocked ? 'cursor-pointer' : 'cursor-not-allowed'}`}
-                        style={{ transform: 'translate(-50%, -50%)' }}
-                        onClick={() => {
-                          if (pillar.isActive && !pillar.isLocked) {
-                            setSelectedPillarId(pillar.id);
-                            setActiveTab('breakdown');
-                          }
-                        }}
-                      >
-                        <div className={`relative w-32 h-32 rounded-full shadow-2xl border-2 flex flex-col items-center justify-center p-3 transition-all ${
-                          pillar.isActive && !pillar.isLocked
-                            ? `bg-gradient-to-br ${pillar.color} border-white/90 shadow-lg hover:scale-110`
-                            : pillar.isLocked
-                            ? 'bg-gradient-to-br from-neutral-400 to-neutral-500 border-neutral-300/60 shadow-md opacity-60'
-                            : `bg-gradient-to-br ${pillar.color} border-white/90 shadow-lg opacity-60`
-                        }`}>
-                          {pillar.isActive && !pillar.isLocked && (
-                            <motion.div
-                              className={`absolute inset-0 rounded-full bg-gradient-to-br ${pillar.color} opacity-60 blur-xl -z-10`}
-                              animate={{
-                                opacity: [0.4, 0.6, 0.4],
-                                scale: [1, 1.2, 1],
-                              }}
-                              transition={{
-                                duration: 2,
-                                repeat: Infinity,
-                                ease: "easeInOut",
-                              }}
-                            />
-                          )}
-                          
-                          <Icon 
-                            className={`w-7 h-7 mb-1.5 ${pillar.isActive && !pillar.isLocked ? 'text-white' : 'text-white/90'}`} 
-                            strokeWidth={2} 
-                          />
-                          
-                          <p className={`text-base font-black text-center leading-tight px-1.5 ${
-                            pillar.isActive && !pillar.isLocked 
-                              ? 'text-white drop-shadow-[0_3px_10px_rgba(0,0,0,0.9)]' 
-                              : 'text-white/95 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]'
-                          }`}>
-                            {pillar.label.split(' ').slice(0, 2).join(' ')}
-                            {pillar.label.split(' ').length > 2 && (
-                              <span className="block text-sm font-extrabold leading-tight mt-1">
-                                {pillar.label.split(' ').slice(2).join(' ')}
-                              </span>
-                            )}
-                          </p>
-                          
-                          {pillar.isLocked && (
-                            <div className="absolute -top-2 -right-2 w-6 h-6 bg-neutral-600 rounded-full flex items-center justify-center">
-                              <span className="text-white text-xs">🔒</span>
-                            </div>
-                          )}
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              </motion.div>
-            )}
-
             {activeTab === 'breakdown' && (
               <motion.div
                 key="breakdown"
@@ -602,7 +485,7 @@ export function RedesignedCompetenceTreeView() {
                       }} />
                     </div>
 
-                    {/* Central: Active pillar */}
+                    {/* Central: Compiled Artifact */}
                   {primaryPillar && (
                     <motion.div
                       initial={{ scale: 0, opacity: 0 }}
@@ -611,9 +494,9 @@ export function RedesignedCompetenceTreeView() {
                       className="absolute z-20"
                     >
                       <div className="relative group">
-                        {/* Outer glow rings */}
+                        {/* Outer glow rings - neutral/document color scheme */}
                         <motion.div 
-                          className={`absolute inset-0 rounded-full bg-gradient-to-br ${primaryPillar.color} opacity-40 blur-2xl -z-20`}
+                          className="absolute inset-0 rounded-full bg-gradient-to-br from-slate-500 to-slate-700 opacity-40 blur-2xl -z-20"
                           animate={{ 
                             scale: [1, 1.1, 1],
                             opacity: [0.4, 0.6, 0.4]
@@ -625,7 +508,7 @@ export function RedesignedCompetenceTreeView() {
                           }}
                         />
                         <motion.div 
-                          className={`absolute inset-0 rounded-full bg-gradient-to-br ${primaryPillar.color} opacity-30 blur-xl -z-10`}
+                          className="absolute inset-0 rounded-full bg-gradient-to-br from-slate-600 to-slate-800 opacity-30 blur-xl -z-10"
                           animate={{ 
                             scale: [1, 1.15, 1],
                             opacity: [0.3, 0.5, 0.3]
@@ -638,20 +521,18 @@ export function RedesignedCompetenceTreeView() {
                           }}
                         />
 
-                        {/* Main circle - Match Competence Tree style */}
-                        <div className={`relative w-32 h-32 rounded-full shadow-2xl border-2 flex flex-col items-center justify-center p-3 transition-all bg-gradient-to-br ${primaryPillar.color} border-white/90 shadow-lg`}>
-                          <primaryPillar.icon 
+                        {/* Main circle - Compiled Artifact style */}
+                        <div className="relative w-32 h-32 rounded-full shadow-2xl border-2 flex flex-col items-center justify-center p-3 transition-all bg-gradient-to-br from-slate-600 to-slate-800 border-white/90 shadow-lg">
+                          <Layers 
                             className="w-7 h-7 mb-1.5 text-white" 
                             strokeWidth={2} 
                           />
                           
                           <p className="text-white text-base font-black text-center leading-tight px-1.5 drop-shadow-[0_3px_10px_rgba(0,0,0,0.9)]">
-                            {primaryPillar.label.split(' ').slice(0, 2).join(' ')}
-                            {primaryPillar.label.split(' ').length > 2 && (
-                              <span className="block text-sm font-extrabold leading-tight mt-1">
-                                {primaryPillar.label.split(' ').slice(2).join(' ')}
-                              </span>
-                            )}
+                            Compiled
+                            <span className="block text-sm font-extrabold leading-tight mt-1">
+                              Artifact
+                            </span>
                           </p>
                         </div>
                       </div>
@@ -831,7 +712,7 @@ export function RedesignedCompetenceTreeView() {
                   <div className="relative">
                     <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 mb-5 flex items-center gap-3">
                       <Sparkles className="w-6 h-6 text-primary-600 dark:text-primary-400" strokeWidth={2} />
-                      Professional Reflection
+                      Compiled Summary
                     </h2>
                     <div className="space-y-4">
                       {summarySentences.map((sentence, idx) => (
@@ -935,9 +816,9 @@ export function RedesignedCompetenceTreeView() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               className="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-all font-medium shadow-sm flex items-center gap-2"
-              aria-label="Join the waitlist for early access"
+              aria-label="Join the early access list for early access"
             >
-              Join Waitlist
+              Join early access list
               <ArrowRight className="w-4 h-4" aria-hidden="true" />
             </motion.button>
           </div>

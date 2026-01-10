@@ -31,7 +31,7 @@ export function Footer() {
                 </h3>
               </Link>
               <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                Built with care for professional clarity and growth.
+                Built for inspectable, defensible human judgment.
               </p>
             </motion.div>
             <motion.div

@@ -66,7 +66,7 @@ export function LandingHero() {
             href="/demo"
             className="inline-flex items-center justify-center px-8 py-4 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-all shadow-sm hover:shadow-md font-medium text-lg"
           >
-            Try a quick demo
+            View a compiled decision artifact
           </Link>
           <p className="text-sm text-neutral-600 dark:text-neutral-400">
             Takes about 3 minutes

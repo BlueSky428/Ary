@@ -60,7 +60,7 @@ export const demoApi = {
   },
 
   /**
-   * Join waitlist
+   * Join early access list
    */
   joinWaitlist: async (email: string): Promise<ApiResponse<void>> => {
     const response = await apiClient.post('/demo/waitlist', { email });

@@ -2,11 +2,11 @@
 
 /**
  * Feature Cards Section
- * Three cards: Reflective, Private, Visual
+ * Three cards: Inspectable, Governed, Structured
  */
 
 import { motion } from 'framer-motion';
-import { MessageCircle, Lock, Eye } from 'lucide-react';
+import { Search, ShieldCheck, Network } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 interface FeatureConfig {
@@ -18,21 +18,21 @@ interface FeatureConfig {
 
 const features: FeatureConfig[] = [
   {
-    icon: MessageCircle,
-    title: 'Reflective',
-    description: 'Natural conversation that helps you see patterns of competence you already demonstrate',
+    icon: Search,
+    title: 'Inspectable',
+    description: 'Natural conversation compiled into explicit reasoning patterns and demonstrated mechanisms',
     color: 'green',
   },
   {
-    icon: Lock,
-    title: 'Private',
-    description: 'Your data stays yours. No surveillance, no scoring, no hidden evaluation',
+    icon: ShieldCheck,
+    title: 'Governed',
+    description: 'No scoring, no prediction. Data access, retention, and use remain explicitly controlled',
     color: 'orange',
   },
   {
-    icon: Eye,
-    title: 'Visual',
-    description: 'See your strengths as a living competence tree that grows with your reflection',
+    icon: Network,
+    title: 'Structured',
+    description: 'Reasoning rendered as a structured graph linking evidence, constraints, and uncertainty',
     color: 'green',
   },
 ];

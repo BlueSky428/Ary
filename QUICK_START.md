@@ -87,7 +87,7 @@ cd frontend && npm run dev
    - Type: "I'm feeling a bit stuck in my career"
    - Continue the conversation
    - Click "See what I see" to view competence preview
-3. Join the waitlist with your email
+3. Join the early access list with your email
 
 ## Project Structure
 
