@@ -7,7 +7,6 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { MessageCircle } from 'lucide-react';
 
 export function Footer() {
   return (
@@ -22,12 +21,9 @@ export function Footer() {
               transition={{ duration: 0.4 }}
               className="text-center md:text-left"
             >
-              <Link href="/" className="inline-flex items-center gap-2 mb-2 group">
-                <div className="relative bg-gradient-to-br from-primary-600 to-primary-700 p-1.5 rounded-lg shadow-sm">
-                  <MessageCircle className="w-4 h-4 text-white" strokeWidth={2} />
-                </div>
-                <h3 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-                  Ary
+              <Link href="/" className="inline-flex items-center mb-2 group">
+                <h3 className="text-xl font-semibold tracking-wide text-neutral-900 dark:text-neutral-100 group-hover:text-neutral-700 dark:group-hover:text-neutral-300 transition-colors">
+                  INLYTH
                 </h3>
               </Link>
               <p className="text-sm text-neutral-600 dark:text-neutral-400">
@@ -43,7 +39,7 @@ export function Footer() {
             >
               <div className="flex items-center gap-6 text-sm text-neutral-500 dark:text-neutral-400">
                 <Link
-                  href="/demo"
+                  href="/demo-access"
                   className="hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                 >
                   Demo
@@ -56,7 +52,7 @@ export function Footer() {
                 </Link>
               </div>
               <p className="text-xs text-neutral-400 dark:text-neutral-500">
-                © {new Date().getFullYear()} Ary. All rights reserved.
+                © {new Date().getFullYear()} Inlyth, Inc. All rights reserved.
               </p>
             </motion.div>
           </div>

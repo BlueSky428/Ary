@@ -63,7 +63,7 @@ export function LandingHero() {
           className="flex flex-col items-center gap-2"
         >
           <Link
-            href="/demo"
+            href="/demo-access"
             className="inline-flex items-center justify-center px-8 py-4 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-all shadow-sm hover:shadow-md font-medium text-lg"
           >
             View a compiled decision artifact
