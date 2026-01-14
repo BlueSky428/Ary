@@ -15,15 +15,11 @@ import { ArrowRight, Check, Minus } from 'lucide-react';
 const fadeInUp = {
   initial: { opacity: 0, y: 40 },
   whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: '-100px' },
-  transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
 };
 
 const staggerContainer = {
   initial: { opacity: 0 },
   whileInView: { opacity: 1 },
-  viewport: { once: true },
-  transition: { staggerChildren: 0.12, delayChildren: 0.1 },
 };
 
 export default function HomePage() {
@@ -65,6 +61,8 @@ export default function HomePage() {
         {/* Section 1 — The Claim */}
         <motion.section
           {...fadeInUp}
+          viewport={{ once: true, margin: '-100px' }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           className="max-w-5xl mb-40 md:mb-56 relative"
         >
           <motion.div
@@ -109,6 +107,8 @@ export default function HomePage() {
         {/* Section 2 — The Black Box Analogy */}
         <motion.section
           {...fadeInUp}
+          viewport={{ once: true, margin: '-100px' }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           className="max-w-5xl mb-40 md:mb-56 relative"
         >
           <div className="space-y-4 text-xl md:text-2xl lg:text-3xl text-neutral-600 dark:text-neutral-400 leading-[1.6] font-extralight mb-10">
@@ -120,6 +120,8 @@ export default function HomePage() {
           
           <motion.div
             {...fadeInUp}
+            viewport={{ once: true, margin: '-100px' }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="relative pl-8 md:pl-12 border-l-[1.5px] border-neutral-300 dark:border-neutral-700"
           >
             <div className="absolute left-0 top-0 bottom-0 w-[1.5px] bg-gradient-to-b from-transparent via-neutral-400 dark:via-neutral-600 to-transparent" />
@@ -137,10 +139,14 @@ export default function HomePage() {
         {/* Section 3 — What Ary does */}
         <motion.section
           {...fadeInUp}
+          viewport={{ once: true, margin: '-100px' }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           className="max-w-5xl mb-40 md:mb-56 relative"
         >
           <motion.p
             {...fadeInUp}
+            viewport={{ once: true, margin: '-100px' }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="text-xl md:text-2xl lg:text-3xl text-neutral-800 dark:text-neutral-200 leading-[1.6] mb-10 font-extralight"
           >
             Ary compiles deliberation into a judgment artifact:
@@ -151,6 +157,7 @@ export default function HomePage() {
             initial="initial"
             whileInView="whileInView"
             viewport={{ once: true, margin: '-50px' }}
+            transition={{ staggerChildren: 0.12, delayChildren: 0.1 }}
             className="space-y-5 mb-12"
           >
             {[
@@ -163,6 +170,8 @@ export default function HomePage() {
               <motion.li
                 key={index}
                 variants={fadeInUp}
+                viewport={{ once: true }}
+                transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
                 className="flex items-start gap-4 group"
               >
                 <div className="mt-1.5 flex-shrink-0">
@@ -177,6 +186,8 @@ export default function HomePage() {
           
           <motion.p
             {...fadeInUp}
+            viewport={{ once: true, margin: '-100px' }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="text-xl md:text-2xl lg:text-3xl text-neutral-900 dark:text-neutral-100 leading-[1.6] font-light"
           >
             No scores. No predictions. No recommendations.
@@ -191,10 +202,14 @@ export default function HomePage() {
         {/* Section 4 — Why this exists */}
         <motion.section
           {...fadeInUp}
+          viewport={{ once: true, margin: '-100px' }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           className="max-w-5xl mb-40 md:mb-56 relative"
         >
           <motion.p
             {...fadeInUp}
+            viewport={{ once: true, margin: '-100px' }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="text-xl md:text-2xl lg:text-3xl text-neutral-800 dark:text-neutral-200 leading-[1.6] mb-10 font-extralight"
           >
             In regulated environments, defensibility is not optional.
@@ -205,6 +220,7 @@ export default function HomePage() {
             initial="initial"
             whileInView="whileInView"
             viewport={{ once: true, margin: '-50px' }}
+            transition={{ staggerChildren: 0.12, delayChildren: 0.1 }}
             className="space-y-4 mb-12 grid grid-cols-1 md:grid-cols-2 gap-4"
           >
             {[
@@ -217,6 +233,8 @@ export default function HomePage() {
               <motion.li
                 key={index}
                 variants={fadeInUp}
+                viewport={{ once: true }}
+                transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
                 className="flex items-center gap-4 group"
               >
                 <div className="w-2 h-2 rounded-full bg-neutral-400 dark:text-neutral-600 flex-shrink-0 group-hover:bg-neutral-600 dark:group-hover:bg-neutral-400 transition-colors" />
@@ -229,6 +247,8 @@ export default function HomePage() {
           
           <motion.div
             {...fadeInUp}
+            viewport={{ once: true, margin: '-100px' }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="relative pl-8 md:pl-12 border-l-[1.5px] border-neutral-300 dark:border-neutral-700"
           >
             <div className="absolute left-0 top-0 bottom-0 w-[1.5px] bg-gradient-to-b from-transparent via-neutral-400 dark:via-neutral-600 to-transparent" />
@@ -247,10 +267,14 @@ export default function HomePage() {
         {/* Section 5 — Who mandates this */}
         <motion.section
           {...fadeInUp}
+          viewport={{ once: true, margin: '-100px' }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           className="max-w-5xl mb-40 md:mb-56 relative"
         >
           <motion.div
             {...fadeInUp}
+            viewport={{ once: true, margin: '-100px' }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="space-y-4 text-xl md:text-2xl lg:text-3xl text-neutral-800 dark:text-neutral-200 leading-[1.6] mb-10 font-extralight"
           >
             <p>Ary is not adopted by managers.</p>
@@ -262,6 +286,7 @@ export default function HomePage() {
             initial="initial"
             whileInView="whileInView"
             viewport={{ once: true, margin: '-50px' }}
+            transition={{ staggerChildren: 0.12, delayChildren: 0.1 }}
             className="flex flex-wrap gap-3"
           >
             {['Legal', 'Compliance', 'Risk', 'Boards', 'Regulators'].map((item, index) => (
@@ -269,6 +294,7 @@ export default function HomePage() {
                 key={index}
                 variants={fadeInUp}
                 whileHover={{ scale: 1.05, y: -2 }}
+                transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
                 className="px-5 py-2.5 bg-neutral-100 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700/50 rounded-lg text-base md:text-lg text-neutral-700 dark:text-neutral-300 font-light hover:bg-neutral-200 dark:hover:bg-neutral-700/50 hover:border-neutral-300 dark:hover:border-neutral-600 transition-all cursor-default"
               >
                 {item}
@@ -285,10 +311,14 @@ export default function HomePage() {
         {/* Section 6 — The gate (demo access) */}
         <motion.section
           {...fadeInUp}
+          viewport={{ once: true, margin: '-100px' }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           className="max-w-5xl mb-40 md:mb-56 relative"
         >
           <motion.div
             {...fadeInUp}
+            viewport={{ once: true, margin: '-100px' }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="space-y-5 text-xl md:text-2xl lg:text-3xl text-neutral-800 dark:text-neutral-200 leading-[1.6] mb-10 font-extralight"
           >
             <p>Access the system</p>
@@ -320,10 +350,13 @@ export default function HomePage() {
         {/* Section 7 — Footer (credibility, not marketing) */}
         <motion.section
           {...fadeInUp}
+          viewport={{ once: true, margin: '-100px' }}
           className="max-w-5xl relative"
         >
           <motion.div
             {...fadeInUp}
+            viewport={{ once: true, margin: '-100px' }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="space-y-4 text-base md:text-lg text-neutral-600 dark:text-neutral-400 leading-relaxed font-light"
           >
             <p className="font-normal text-neutral-700 dark:text-neutral-300">Inlyth, Inc.</p>
