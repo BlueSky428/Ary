@@ -1,7 +1,7 @@
 {
   "name": "ary",
   "version": "0.1.0",
-  "description": "Ary - Strength-Spotting AI Companion",
+  "description": "INLYTH",
   "private": true,
   "workspaces": [
     "frontend",

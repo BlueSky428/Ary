@@ -362,8 +362,10 @@ Return ONLY the JSON object, nothing else.`;
     if (typeof window !== 'undefined') {
       const storedQuestionPrompt = sessionStorage.getItem('customQuestionPrompt');
       const storedFinalPrompt = sessionStorage.getItem('customFinalPrompt');
+      const storedCompilerPrompt = sessionStorage.getItem('customCompilerPrompt');
       if (storedQuestionPrompt) setCustomQuestionPrompt(storedQuestionPrompt);
       if (storedFinalPrompt) setCustomFinalPrompt(storedFinalPrompt);
+      if (storedCompilerPrompt) setCustomCompilerPrompt(storedCompilerPrompt);
     }
   }, []);
 
@@ -648,15 +650,18 @@ Return ONLY the JSON object, nothing else.`;
   };
 
   // Handle prompt save
-  const handleSavePrompts = (questionPrompt: string, finalPrompt: string) => {
+  const handleSavePrompts = (questionPrompt: string, finalPrompt: string, compilerPrompt: string) => {
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('customQuestionPrompt', questionPrompt);
       sessionStorage.setItem('customFinalPrompt', finalPrompt);
+      sessionStorage.setItem('customCompilerPrompt', compilerPrompt);
       setCustomQuestionPrompt(questionPrompt);
       setCustomFinalPrompt(finalPrompt);
+      setCustomCompilerPrompt(compilerPrompt);
       console.log('[Prompt Edit] Saved custom prompts:', {
         questionPromptLength: questionPrompt.length,
         finalPromptLength: finalPrompt.length,
+        compilerPromptLength: compilerPrompt.length,
       });
     }
   };
@@ -666,8 +671,10 @@ Return ONLY the JSON object, nothing else.`;
     if (typeof window !== 'undefined') {
       sessionStorage.removeItem('customQuestionPrompt');
       sessionStorage.removeItem('customFinalPrompt');
+      sessionStorage.removeItem('customCompilerPrompt');
       setCustomQuestionPrompt(null);
       setCustomFinalPrompt(null);
+      setCustomCompilerPrompt(null);
     }
   };
 
@@ -1340,14 +1347,14 @@ Return ONLY the JSON object, nothing else.`;
         </div>
       </div>
 
-      {/* Prompt Edit Panel - Hidden */}
-      {/* <PromptEditPanel
+      {/* Prompt Edit Panel */}
+      <PromptEditPanel
         questionPrompt={customQuestionPrompt || DEFAULT_QUESTION_PROMPT}
         finalPrompt={customFinalPrompt || DEFAULT_FINAL_PROMPT}
         compilerPrompt={customCompilerPrompt || DEFAULT_COMPILER_PROMPT}
         onSave={handleSavePrompts}
         onReset={handleResetPrompts}
-      /> */}
+      />
 
       {/* GPT Debug Panel - Hidden */}
       {/* <GPTDebugPanel

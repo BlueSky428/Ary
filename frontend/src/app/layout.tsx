@@ -10,13 +10,13 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Ary - Strength-Spotting AI Companion',
-  description: 'See and articulate your professional capabilities through natural conversation. Not an assessment. Not therapy. Just clarity.',
-  keywords: ['career', 'strengths', 'professional development', 'self-reflection', 'competence'],
-  authors: [{ name: 'Ary' }],
+  title: 'Ary - Infrastructure for Auditable Human Judgment',
+  description: 'Ary is infrastructure for auditable human judgment. Institutions can audit financial decisions. They cannot audit people decisions. Ary is the missing layer.',
+  keywords: ['auditable judgment', 'human judgment', 'institutional compliance', 'defensible decisions', 'professional judgment'],
+  authors: [{ name: 'Inlyth, Inc.' }],
   openGraph: {
-    title: 'Ary - Strength-Spotting AI Companion',
-    description: 'See and articulate your professional capabilities through natural conversation',
+    title: 'Ary - Infrastructure for Auditable Human Judgment',
+    description: 'Ary is infrastructure for auditable human judgment. Institutions can audit financial decisions. They cannot audit people decisions.',
     type: 'website',
   },
 };
