@@ -48,12 +48,12 @@ export function Footer() {
                 Doctrine
               </Link>
               <span className="text-neutral-300 dark:text-neutral-600">·</span>
-              <Link
+              <a
                 href="mailto:hello@inlyth.com"
                 className="hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
               >
                 Contact
-              </Link>
+              </a>
             </div>
 
             {/* Divider */}
