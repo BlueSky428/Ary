@@ -397,13 +397,10 @@ export function RedesignedCompetenceTreeView() {
             className="text-center mb-6"
           >
             <h1 className="text-4xl md:text-5xl font-bold text-neutral-900 dark:text-neutral-100 mb-2">
-              Your Identity Core
+              Compiled Conversation Artifact
             </h1>
-            <p className="text-xl text-primary-600 dark:text-primary-400 font-semibold mb-3">
-              {result.title}
-            </p>
             <p className="text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">
-              Patterns revealed from your conversation with Ary
+              Structured observations derived from a single conversation
             </p>
           </motion.div>
 
