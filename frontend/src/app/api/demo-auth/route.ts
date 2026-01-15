@@ -8,7 +8,7 @@ import { cookies } from 'next/headers';
 
 // Access code - stored in environment variable for security
 // Set DEMO_ACCESS_CODE in your .env.local file
-const DEMO_ACCESS_CODE = process.env.DEMO_ACCESS_CODE || 'demo2026';
+const DEMO_ACCESS_CODE = process.env.DEMO_ACCESS_CODE || 'arybyinlyth';
 
 // Cookie name and settings
 const AUTH_COOKIE_NAME = 'demo-access';

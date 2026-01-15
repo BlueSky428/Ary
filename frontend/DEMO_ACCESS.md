@@ -12,7 +12,7 @@ DEMO_ACCESS_CODE=your-access-code-here
 
 ## Default Code
 
-If `DEMO_ACCESS_CODE` is not set, the default code is `demo2024`.
+If `DEMO_ACCESS_CODE` is not set, the default code is `arybyinlyth`.
 
 ## How It Works
 
