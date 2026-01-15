@@ -12,7 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { 
   Users, Target, Scale, BookOpen, Rocket,
-  MessageSquare, ArrowRight, Sparkles, FileText, Layers
+  MessageSquare, ArrowRight, FileText, Layers
 } from 'lucide-react';
 import type { ConversationResult, ConversationHistory } from '@/lib/conversationResults';
 
@@ -146,37 +146,6 @@ export function RedesignedCompetenceTreeView() {
       });
   }
 
-  // Parse summary if it's a JSON string, then split into 3 sentences
-  let summaryText = result.summary;
-  if (typeof summaryText === 'string') {
-    const trimmed = summaryText.trim();
-    if (trimmed.startsWith('{') || trimmed.startsWith('"')) {
-      try {
-        // First try parsing as JSON
-        const parsed = JSON.parse(trimmed);
-        if (typeof parsed === 'object' && parsed.summary) {
-          summaryText = parsed.summary;
-        } else if (typeof parsed === 'string') {
-          summaryText = parsed;
-        }
-      } catch {
-        // If parsing fails, try to extract text between quotes or after "summary":
-        const match = trimmed.match(/"summary"\s*:\s*"([^"]+(?:"[^"]*")*[^"]*)"/);
-        if (match && match[1]) {
-          summaryText = match[1].replace(/\\"/g, '"').replace(/\\n/g, '\n');
-        } else {
-          // Try to remove JSON structure manually
-          summaryText = trimmed.replace(/^\{?\s*"summary"\s*:\s*"/, '').replace(/"\s*\}?$/, '').replace(/\\"/g, '"').replace(/\\n/g, '\n');
-        }
-      }
-    }
-  }
-  
-  const summarySentences = summaryText
-    .split(/[.!?]+/)
-    .filter(s => s.trim().length > 0)
-    .slice(0, 3)
-    .map(s => s.trim() + '.');
 
   const normalizedCompetencies = result.competencies.map(c => normalize(c));
 
@@ -704,34 +673,6 @@ export function RedesignedCompetenceTreeView() {
                   </div>
                 </div>
 
-                {/* Summary */}
-                <div className="bg-gradient-to-br from-white to-neutral-50/50 dark:from-neutral-900 dark:to-neutral-800/30 rounded-2xl p-6 shadow-lg border border-neutral-200/50 dark:border-neutral-700/50 relative overflow-hidden">
-                  {/* Decorative background element */}
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/5 dark:bg-primary-400/5 rounded-full blur-3xl -mr-32 -mt-32" />
-                  
-                  <div className="relative">
-                    <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 mb-5 flex items-center gap-3">
-                      <Sparkles className="w-6 h-6 text-primary-600 dark:text-primary-400" strokeWidth={2} />
-                      Compiled Summary
-                    </h2>
-                    <div className="space-y-4">
-                      {summarySentences.map((sentence, idx) => (
-                        <motion.div
-                          key={idx}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: idx * 0.15, duration: 0.5 }}
-                          className="relative pl-7"
-                        >
-                          <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b from-primary-400 to-primary-500 dark:from-primary-500 dark:to-primary-600 opacity-80 rounded-full" />
-                          <p className="text-xl text-neutral-900 dark:text-neutral-100 leading-relaxed font-semibold">
-                            {sentence}
-                          </p>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
               </motion.div>
             )}
 
