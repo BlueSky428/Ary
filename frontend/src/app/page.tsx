@@ -342,27 +342,6 @@ export default function HomePage() {
           </motion.div>
         </motion.section>
 
-        {/* Section Divider */}
-        <div className="max-w-5xl mb-40 md:mb-56">
-          <div className="h-px bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-700 to-transparent" />
-        </div>
-
-        {/* Section 7 — Footer (credibility, not marketing) */}
-        <motion.section
-          {...fadeInUp}
-          viewport={{ once: true, margin: '-100px' }}
-          className="max-w-5xl relative"
-        >
-          <motion.div
-            {...fadeInUp}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="space-y-4 text-base md:text-lg text-neutral-600 dark:text-neutral-400 leading-relaxed font-light"
-          >
-            <p className="font-normal text-neutral-700 dark:text-neutral-300">Inlyth, Inc.</p>
-            <p>Developed in collaboration with academic and institutional partners.</p>
-          </motion.div>
-        </motion.section>
       </div>
 
       {/* Footer */}

@@ -530,9 +530,9 @@ export function RedesignedCompetenceTreeView() {
                           
                           <p className="text-white text-base font-black text-center leading-tight px-1.5 drop-shadow-[0_3px_10px_rgba(0,0,0,0.9)]">
                             Compiled
-                            <span className="block text-sm font-extrabold leading-tight mt-1">
+                              <span className="block text-sm font-extrabold leading-tight mt-1">
                               Artifact
-                            </span>
+                              </span>
                           </p>
                         </div>
                       </div>
