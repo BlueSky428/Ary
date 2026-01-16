@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Lock, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Navigation } from '@/components/Navigation';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function DemoAccessPage() {
@@ -57,31 +58,19 @@ export default function DemoAccessPage() {
         }} />
       </div>
 
+      <Navigation />
+
       {/* Theme Toggle */}
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.4 }}
-        className="fixed top-6 right-6 z-50"
+        className="fixed top-20 right-6 z-50"
       >
         <ThemeToggle />
       </motion.div>
 
-      {/* Logo */}
-      <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.6 }}
-        className="fixed top-6 left-6 z-50"
-      >
-        <Link href="/" className="inline-flex items-center">
-          <span className="text-lg font-semibold tracking-[0.15em] text-neutral-900 dark:text-neutral-100">
-            INLYTH
-          </span>
-        </Link>
-      </motion.div>
-
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-md w-full">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-md w-full pt-24">
         {/* Back Button */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}

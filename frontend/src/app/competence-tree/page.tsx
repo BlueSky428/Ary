@@ -10,12 +10,20 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function CompetenceTreePage() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950">
+    <main className="min-h-screen bg-gradient-to-b from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950 relative overflow-hidden">
+      {/* Subtle background pattern */}
+      <div className="fixed inset-0 opacity-[0.015] dark:opacity-[0.02] pointer-events-none">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`,
+          backgroundSize: '32px 32px'
+        }} />
+      </div>
+
       {/* Navigation */}
       <Navigation />
 
       {/* Theme Toggle */}
-      <div className="fixed top-24 right-6 z-50">
+      <div className="fixed top-20 right-6 z-50">
         <ThemeToggle />
       </div>
 

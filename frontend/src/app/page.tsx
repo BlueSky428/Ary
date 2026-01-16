@@ -9,6 +9,7 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Footer } from '@/components/Footer';
+import { Navigation } from '@/components/Navigation';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ArrowRight, Check, Minus } from 'lucide-react';
 
@@ -33,28 +34,16 @@ export default function HomePage() {
         }} />
       </div>
 
+      <Navigation />
+
       {/* Theme Toggle - Fixed position */}
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.4 }}
-        className="fixed top-6 right-6 z-50"
+        className="fixed top-20 right-6 z-50"
       >
         <ThemeToggle />
-      </motion.div>
-
-      {/* Logo/Brand - Top */}
-      <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="fixed top-6 left-6 z-50"
-      >
-        <Link href="/" className="inline-flex items-center group">
-          <span className="text-lg font-semibold tracking-[0.15em] text-neutral-900 dark:text-neutral-100 group-hover:text-neutral-600 dark:group-hover:text-neutral-400 transition-colors duration-300">
-            INLYTH
-          </span>
-        </Link>
       </motion.div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-32 relative">

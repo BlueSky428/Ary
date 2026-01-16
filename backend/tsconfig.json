@@ -4,7 +4,6 @@
     "module": "commonjs",
     "lib": ["ES2022"],
     "outDir": "./dist",
-    "rootDir": "./src",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -13,10 +12,15 @@
     "moduleResolution": "node",
     "baseUrl": ".",
     "paths": {
-      "@ary/shared": ["../shared/src"]
+      "@ary/shared": ["../shared/dist"]
     }
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts"]
+  "exclude": ["node_modules", "dist", "**/*.test.ts"],
+  "references": [
+    {
+      "path": "../shared"
+    }
+  ]
 }
 

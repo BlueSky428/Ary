@@ -13,6 +13,9 @@ export function Navigation() {
   const pathname = usePathname();
 
   const navLinks = [
+    { href: '/', label: 'Home' },
+    { href: '/infrastructure', label: 'Infrastructure' },
+    { href: '/team', label: 'Team' },
     { href: '/demo-access', label: 'Demo' },
     { href: '/waitlist', label: 'Waitlist' },
   ];
