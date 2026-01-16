@@ -11,12 +11,12 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: 'Ary - Infrastructure for Auditable Human Judgment',
-  description: 'Ary is infrastructure for auditable human judgment. Institutions can audit financial decisions. They cannot audit people decisions. Ary is the missing layer.',
+  description: 'Inlyth builds accountability infrastructure for human judgment — compiling decision reasoning into auditable, defensible records without scoring or prediction.',
   keywords: ['auditable judgment', 'human judgment', 'institutional compliance', 'defensible decisions', 'professional judgment'],
   authors: [{ name: 'Inlyth, Inc.' }],
   openGraph: {
     title: 'Ary - Infrastructure for Auditable Human Judgment',
-    description: 'Ary is infrastructure for auditable human judgment. Institutions can audit financial decisions. They cannot audit people decisions.',
+    description: 'Inlyth builds accountability infrastructure for human judgment — compiling decision reasoning into auditable, defensible records without scoring or prediction.',
     type: 'website',
   },
 };
