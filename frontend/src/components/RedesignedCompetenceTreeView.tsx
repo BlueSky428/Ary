@@ -12,7 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { 
   Users, Target, Scale, BookOpen, Rocket,
-  MessageSquare, ArrowRight, FileText, Layers
+  MessageSquare, FileText, Layers
 } from 'lucide-react';
 import type { ConversationResult, ConversationHistory } from '@/lib/conversationResults';
 
@@ -748,16 +748,6 @@ export function RedesignedCompetenceTreeView() {
               aria-label="Start a new conversation"
             >
               Try Again
-            </motion.button>
-            <motion.button
-              onClick={() => router.push('/waitlist')}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-all font-medium shadow-sm flex items-center gap-2"
-              aria-label="Join the early access list for early access"
-            >
-              Join early access list
-              <ArrowRight className="w-4 h-4" aria-hidden="true" />
             </motion.button>
           </div>
         </div>

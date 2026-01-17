@@ -17,7 +17,6 @@ export function Navigation() {
     { href: '/infrastructure', label: 'Infrastructure' },
     { href: '/team', label: 'Team' },
     { href: '/demo-access', label: 'Demo' },
-    { href: '/waitlist', label: 'Waitlist' },
   ];
 
   return (
