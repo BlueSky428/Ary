@@ -295,7 +295,7 @@ export default function HomePage() {
         {/* Section Divider */}
         <div className="max-w-5xl mb-40 md:mb-56">
           <div className="h-px bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-700 to-transparent" />
-        </div>
+      </div>
 
         {/* Section 6 — The gate (demo access) */}
         <motion.section

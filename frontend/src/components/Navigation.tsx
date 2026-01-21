@@ -15,6 +15,7 @@ export function Navigation() {
   const navLinks = [
     { href: '/', label: 'Home' },
     { href: '/infrastructure', label: 'Infrastructure' },
+    { href: '/legitimacy', label: 'Legitimacy' },
     { href: '/team', label: 'Team' },
     { href: '/demo-access', label: 'Demo' },
   ];
