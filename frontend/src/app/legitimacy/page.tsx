@@ -7,7 +7,6 @@
 
 import { motion } from 'framer-motion';
 import { Footer } from '@/components/Footer';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { Minus, Check } from 'lucide-react';
 import { Navigation } from '@/components/Navigation';
 
@@ -38,23 +37,13 @@ export default function LegitimacyPage() {
 
       <Navigation />
 
-      {/* Theme Toggle - Fixed position */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.4 }}
-        className="fixed top-20 right-6 z-50"
-      >
-        <ThemeToggle />
-      </motion.div>
-
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-32 relative">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 md:pt-32 pb-20 sm:pb-24 md:pb-32 relative">
         {/* Page Title */}
         <motion.section
           {...fadeInUp}
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="max-w-5xl mb-40 md:mb-56 relative"
+          className="max-w-5xl mb-24 sm:mb-32 md:mb-40 lg:mb-48 relative"
         >
           <motion.div
             initial={{ opacity: 0 }}
@@ -72,7 +61,7 @@ export default function LegitimacyPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-extralight text-neutral-900 dark:text-neutral-50 leading-[1.08] mb-12 tracking-tight"
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-extralight text-neutral-900 dark:text-neutral-50 leading-[1.1] sm:leading-[1.08] mb-8 sm:mb-12 tracking-tight"
           >
             The Legitimacy
           </motion.h1>
@@ -83,22 +72,22 @@ export default function LegitimacyPage() {
           {...fadeInUp}
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="max-w-5xl mb-40 md:mb-56 relative"
+          className="max-w-5xl mb-24 sm:mb-32 md:mb-40 lg:mb-48 relative"
         >
-          <div className="space-y-6 text-xl md:text-2xl lg:text-3xl text-neutral-600 dark:text-neutral-400 leading-[1.6] font-extralight">
+          <div className="space-y-5 sm:space-y-6 text-lg sm:text-xl md:text-2xl lg:text-3xl text-neutral-600 dark:text-neutral-400 leading-[1.6] font-extralight">
             <p>A simple rule:</p>
             <p className="text-neutral-900 dark:text-neutral-100 font-light">
               If a process cannot be performed honestly by a human, it must not be automated.
             </p>
           </div>
-          <div className="mt-10 space-y-3 text-lg md:text-xl text-neutral-500 dark:text-neutral-500 font-light">
+          <div className="mt-8 sm:mt-10 space-y-3 text-base sm:text-lg md:text-xl text-neutral-500 dark:text-neutral-500 font-light">
             <p>Automation does not create legitimacy.</p>
             <p>It only removes friction.</p>
           </div>
         </motion.section>
 
         {/* Section Divider */}
-        <div className="max-w-5xl mb-40 md:mb-56">
+        <div className="max-w-5xl mb-24 sm:mb-32 md:mb-40 lg:mb-48">
           <div className="h-px bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-700 to-transparent" />
         </div>
 
@@ -107,13 +96,13 @@ export default function LegitimacyPage() {
           {...fadeInUp}
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="max-w-5xl mb-40 md:mb-56 relative"
+          className="max-w-5xl mb-24 sm:mb-32 md:mb-40 lg:mb-48 relative"
         >
           <motion.p
             {...fadeInUp}
             viewport={{ once: true, margin: '-100px' }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="text-xl md:text-2xl lg:text-3xl text-neutral-800 dark:text-neutral-200 leading-[1.6] mb-10 font-extralight"
+            className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-neutral-800 dark:text-neutral-200 leading-[1.6] mb-6 sm:mb-10 font-extralight"
           >
             For decades, institutions relied on human processes to:
           </motion.p>
@@ -124,7 +113,7 @@ export default function LegitimacyPage() {
             whileInView="whileInView"
             viewport={{ once: true, margin: '-50px' }}
             transition={{ staggerChildren: 0.12, delayChildren: 0.1 }}
-            className="space-y-5 mb-12"
+            className="space-y-4 sm:space-y-5 mb-10 sm:mb-12"
           >
             {[
               'ask questions',
@@ -146,7 +135,7 @@ export default function LegitimacyPage() {
                     strokeWidth={1.5}
                   />
                 </div>
-                <span className="text-lg md:text-xl lg:text-2xl text-neutral-700 dark:text-neutral-300 leading-[1.7] font-extralight flex-1">
+                <span className="text-base sm:text-lg md:text-xl lg:text-2xl text-neutral-700 dark:text-neutral-300 leading-[1.7] font-extralight flex-1">
                   {item}
                 </span>
               </motion.li>
@@ -157,14 +146,23 @@ export default function LegitimacyPage() {
             {...fadeInUp}
             viewport={{ once: true, margin: '-100px' }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="text-xl md:text-2xl lg:text-3xl text-neutral-700 dark:text-neutral-300 leading-[1.6] font-extralight"
+            className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-neutral-700 dark:text-neutral-300 leading-[1.6] font-extralight"
           >
-            These processes were slow, inconsistent, and expensive — but they were legible.
+            These processes were slow, inconsistent, and expensive — but they were{' '}
+            <span className="text-neutral-900 dark:text-neutral-100 font-light">legible</span>.
+          </motion.p>
+          <motion.p
+            {...fadeInUp}
+            viewport={{ once: true, margin: '-100px' }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-6 text-base sm:text-lg md:text-xl lg:text-2xl text-neutral-500 dark:text-neutral-500 leading-[1.7] font-extralight"
+          >
+            Their inconsistency was a human limitation, not an epistemic failure. What mattered was that the reasoning could be shown.
           </motion.p>
         </motion.section>
 
         {/* Section Divider */}
-        <div className="max-w-5xl mb-40 md:mb-56">
+        <div className="max-w-5xl mb-24 sm:mb-32 md:mb-40 lg:mb-48">
           <div className="h-px bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-700 to-transparent" />
         </div>
 
@@ -173,21 +171,21 @@ export default function LegitimacyPage() {
           {...fadeInUp}
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="max-w-5xl mb-40 md:mb-56 relative"
+          className="max-w-5xl mb-24 sm:mb-32 md:mb-40 lg:mb-48 relative"
         >
-          <div className="space-y-6 text-xl md:text-2xl lg:text-3xl text-neutral-600 dark:text-neutral-400 leading-[1.6] font-extralight">
+          <div className="space-y-5 sm:space-y-6 text-lg sm:text-xl md:text-2xl lg:text-3xl text-neutral-600 dark:text-neutral-400 leading-[1.6] font-extralight">
             <p>Modern AI systems reverse this order:</p>
             <p className="text-neutral-900 dark:text-neutral-100 font-light">
               they automate first, and attempt to justify later.
             </p>
           </div>
-          <div className="mt-10 text-xl md:text-2xl lg:text-3xl text-neutral-900 dark:text-neutral-100 font-light">
+          <div className="mt-8 sm:mt-10 text-lg sm:text-xl md:text-2xl lg:text-3xl text-neutral-900 dark:text-neutral-100 font-light">
             <p>Ary does the opposite.</p>
           </div>
         </motion.section>
 
         {/* Section Divider */}
-        <div className="max-w-5xl mb-40 md:mb-56">
+        <div className="max-w-5xl mb-24 sm:mb-32 md:mb-40 lg:mb-48">
           <div className="h-px bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-700 to-transparent" />
         </div>
 
@@ -196,13 +194,13 @@ export default function LegitimacyPage() {
           {...fadeInUp}
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="max-w-5xl mb-40 md:mb-56 relative"
+          className="max-w-5xl mb-24 sm:mb-32 md:mb-40 lg:mb-48 relative"
         >
           <motion.p
             {...fadeInUp}
             viewport={{ once: true, margin: '-100px' }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="text-xl md:text-2xl lg:text-3xl text-neutral-800 dark:text-neutral-200 leading-[1.6] mb-10 font-extralight"
+            className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-neutral-800 dark:text-neutral-200 leading-[1.6] mb-6 sm:mb-10 font-extralight"
           >
             Before anything is automated, we ask:
           </motion.p>
@@ -213,7 +211,7 @@ export default function LegitimacyPage() {
             whileInView="whileInView"
             viewport={{ once: true, margin: '-50px' }}
             transition={{ staggerChildren: 0.12, delayChildren: 0.1 }}
-            className="space-y-5 mb-12"
+            className="space-y-4 sm:space-y-5 mb-10 sm:mb-12"
           >
             {[
               'Can this be done manually?',
@@ -234,7 +232,7 @@ export default function LegitimacyPage() {
                     strokeWidth={1.5}
                   />
                 </div>
-                <span className="text-lg md:text-xl lg:text-2xl text-neutral-700 dark:text-neutral-300 leading-[1.7] font-extralight flex-1">
+                <span className="text-base sm:text-lg md:text-xl lg:text-2xl text-neutral-700 dark:text-neutral-300 leading-[1.7] font-extralight flex-1">
                   {item}
                 </span>
               </motion.li>
@@ -245,14 +243,14 @@ export default function LegitimacyPage() {
             {...fadeInUp}
             viewport={{ once: true, margin: '-100px' }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="text-xl md:text-2xl lg:text-3xl text-neutral-800 dark:text-neutral-200 leading-[1.6] font-extralight"
+            className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-neutral-800 dark:text-neutral-200 leading-[1.6] font-extralight"
           >
             If the answer is no, we refuse to automate it.
           </motion.p>
         </motion.section>
 
         {/* Section Divider */}
-        <div className="max-w-5xl mb-40 md:mb-56">
+        <div className="max-w-5xl mb-24 sm:mb-32 md:mb-40 lg:mb-48">
           <div className="h-px bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-700 to-transparent" />
         </div>
 
@@ -261,15 +259,15 @@ export default function LegitimacyPage() {
           {...fadeInUp}
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="max-w-5xl mb-20 md:mb-24 relative"
+          className="max-w-5xl mb-16 sm:mb-20 md:mb-24 relative"
         >
-          <div className="space-y-6 text-xl md:text-2xl lg:text-3xl text-neutral-700 dark:text-neutral-300 leading-[1.6] font-extralight">
+          <div className="space-y-5 sm:space-y-6 text-lg sm:text-xl md:text-2xl lg:text-3xl text-neutral-700 dark:text-neutral-300 leading-[1.6] font-extralight">
             <p>This is not a limitation.</p>
             <p className="text-neutral-900 dark:text-neutral-100 font-light">
               It is the condition for scale.
             </p>
           </div>
-          <div className="mt-12 space-y-3 text-xl md:text-2xl lg:text-3xl text-neutral-900 dark:text-neutral-100 font-light">
+          <div className="mt-8 sm:mt-12 space-y-3 text-lg sm:text-xl md:text-2xl lg:text-3xl text-neutral-900 dark:text-neutral-100 font-light">
             <p>Accountability is not the opposite of progress.</p>
             <p>It is the prerequisite for it.</p>
           </div>

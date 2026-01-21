@@ -10,7 +10,6 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Footer } from '@/components/Footer';
 import { Navigation } from '@/components/Navigation';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { ArrowRight, Check, Minus } from 'lucide-react';
 
 const fadeInUp = {
@@ -36,23 +35,13 @@ export default function HomePage() {
 
       <Navigation />
 
-      {/* Theme Toggle - Fixed position */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.4 }}
-        className="fixed top-20 right-6 z-50"
-      >
-        <ThemeToggle />
-      </motion.div>
-
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-32 relative">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-24 md:pt-32 pb-24 md:pb-32 relative">
         {/* Section 1 — The Claim */}
         <motion.section
           {...fadeInUp}
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="max-w-5xl mb-40 md:mb-56 relative"
+          className="max-w-5xl mb-24 sm:mb-32 md:mb-40 lg:mb-48 relative"
         >
           <motion.div
             initial={{ opacity: 0 }}
@@ -70,7 +59,7 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-extralight text-neutral-900 dark:text-neutral-50 leading-[1.08] mb-12 tracking-tight"
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-extralight text-neutral-900 dark:text-neutral-50 leading-[1.1] sm:leading-[1.08] mb-8 sm:mb-12 tracking-tight"
           >
             Ary is infrastructure for{' '}
             <span className="font-normal text-neutral-950 dark:text-neutral-50">auditable human judgment</span>.
@@ -80,7 +69,7 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="space-y-5 text-xl md:text-2xl lg:text-3xl text-neutral-600 dark:text-neutral-400 leading-[1.6] font-extralight max-w-4xl"
+            className="space-y-5 text-lg sm:text-xl md:text-2xl lg:text-3xl text-neutral-600 dark:text-neutral-400 leading-[1.6] font-extralight max-w-4xl"
           >
             <p>Institutions can audit financial decisions.</p>
             <p>They cannot audit people decisions.</p>
@@ -89,7 +78,7 @@ export default function HomePage() {
         </motion.section>
 
         {/* Section Divider */}
-        <div className="max-w-5xl mb-40 md:mb-56">
+        <div className="max-w-5xl mb-24 sm:mb-32 md:mb-40 lg:mb-48">
           <div className="h-px bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-700 to-transparent" />
         </div>
 
@@ -98,7 +87,7 @@ export default function HomePage() {
           {...fadeInUp}
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="max-w-5xl mb-40 md:mb-56 relative"
+          className="max-w-5xl mb-24 sm:mb-32 md:mb-40 lg:mb-48 relative"
         >
           <div className="space-y-4 text-xl md:text-2xl lg:text-3xl text-neutral-600 dark:text-neutral-400 leading-[1.6] font-extralight mb-10">
             <p>High-stakes systems require black boxes.</p>
@@ -121,7 +110,7 @@ export default function HomePage() {
         </motion.section>
 
         {/* Section Divider */}
-        <div className="max-w-5xl mb-40 md:mb-56">
+        <div className="max-w-5xl mb-24 sm:mb-32 md:mb-40 lg:mb-48">
           <div className="h-px bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-700 to-transparent" />
         </div>
 
@@ -130,7 +119,7 @@ export default function HomePage() {
           {...fadeInUp}
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="max-w-5xl mb-40 md:mb-56 relative"
+          className="max-w-5xl mb-24 sm:mb-32 md:mb-40 lg:mb-48 relative"
         >
           <motion.p
             {...fadeInUp}
@@ -184,7 +173,7 @@ export default function HomePage() {
         </motion.section>
 
         {/* Section Divider */}
-        <div className="max-w-5xl mb-40 md:mb-56">
+        <div className="max-w-5xl mb-24 sm:mb-32 md:mb-40 lg:mb-48">
           <div className="h-px bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-700 to-transparent" />
         </div>
 
@@ -193,7 +182,7 @@ export default function HomePage() {
           {...fadeInUp}
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="max-w-5xl mb-40 md:mb-56 relative"
+          className="max-w-5xl mb-24 sm:mb-32 md:mb-40 lg:mb-48 relative"
         >
           <motion.p
             {...fadeInUp}
@@ -249,7 +238,7 @@ export default function HomePage() {
         </motion.section>
 
         {/* Section Divider */}
-        <div className="max-w-5xl mb-40 md:mb-56">
+        <div className="max-w-5xl mb-24 sm:mb-32 md:mb-40 lg:mb-48">
           <div className="h-px bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-700 to-transparent" />
         </div>
 
@@ -258,7 +247,7 @@ export default function HomePage() {
           {...fadeInUp}
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="max-w-5xl mb-40 md:mb-56 relative"
+          className="max-w-5xl mb-24 sm:mb-32 md:mb-40 lg:mb-48 relative"
         >
           <motion.div
             {...fadeInUp}
@@ -293,16 +282,16 @@ export default function HomePage() {
         </motion.section>
 
         {/* Section Divider */}
-        <div className="max-w-5xl mb-40 md:mb-56">
+        <div className="max-w-5xl mb-24 sm:mb-32 md:mb-40 lg:mb-48">
           <div className="h-px bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-700 to-transparent" />
-      </div>
+        </div>
 
         {/* Section 6 — The gate (demo access) */}
         <motion.section
           {...fadeInUp}
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="max-w-5xl mb-40 md:mb-56 relative"
+          className="max-w-5xl mb-24 sm:mb-32 md:mb-40 lg:mb-48 relative"
         >
           <motion.div
             {...fadeInUp}

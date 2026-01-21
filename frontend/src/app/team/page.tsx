@@ -7,7 +7,6 @@
 
 import { motion } from 'framer-motion';
 import { Footer } from '@/components/Footer';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { Minus } from 'lucide-react';
 import { Navigation } from '@/components/Navigation';
 
@@ -42,36 +41,26 @@ export default function TeamPage() {
 
       <Navigation />
 
-      {/* Theme Toggle - Fixed position */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.4 }}
-        className="fixed top-20 right-6 z-50"
-      >
-        <ThemeToggle />
-      </motion.div>
-
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-32 relative">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 md:pt-32 pb-20 sm:pb-24 md:pb-32 relative">
         {/* Page Title */}
         <motion.section
           {...fadeInUp}
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="max-w-5xl mb-40 md:mb-56 relative"
+          className="max-w-5xl mb-24 sm:mb-32 md:mb-40 lg:mb-48 relative"
         >
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-extralight text-neutral-900 dark:text-neutral-50 leading-[1.08] mb-12 tracking-tight"
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-extralight text-neutral-900 dark:text-neutral-50 leading-[1.1] sm:leading-[1.08] mb-8 sm:mb-12 tracking-tight"
           >
             The Team
           </motion.h1>
         </motion.section>
 
         {/* Team Members */}
-        <div className="max-w-5xl space-y-24 md:space-y-32">
+        <div className="max-w-5xl space-y-16 sm:space-y-24 md:space-y-32">
           {teamMembers.map((member, index) => (
             <motion.section
               key={index}
@@ -86,7 +75,7 @@ export default function TeamPage() {
                     {...fadeInUp}
                     viewport={{ once: true }}
                     transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                    className="text-3xl md:text-4xl lg:text-5xl font-light text-neutral-900 dark:text-neutral-50"
+                    className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light text-neutral-900 dark:text-neutral-50"
                   >
                     {member.name}
                   </motion.h2>
@@ -104,7 +93,7 @@ export default function TeamPage() {
                   {...fadeInUp}
                   viewport={{ once: true }}
                   transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
-                  className="text-lg md:text-xl lg:text-2xl text-neutral-700 dark:text-neutral-300 leading-[1.7] font-extralight max-w-4xl"
+                  className="text-base sm:text-lg md:text-xl lg:text-2xl text-neutral-700 dark:text-neutral-300 leading-[1.7] font-extralight max-w-4xl"
                 >
                   {member.description}
                 </motion.p>

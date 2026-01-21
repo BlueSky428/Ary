@@ -6,7 +6,6 @@
 
 import { ConversationFlow } from '@/components/ConversationFlow';
 import { Navigation } from '@/components/Navigation';
-import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function DemoPage() {
   // Authentication is handled by middleware - if we reach here, user is authenticated
@@ -22,11 +21,6 @@ export default function DemoPage() {
 
       {/* Navigation */}
       <Navigation />
-
-      {/* Theme Toggle */}
-      <div className="fixed top-20 right-6 z-50">
-        <ThemeToggle />
-      </div>
 
       {/* Conversation Flow */}
       <div className="pt-16 h-full">

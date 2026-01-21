@@ -6,7 +6,6 @@
 import { CompetenceTreeView } from '@/components/CompetenceTreeView';
 import { Navigation } from '@/components/Navigation';
 import { Footer } from '@/components/Footer';
-import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function CompetenceTreePage() {
   return (
@@ -21,11 +20,6 @@ export default function CompetenceTreePage() {
 
       {/* Navigation */}
       <Navigation />
-
-      {/* Theme Toggle */}
-      <div className="fixed top-20 right-6 z-50">
-        <ThemeToggle />
-      </div>
 
       {/* Competence Tree View */}
       <div className="pt-16">

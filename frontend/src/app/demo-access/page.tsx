@@ -11,7 +11,6 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Lock, ArrowRight, ArrowLeft } from 'lucide-react';
 import { Navigation } from '@/components/Navigation';
-import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function DemoAccessPage() {
   const router = useRouter();
@@ -59,16 +58,6 @@ export default function DemoAccessPage() {
       </div>
 
       <Navigation />
-
-      {/* Theme Toggle */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.4 }}
-        className="fixed top-20 right-6 z-50"
-      >
-        <ThemeToggle />
-      </motion.div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-md w-full pt-24">
         {/* Back Button */}
