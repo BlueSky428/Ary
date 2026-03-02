@@ -29,6 +29,7 @@ export default function RequestPilotPage() {
   const [name, setName] = useState('');
   const [organization, setOrganization] = useState('');
   const [role, setRole] = useState('');
+  const [contact, setContact] = useState('');
   const [domain, setDomain] = useState<Domain>('Procurement');
   const [context, setContext] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -50,6 +51,7 @@ export default function RequestPilotPage() {
           name: name.trim(),
           organization: organization.trim(),
           role: role.trim(),
+          contact: contact.trim(),
           domain,
           context: context.trim(),
         }),
@@ -66,6 +68,7 @@ export default function RequestPilotPage() {
       setName('');
       setOrganization('');
       setRole('');
+      setContact('');
       setDomain('Procurement');
       setContext('');
     } catch {
@@ -170,9 +173,10 @@ export default function RequestPilotPage() {
                   animate="show"
                 >
                   {[
-                    { id: 'name', label: 'Name', value: name, setter: setName, type: 'text', required: true },
-                    { id: 'organization', label: 'Organization', value: organization, setter: setOrganization, type: 'text', required: true },
-                    { id: 'role', label: 'Role', value: role, setter: setRole, type: 'text', required: true },
+                    { id: 'name', label: 'Name', value: name, setter: setName, type: 'text', required: true, placeholder: '' },
+                    { id: 'organization', label: 'Organization', value: organization, setter: setOrganization, type: 'text', required: true, placeholder: '' },
+                    { id: 'role', label: 'Role', value: role, setter: setRole, type: 'text', required: true, placeholder: '' },
+                    { id: 'contact', label: 'Contact Info', value: contact, setter: setContact, type: 'text', required: true, placeholder: 'Email or phone number' },
                   ].map((field, i) => (
                     <motion.div key={field.id} custom={i} variants={fieldVariants}>
                       <label htmlFor={field.id} className={labelClass}>
@@ -184,12 +188,13 @@ export default function RequestPilotPage() {
                         value={field.value}
                         onChange={(e) => field.setter(e.target.value)}
                         required={field.required}
+                        placeholder={field.placeholder}
                         className={inputClass}
                       />
                     </motion.div>
                   ))}
 
-                  <motion.div custom={3} variants={fieldVariants}>
+                  <motion.div custom={4} variants={fieldVariants}>
                     <label htmlFor="domain" className={labelClass}>
                       Domain
                     </label>
@@ -206,7 +211,7 @@ export default function RequestPilotPage() {
                     </select>
                   </motion.div>
 
-                  <motion.div custom={4} variants={fieldVariants}>
+                  <motion.div custom={5} variants={fieldVariants}>
                     <label htmlFor="context" className={labelClass}>
                       Brief context{' '}
                       <span className="normal-case font-light text-neutral-400 dark:text-neutral-600 tracking-normal">
@@ -234,7 +239,7 @@ export default function RequestPilotPage() {
                     </motion.p>
                   )}
 
-                  <motion.div custom={5} variants={fieldVariants}>
+                  <motion.div custom={6} variants={fieldVariants}>
                     <motion.button
                       type="submit"
                       disabled={submitting}
