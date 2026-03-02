@@ -26,67 +26,45 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status');
     const domain = searchParams.get('domain');
     const search = searchParams.get('search');
+    const like = search ? `%${search}%` : '';
 
     let rows;
 
     if (status && domain && search) {
       rows = await sql`
-        SELECT id, name, organization, role, contact, domain, context, status, created_at
-        FROM pilot_requests
-        WHERE status = ${status} AND domain = ${domain}
-          AND (name ILIKE ${'%' + search + '%'} OR organization ILIKE ${'%' + search + '%'})
-        ORDER BY created_at DESC
-      `;
+        SELECT id, name, organization, role, contact, domain, context, status, created_at FROM pilot_requests
+        WHERE status = ${status} AND domain = ${domain} AND (name ILIKE ${like} OR organization ILIKE ${like})
+        ORDER BY created_at DESC`;
     } else if (status && domain) {
       rows = await sql`
-        SELECT id, name, organization, role, contact, domain, context, status, created_at
-        FROM pilot_requests
-        WHERE status = ${status} AND domain = ${domain}
-        ORDER BY created_at DESC
-      `;
+        SELECT id, name, organization, role, contact, domain, context, status, created_at FROM pilot_requests
+        WHERE status = ${status} AND domain = ${domain} ORDER BY created_at DESC`;
     } else if (status && search) {
       rows = await sql`
-        SELECT id, name, organization, role, contact, domain, context, status, created_at
-        FROM pilot_requests
-        WHERE status = ${status}
-          AND (name ILIKE ${'%' + search + '%'} OR organization ILIKE ${'%' + search + '%'})
-        ORDER BY created_at DESC
-      `;
+        SELECT id, name, organization, role, contact, domain, context, status, created_at FROM pilot_requests
+        WHERE status = ${status} AND (name ILIKE ${like} OR organization ILIKE ${like})
+        ORDER BY created_at DESC`;
     } else if (domain && search) {
       rows = await sql`
-        SELECT id, name, organization, role, contact, domain, context, status, created_at
-        FROM pilot_requests
-        WHERE domain = ${domain}
-          AND (name ILIKE ${'%' + search + '%'} OR organization ILIKE ${'%' + search + '%'})
-        ORDER BY created_at DESC
-      `;
+        SELECT id, name, organization, role, contact, domain, context, status, created_at FROM pilot_requests
+        WHERE domain = ${domain} AND (name ILIKE ${like} OR organization ILIKE ${like})
+        ORDER BY created_at DESC`;
     } else if (status) {
       rows = await sql`
-        SELECT id, name, organization, role, contact, domain, context, status, created_at
-        FROM pilot_requests
-        WHERE status = ${status}
-        ORDER BY created_at DESC
-      `;
+        SELECT id, name, organization, role, contact, domain, context, status, created_at FROM pilot_requests
+        WHERE status = ${status} ORDER BY created_at DESC`;
     } else if (domain) {
       rows = await sql`
-        SELECT id, name, organization, role, contact, domain, context, status, created_at
-        FROM pilot_requests
-        WHERE domain = ${domain}
-        ORDER BY created_at DESC
-      `;
+        SELECT id, name, organization, role, contact, domain, context, status, created_at FROM pilot_requests
+        WHERE domain = ${domain} ORDER BY created_at DESC`;
     } else if (search) {
       rows = await sql`
-        SELECT id, name, organization, role, contact, domain, context, status, created_at
-        FROM pilot_requests
-        WHERE name ILIKE ${'%' + search + '%'} OR organization ILIKE ${'%' + search + '%'}
-        ORDER BY created_at DESC
-      `;
+        SELECT id, name, organization, role, contact, domain, context, status, created_at FROM pilot_requests
+        WHERE name ILIKE ${like} OR organization ILIKE ${like} ORDER BY created_at DESC`;
     } else {
       rows = await sql`
-        SELECT id, name, organization, role, contact, domain, context, status, created_at
-        FROM pilot_requests
-        ORDER BY created_at DESC
-      `;
+        SELECT id, name, organization, role, contact, domain, context, status, created_at FROM pilot_requests
+        ORDER BY created_at DESC`;
     }
 
     const counts = await sql`
