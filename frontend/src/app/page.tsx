@@ -169,14 +169,23 @@ export default function HomePage() {
             Record the structured decision context at time T.
           </motion.h1>
 
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease, delay: 0.2 }}
+            className="text-lg sm:text-xl text-neutral-900 dark:text-neutral-100 font-light mb-6 max-w-2xl"
+          >
+            Context evolves. History should not.
+          </motion.p>
+
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease, delay: 0.25 }}
+            transition={{ duration: 0.6, ease, delay: 0.3 }}
             className="space-y-2 text-base sm:text-lg text-neutral-500 dark:text-neutral-400 font-light leading-relaxed max-w-2xl mb-8"
           >
             <p>Institutions routinely record outcomes.</p>
-            <p>They don&apos;t preserve the structured context that justified them.</p>
+            <p>They do not preserve the structured context that supported them.</p>
           </motion.div>
 
           <motion.p
@@ -434,6 +443,32 @@ export default function HomePage() {
           <p className="text-lg sm:text-xl text-neutral-900 dark:text-neutral-100 font-light">
             Simple. Disciplined. Defensible.
           </p>
+        </motion.section>
+
+        <Divider />
+
+        {/* ── Deliberate Invocation ── */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={vp}
+          transition={{ duration: 0.6, ease }}
+          className="max-w-5xl mb-20 sm:mb-24"
+        >
+          <Eyebrow label="Deliberate Invocation" />
+          <h2 className="text-3xl sm:text-4xl font-light text-neutral-900 dark:text-neutral-50 tracking-tight mb-7 max-w-2xl">
+            Ary is invoked deliberately when defensibility is required.
+          </h2>
+          <motion.div
+            variants={listContainer}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: '-40px' }}
+            className="space-y-2 text-base sm:text-lg text-neutral-500 dark:text-neutral-400 font-light leading-relaxed max-w-2xl"
+          >
+            <motion.p variants={listItem}>It does not monitor or capture decisions automatically.</motion.p>
+            <motion.p variants={listItem}>Institutions retain full control over when context is preserved.</motion.p>
+          </motion.div>
         </motion.section>
 
         <div className="max-w-5xl overflow-hidden">
